@@ -145,6 +145,7 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(null); // 'start' | 'end' | null
   const [is3DMode, setIs3DMode] = useState(false);
+  const [liveMode, setLiveMode] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
   const [stats, setStats] = useState(null);
   const animationRef = useRef(null);
