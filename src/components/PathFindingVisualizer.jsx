@@ -432,30 +432,30 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   return (
     <div className="w-full h-full flex flex-col bg-white rounded-3xl overflow-hidden border border-slate-200">
       {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-5">
-        <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight mb-2">
-          {algorithmInfo.name}
+      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-5">
+        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
+          {algorithmInfo?.name || 'Pathfinding Algorithm'}
         </h2>
         <div className="flex flex-wrap gap-3 text-xs mb-3">
-          <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md font-medium border border-blue-100">
-            <span className="font-bold opacity-75 mr-1">Time:</span> {algorithmInfo.timeComplexity}
+          <div className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-md font-medium border border-indigo-100 dark:border-indigo-800">
+            <span className="font-bold opacity-75 mr-1">Time:</span> {algorithmInfo?.timeComplexity || 'O(V + E)'}
           </div>
-          <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md font-medium border border-blue-100">
-            <span className="font-bold opacity-75 mr-1">Space:</span> {algorithmInfo.spaceComplexity}
+          <div className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-md font-medium border border-indigo-100 dark:border-indigo-800">
+            <span className="font-bold opacity-75 mr-1">Space:</span> {algorithmInfo?.spaceComplexity || 'O(V)'}
           </div>
           {stats && (
             <>
-              <div className="bg-slate-100 text-slate-700 px-2.5 py-1 rounded-md font-medium border border-slate-200">
+              <div className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md font-medium border border-slate-200 dark:border-slate-700">
                 <span className="font-bold opacity-75 mr-1">Visited:</span> {stats.visited} nodes
               </div>
-              <div className="bg-yellow-50 text-yellow-700 px-2.5 py-1 rounded-md font-medium border border-yellow-200">
+              <div className="bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-md font-medium border border-amber-200 dark:border-amber-800">
                 <span className="font-bold opacity-75 mr-1">Path:</span> {stats.path} steps
               </div>
             </>
           )}
         </div>
-        <p className="text-[13px] text-slate-500 leading-relaxed max-w-4xl">
-          {algorithmInfo.description}
+        <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-4xl">
+          {algorithmInfo?.description || ''}
         </p>
       </div>
 
