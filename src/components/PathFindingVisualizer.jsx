@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, RotateCcw, Eraser, Zap } from 'lucide-react';
+import { Play, RotateCcw, Eraser, Zap, Box, Grid } from 'lucide-react';
 import { createInitialGrid, resetGrid, SPEED_PRESETS } from '../utils/animationHelpers';
 import { getNodesInShortestPathOrder } from '../algorithms/pathfinding/dijkstra';
+import PathFinding3DVisualizer from './3D/PathFinding3DVisualizer';
+import SoundControls from './SoundControls';
+import soundEngine from '../utils/soundEngine';
 
 // ─── Synchronous algorithm runners (no delays) ────────────────────────────────
 
@@ -141,7 +144,7 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   const [isVisualizing, setIsVisualizing] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(null); // 'start' | 'end' | null
-  const [liveMode, setLiveMode] = useState(false);
+  const [is3DMode, setIs3DMode] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
   const [stats, setStats] = useState(null);
   const animationRef = useRef(null);
@@ -187,6 +190,22 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
     if (isVisualizing) return;
     const g = grid.map(row =>
       row.map(node => ({ ...node, isWall: false, isVisited: false, isPath: false, distance: Infinity, previousNode: null }))
+    );
+    setGrid(g);
+    setStats(null);
+  };
+
+  const handleGenerateMaze = () => {
+    if (isVisualizing) return;
+    const g = grid.map(row =>
+      row.map(node => {
+        if ((node.row === startPos.row && node.col === startPos.col) || (node.row === endPos.row && node.col === endPos.col)) {
+          return { ...node, isWall: false, isVisited: false, isPath: false };
+        }
+        // Generate procedural maze pattern with random corridors and walls
+        const isWall = Math.random() < 0.28 || (node.row % 2 === 1 && node.col % 2 === 1 && Math.random() < 0.65);
+        return { ...node, isWall, isVisited: false, isPath: false, distance: Infinity, previousNode: null };
+      })
     );
     setGrid(g);
     setStats(null);
@@ -441,19 +460,27 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
       </div>
 
       {/* Controls */}
-      <div className="bg-slate-50 border-b border-slate-200 px-6 py-4 flex flex-wrap items-center gap-3">
+      <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center gap-3">
         <button
           onClick={visualize}
           disabled={isVisualizing}
-          className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm shadow-blue-600/20"
+          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm shadow-indigo-600/20"
         >
           <Play size={16} /> Visualize
         </button>
 
         <button
+          onClick={handleGenerateMaze}
+          disabled={isVisualizing}
+          className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
+        >
+          <Grid size={16} className="text-indigo-500" /> Generate Maze
+        </button>
+
+        <button
           onClick={handleReset}
           disabled={isVisualizing}
-          className="flex items-center gap-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
         >
           <RotateCcw size={16} className="text-slate-500" /> Reset
         </button>
@@ -461,36 +488,36 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
         <button
           onClick={handleClearWalls}
           disabled={isVisualizing}
-          className="flex items-center gap-2 bg-white hover:bg-rose-50 border border-slate-200 hover:border-rose-200 text-slate-700 hover:text-rose-600 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
+          className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:text-rose-600 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
         >
           <Eraser size={16} className={isVisualizing ? "text-slate-500" : "text-rose-500"} /> Clear Walls
         </button>
 
-        {/* Live mode toggle */}
         <button
-          onClick={() => setLiveMode(v => !v)}
-          disabled={isVisualizing}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm border ${
-            liveMode
-              ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
-              : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
+          onClick={() => setIs3DMode(!is3DMode)}
+          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all shadow-sm border ${
+            is3DMode
+              ? 'bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white shadow-cyan-500/20'
+              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
           }`}
         >
-          <Zap size={16} className={liveMode ? "text-yellow-600" : "text-slate-400"} />
-          {liveMode ? 'Live ON' : 'Live OFF'}
+          <Box className="w-4 h-4 text-cyan-500" />
+          <span>{is3DMode ? '3D Render ON' : '3D Mode'}</span>
         </button>
+
+        <SoundControls />
 
         {/* Speed */}
         <div className="flex items-center gap-2 ml-auto">
-          <span className="text-[11px] text-slate-500 font-bold uppercase tracking-wider">SPEED</span>
-          <div className="flex bg-white border border-slate-200 rounded-lg p-1 shadow-sm">
+          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">SPEED</span>
+          <div className="flex bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1 shadow-sm">
             {[['Slow', 100], ['Med', 30], ['Fast', 8]].map(([label, val]) => (
               <button
                 key={label}
                 onClick={() => setSpeed(val)}
                 disabled={isVisualizing}
                 className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                  speed === val ? 'bg-slate-100 text-blue-600 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
+                  speed === val ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
                 }`}
               >
                 {label}
@@ -500,27 +527,33 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
         </div>
       </div>
 
-      {/* Grid */}
-      <div
-        className="flex-1 bg-slate-100/50 flex items-center justify-center overflow-auto select-none p-6"
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
-        <div className="inline-block rounded-xl overflow-hidden border border-slate-200 shadow-sm bg-white p-1">
-          {grid.map((row, rIdx) => (
-            <div key={rIdx} className="flex">
-              {row.map((node, cIdx) => (
-                <div
-                  key={cIdx}
-                  className={`w-5 h-5 border-r border-b border-slate-100 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
-                  onMouseDown={() => handleMouseDown(node.row, node.col)}
-                  onMouseEnter={() => handleMouseEnter(node.row, node.col)}
-                />
-              ))}
-            </div>
-          ))}
+      {/* Main Grid View / 3D Render View */}
+      {is3DMode ? (
+        <div className="p-6 bg-slate-50 dark:bg-slate-900">
+          <PathFinding3DVisualizer grid={grid} startPos={startPos} endPos={endPos} />
         </div>
-      </div>
+      ) : (
+        <div
+          className="flex-1 bg-slate-50 dark:bg-slate-900 flex items-center justify-center overflow-auto select-none p-6"
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          <div className="inline-block rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 p-1">
+            {grid.map((row, rIdx) => (
+              <div key={rIdx} className="flex">
+                {row.map((node, cIdx) => (
+                  <div
+                    key={cIdx}
+                    className={`w-5 h-5 border-r border-b border-slate-100 dark:border-slate-800 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
+                    onMouseDown={() => handleMouseDown(node.row, node.col)}
+                    onMouseEnter={() => handleMouseEnter(node.row, node.col)}
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Legend */}
       <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-wrap gap-6 justify-center text-[12px] font-medium text-slate-600">
