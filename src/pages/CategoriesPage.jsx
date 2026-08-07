@@ -132,7 +132,7 @@ const CategoriesPage = () => {
           <div className="flex items-center gap-6 text-sm font-medium text-slate-500 dark:text-slate-400">
              <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</a>
              <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms</a>
-             <a href="https://github.com/manishkumar8312/" className="hover:text-slate-900 dark:hover:text-white transition-colors">GitHub</a>
+             <a href="https://gitlab.com/sireenyadav/algorithmvizualizer" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white transition-colors">GitLab</a>
           </div>
         </div>
       </footer>

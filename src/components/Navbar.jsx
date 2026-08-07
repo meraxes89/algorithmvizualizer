@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ChevronDown, Search, Moon, Sun, Menu, X, Swords, Trophy } from 'lucide-react';
-import GitHubIcon from './GitHubIcon';
+import GitLabIcon from './GitLabIcon';
 import { useTheme } from '../context/ThemeContext';
 
 import Logo from './Logo';
@@ -193,13 +193,13 @@ const Navbar = () => {
           </button>
 
           <a
-            href="https://github.com/manishkumar8312/"
+            href="https://gitlab.com/sireenyadav/algorithmvizualizer"
             target="_blank"
             rel="noopener noreferrer"
             className="hidden sm:flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white text-[13px] font-medium px-4 py-2 rounded-lg shadow-sm shadow-indigo-600/20 transition-all"
           >
-            <GitHubIcon className="w-4 h-4 fill-current" />
-            GitHub
+            <GitLabIcon className="w-4 h-4 fill-current" />
+            GitLab
           </a>
 
           {/* Mobile Menu Button */}

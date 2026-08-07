@@ -22,7 +22,7 @@ import {
   Notebook as NotebookIcon
 } from 'lucide-react';
 import Navbar from '../components/Navbar';
-import GitHubIcon from '../components/GitHubIcon';
+import GitLabIcon from '../components/GitLabIcon';
 import Logo from '../components/Logo';
 
 const QUICK_SORT_FRAMES = [
@@ -367,20 +367,10 @@ const Home = () => {
             <div>
               <p className="text-[11px] font-semibold text-slate-400 dark:text-slate-600 uppercase tracking-widest mb-4">Resources</p>
               <div className="flex flex-col gap-3">
-                <a href="https://github.com/manishkumar8312/CS-Fundamentals" target="_blank" rel="noopener noreferrer"
+                <a href="https://gitlab.com/sireenyadav/algorithmvizualizer" target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-400 no-underline hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  <BookOpenIcon className="w-4 h-4 text-indigo-500" />
-                  CS Fundamentals
-                </a>
-                <a href="https://github.com/manishkumar8312/cp-notes" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-400 no-underline hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  <NotebookIcon className="w-4 h-4 text-indigo-500" />
-                  CP Notes
-                </a>
-                <a href="https://github.com/manishkumar8312" target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-400 no-underline hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
-                  <GitHubIcon className="w-4 h-4 text-indigo-500" />
-                  GitHub Profile
+                  <GitLabIcon className="w-4 h-4 text-indigo-500" />
+                  GitLab Repository
                 </a>
               </div>
             </div>
@@ -403,13 +393,13 @@ const Home = () => {
           <div className="border-t border-slate-200 dark:border-slate-800 pt-5 flex flex-wrap items-center justify-between gap-3">
             <p className="text-[12px] text-slate-500 dark:text-slate-600 m-0">
               Built by{" "}
-              <a href="https://github.com/manishkumar8312" target="_blank" rel="noopener noreferrer"
+              <a href="https://gitlab.com/sireenyadav/algorithmvizualizer" target="_blank" rel="noopener noreferrer"
                 className="text-indigo-600 dark:text-indigo-500 no-underline hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors">
-                Manish Kumar
+                Sireen Yadav
               </a>{" "}
-              · Made for learners and competitive programmers
+              · Interactive Algorithm Visualizer
             </p>
-            <p className="text-[12px] text-slate-500 dark:text-slate-600 m-0">© 2025 Algorithm Visualizer</p>
+            <p className="text-[12px] text-slate-500 dark:text-slate-600 m-0">© 2026 Algorithm Visualizer</p>
           </div>
 
         </div>

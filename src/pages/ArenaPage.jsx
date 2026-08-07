@@ -254,9 +254,10 @@ const PATHFINDING_ALGORITHMS = {
     category: 'Pathfinding',
     complexity: 'O(V log V + E)',
     color: 'from-indigo-500 to-purple-600',
-    generator: function* (rows = 10, cols = 15) {
-      const start = [1, 1], end = [8, 13];
+    generator: function* (rows = 8, cols = 12) {
+      const start = [1, 1], end = [6, 10];
       const visited = new Set();
+      const parent = {};
       const queue = [[...start, 0]];
       let steps = 0;
 
@@ -268,22 +269,33 @@ const PATHFINDING_ALGORITHMS = {
         visited.add(key);
         steps++;
 
-        yield { visitedCount: visited.size, activeNode: [r, c], finished: r === end[0] && c === end[1], steps };
+        const visitedArr = Array.from(visited);
+        const isTarget = r === end[0] && c === end[1];
 
-        if (r === end[0] && c === end[1]) {
-          yield { visitedCount: visited.size, activeNode: [r, c], finished: true, steps };
+        yield { visitedList: visitedArr, activeNode: [r, c], steps, finished: isTarget };
+
+        if (isTarget) {
+          const path = [];
+          let curr = `${end[0]},${end[1]}`;
+          while (curr) {
+            path.push(curr);
+            curr = parent[curr];
+          }
+          yield { visitedList: visitedArr, pathList: path, activeNode: [r, c], finished: true, steps };
           return;
         }
 
         const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
         for (const [dr, dc] of dirs) {
           const nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(`${nr},${nc}`)) {
+          const nkey = `${nr},${nc}`;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(nkey)) {
+            if (!parent[nkey]) parent[nkey] = key;
             queue.push([nr, nc, dist + 1]);
           }
         }
       }
-      yield { visitedCount: visited.size, finished: true, steps };
+      yield { visitedList: Array.from(visited), finished: true, steps };
     }
   },
   astar: {
@@ -291,10 +303,11 @@ const PATHFINDING_ALGORITHMS = {
     category: 'Pathfinding',
     complexity: 'O(E)',
     color: 'from-emerald-500 to-cyan-600',
-    generator: function* (rows = 10, cols = 15) {
-      const start = [1, 1], end = [8, 13];
+    generator: function* (rows = 8, cols = 12) {
+      const start = [1, 1], end = [6, 10];
       const visited = new Set();
-      const queue = [[...start, 0, Math.abs(1 - 8) + Math.abs(1 - 13)]];
+      const parent = {};
+      const queue = [[...start, 0, Math.abs(1 - 6) + Math.abs(1 - 10)]];
       let steps = 0;
 
       while (queue.length > 0) {
@@ -305,23 +318,34 @@ const PATHFINDING_ALGORITHMS = {
         visited.add(key);
         steps++;
 
-        yield { visitedCount: visited.size, activeNode: [r, c], finished: r === end[0] && c === end[1], steps };
+        const visitedArr = Array.from(visited);
+        const isTarget = r === end[0] && c === end[1];
 
-        if (r === end[0] && c === end[1]) {
-          yield { visitedCount: visited.size, activeNode: [r, c], finished: true, steps };
+        yield { visitedList: visitedArr, activeNode: [r, c], steps, finished: isTarget };
+
+        if (isTarget) {
+          const path = [];
+          let curr = `${end[0]},${end[1]}`;
+          while (curr) {
+            path.push(curr);
+            curr = parent[curr];
+          }
+          yield { visitedList: visitedArr, pathList: path, activeNode: [r, c], finished: true, steps };
           return;
         }
 
         const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
         for (const [dr, dc] of dirs) {
           const nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(`${nr},${nc}`)) {
+          const nkey = `${nr},${nc}`;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(nkey)) {
+            if (!parent[nkey]) parent[nkey] = key;
             const h = Math.abs(nr - end[0]) + Math.abs(nc - end[1]);
             queue.push([nr, nc, dist + 1, h]);
           }
         }
       }
-      yield { visitedCount: visited.size, finished: true, steps };
+      yield { visitedList: Array.from(visited), finished: true, steps };
     }
   },
   bfs: {
@@ -329,9 +353,10 @@ const PATHFINDING_ALGORITHMS = {
     category: 'Pathfinding',
     complexity: 'O(V + E)',
     color: 'from-blue-500 to-teal-500',
-    generator: function* (rows = 10, cols = 15) {
-      const start = [1, 1], end = [8, 13];
+    generator: function* (rows = 8, cols = 12) {
+      const start = [1, 1], end = [6, 10];
       const visited = new Set();
+      const parent = {};
       const queue = [[...start]];
       let steps = 0;
 
@@ -342,22 +367,33 @@ const PATHFINDING_ALGORITHMS = {
         visited.add(key);
         steps++;
 
-        yield { visitedCount: visited.size, activeNode: [r, c], finished: r === end[0] && c === end[1], steps };
+        const visitedArr = Array.from(visited);
+        const isTarget = r === end[0] && c === end[1];
 
-        if (r === end[0] && c === end[1]) {
-          yield { visitedCount: visited.size, activeNode: [r, c], finished: true, steps };
+        yield { visitedList: visitedArr, activeNode: [r, c], steps, finished: isTarget };
+
+        if (isTarget) {
+          const path = [];
+          let curr = `${end[0]},${end[1]}`;
+          while (curr) {
+            path.push(curr);
+            curr = parent[curr];
+          }
+          yield { visitedList: visitedArr, pathList: path, activeNode: [r, c], finished: true, steps };
           return;
         }
 
         const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
         for (const [dr, dc] of dirs) {
           const nr = r + dr, nc = c + dc;
-          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(`${nr},${nc}`)) {
+          const nkey = `${nr},${nc}`;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(nkey)) {
+            if (!parent[nkey]) parent[nkey] = key;
             queue.push([nr, nc]);
           }
         }
       }
-      yield { visitedCount: visited.size, finished: true, steps };
+      yield { visitedList: Array.from(visited), finished: true, steps };
     }
   }
 };
@@ -688,12 +724,32 @@ const ArenaPage = () => {
                 )}
 
                 {activeCategory === 'pathfinding' && (
-                  <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-center justify-center border border-slate-200 dark:border-slate-800 mb-4">
-                    <div className="flex flex-col items-center justify-center gap-2">
-                      <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 font-mono">
-                        {runner.visitedCount || 0}
-                      </div>
-                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Nodes Explored</span>
+                  <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-2.5 flex items-center justify-center border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                    <div className="grid grid-rows-8 grid-cols-12 gap-1 w-full h-full">
+                      {Array.from({ length: 8 }).map((_, r) =>
+                        Array.from({ length: 12 }).map((_, c) => {
+                          const key = `${r},${c}`;
+                          const isStart = r === 1 && c === 1;
+                          const isTarget = r === 6 && c === 10;
+                          const isVisited = runner.visitedList?.includes(key);
+                          const isPath = runner.pathList?.includes(key);
+                          const isActive = runner.activeNode && runner.activeNode[0] === r && runner.activeNode[1] === c;
+
+                          let cellStyle = 'bg-slate-200/50 dark:bg-slate-800/40 border-slate-300/30 dark:border-slate-800/30';
+                          if (isStart) cellStyle = 'bg-emerald-500 ring-2 ring-emerald-400 font-bold';
+                          else if (isTarget) cellStyle = 'bg-rose-500 ring-2 ring-rose-400 font-bold';
+                          else if (isPath) cellStyle = 'bg-amber-400 dark:bg-amber-500 shadow-md shadow-amber-500/50';
+                          else if (isActive) cellStyle = 'bg-amber-300 dark:bg-amber-400 animate-pulse';
+                          else if (isVisited) cellStyle = 'bg-indigo-400/40 dark:bg-indigo-600/50';
+
+                          return (
+                            <div
+                              key={key}
+                              className={`rounded-sm border text-[9px] flex items-center justify-center transition-all duration-100 ${cellStyle}`}
+                            />
+                          );
+                        })
+                      )}
                     </div>
                   </div>
                 )}
