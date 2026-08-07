@@ -117,22 +117,6 @@ const Navbar = () => {
               <span>Quiz</span>
             </Link>
             <Link to="/playground" className="hover:text-slate-900 dark:hover:text-white transition-colors">Playground</Link>
-            <a
-              href="https://github.com/manishkumar8312/CS-Fundamentals"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              Learn
-            </a>
-            <a
-              href="https://github.com/manishkumar8312/CP-Notes"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-slate-900 dark:hover:text-white transition-colors"
-            >
-              About
-            </a>
           </div>
         </div>
 

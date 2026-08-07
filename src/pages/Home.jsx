@@ -372,6 +372,11 @@ const Home = () => {
                   <GitLabIcon className="w-4 h-4 text-indigo-500" />
                   GitLab Repository
                 </a>
+                <a href="https://gitlab.com/sireenyadav" target="_blank" rel="noopener noreferrer"
+                  className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-400 no-underline hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                  <GitLabIcon className="w-4 h-4 text-indigo-500" />
+                  GitLab Profile
+                </a>
               </div>
             </div>
 
