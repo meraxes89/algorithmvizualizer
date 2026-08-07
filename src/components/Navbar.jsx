@@ -108,6 +108,13 @@ const Navbar = () => {
             </div>
 
             <Link to="/algorithms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Categories</Link>
+            <Link to="/arena" className="hover:text-amber-500 dark:hover:text-amber-400 font-bold flex items-center gap-1 transition-colors">
+              <span>⚔️ Battle Arena</span>
+              <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-500 text-[9px] font-black uppercase">NEW</span>
+            </Link>
+            <Link to="/quiz" className="hover:text-purple-500 dark:hover:text-purple-400 font-bold flex items-center gap-1 transition-colors">
+              <span>🏆 Quiz</span>
+            </Link>
             <Link to="/playground" className="hover:text-slate-900 dark:hover:text-white transition-colors">Playground</Link>
             <a
               href="https://github.com/manishkumar8312/CS-Fundamentals"

@@ -1,11 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward } from 'lucide-react';
+import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward, Box, Layers } from 'lucide-react';
 import { generateRandomArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import StepControls from './educational/StepControls';
 import ExplanationPanel from './educational/ExplanationPanel';
 import CodeViewer from './educational/CodeViewer';
 import CustomTestCases from './educational/CustomTestCases';
 import { algorithmDatabase } from '../data/algorithmData';
+import soundEngine from '../utils/soundEngine';
+import SoundControls from './SoundControls';
+import Sorting3DVisualizer from './3D/Sorting3DVisualizer';
+import MemoryStackInspector from './MemoryStackInspector';
 
 const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
   const [array, setArray] = useState([]);
@@ -20,6 +24,7 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
   const [showExplanation, setShowExplanation] = useState(false);
   const [showCodeViewer, setShowCodeViewer] = useState(false);
   const [showCustomTest, setShowCustomTest] = useState(false);
+  const [is3DMode, setIs3DMode] = useState(false);
   
   // Playback state
   const [steps, setSteps] = useState([]);
@@ -270,6 +275,20 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
           Settings
         </button>
 
+        <button
+          onClick={() => setIs3DMode(!is3DMode)}
+          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all shadow-sm border ${
+            is3DMode
+              ? 'bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white shadow-cyan-500/20'
+              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
+          }`}
+        >
+          <Box className={`w-4 h-4 ${is3DMode ? 'animate-bounce' : 'text-cyan-500'}`} />
+          <span>{is3DMode ? '3D Render ON' : '3D Mode'}</span>
+        </button>
+
+        <SoundControls />
+
         <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
 
         {/* Educational Tools */}
@@ -366,22 +385,30 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
       )}
 
       {/* Main Visualization Area */}
-      <div className="flex-1 bg-white dark:bg-slate-900 relative min-h-[400px] overflow-hidden">
-        <div className="absolute inset-0 px-6 pt-6 pb-2 flex items-end justify-center gap-[2px]">
-          {array.map((value, idx) => (
-            <div
-              key={idx}
-              className="transition-all duration-75 rounded-t-sm"
-              style={{
-                height: `${(value / maxValue) * 85}%`,
-                width: `${100 / array.length}%`,
-                backgroundColor: getBarColor(idx),
-                minWidth: '2px',
-              }}
-              title={`Value: ${value}, Index: ${idx}`}
-            />
-          ))}
-        </div>
+      <div className="flex-1 bg-white dark:bg-slate-900 relative min-h-[400px] overflow-hidden p-6">
+        {is3DMode ? (
+          <Sorting3DVisualizer
+            array={array}
+            comparing={comparingIndices}
+            swapped={swappingIndices}
+          />
+        ) : (
+          <div className="absolute inset-0 px-6 pt-6 pb-2 flex items-end justify-center gap-[2px]">
+            {array.map((value, idx) => (
+              <div
+                key={idx}
+                className="transition-all duration-75 rounded-t-sm"
+                style={{
+                  height: `${(value / maxValue) * 85}%`,
+                  width: `${100 / array.length}%`,
+                  backgroundColor: getBarColor(idx),
+                  minWidth: '2px',
+                }}
+                title={`Value: ${value}, Index: ${idx}`}
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Legend Footer */}
