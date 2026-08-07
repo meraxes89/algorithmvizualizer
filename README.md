@@ -1,199 +1,180 @@
-# Algorithm Visualizer
+# ⚡ Algorithm Visualizer
 
-Interactive visualizations for understanding fundamental Computer Science algorithms.
+> An interactive, high-performance web platform designed to visualize, explore, and master computer science algorithms through real-time step-by-step animations, 3D spatial rendering, dynamic audio sonification, and multi-language code execution.
+
 <p align="center">
-
-![React](https://img.shields.io/badge/React-19-blue?logo=react)
-![Vite](https://img.shields.io/badge/Vite-Latest-purple?logo=vite)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4-38BDF8?logo=tailwindcss)
-![License](https://img.shields.io/badge/License-MIT-green)
-
+  <a href="https://gitlab.com/sireenyadav/algorithmvizualizer">
+    <img src="https://img.shields.io/badge/GitLab-Repository-orange?logo=gitlab" alt="GitLab Repository" />
+  </a>
+  <img src="https://img.shields.io/badge/React-18.3-61DAFB?logo=react" alt="React 18" />
+  <img src="https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite" alt="Vite 5" />
+  <img src="https://img.shields.io/badge/Three.js-WebGL-000000?logo=three.js" alt="Three.js WebGL" />
+  <img src="https://img.shields.io/badge/Audio-Web_Audio_API-emerald" alt="Web Audio API" />
+  <img src="https://img.shields.io/badge/TailwindCSS-3.4-38BDF8?logo=tailwindcss" alt="Tailwind CSS" />
+  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
 </p>
 
 ---
 
-## Overview
+## 🌟 Overview
 
-Algorithm Visualizer is an interactive educational platform designed to help students and developers understand algorithms through real-time visualizations.
+**Algorithm Visualizer** bridges the gap between theoretical computer science and intuitive understanding. Instead of static diagrams or complex code traceouts, users can watch algorithms execute live with frame-by-frame precision, inspect memory call stacks, hear frequency-mapped sound synthesis, and run multi-algorithm speed races in real time.
 
-Rather than learning algorithms solely through theory, users can observe each operation step-by-step, making concepts easier to understand and retain.
-
-The application emphasizes performance, responsive design, clean user experience, and intuitive controls.
+Built with **React 18**, **Three.js WebGL**, **Web Audio API**, **Tailwind CSS**, and **Vite**, the application delivers 60 FPS animations, responsive glassmorphism design, full dark/light theme adaptability, and multi-language code execution support.
 
 ---
 
-# Features
+## 🔥 Key Features
 
-- Interactive algorithm visualizations
-- Adjustable animation speed
-- Random input generation
-- Step-by-step execution
-- Responsive interface
-- Dark mode support
-- Modern UI built with Tailwind CSS
-- Optimized rendering for smooth animations
+### 🌐 3D Spatial WebGL Rendering
+* Real-time 3D bar chart rendering using **Three.js** with ambient lighting, specular point lights, reflective ground floor grid, and camera rotation controls.
+* Seamless 1-click toggle between standard 2D view and 3D WebGL spatial view.
 
----
+### 🎵 Web Audio API Sonification Engine
+* Synthesizes dynamic pitch frequencies mapped pentatonically (200Hz – 1200Hz) to array values, comparisons, and swaps.
+* Includes customizable instrument timbres: **Marimba**, **Synth Lead**, **8-Bit Arcade**, and **Pure Sine Wave** with instant mute controls.
 
-# Supported Algorithms
+### ⚔️ Multi-Category Algorithm Battle Arena
+* Real-time side-by-side execution races comparing algorithms on identical input data.
+* **Sorting Arena**: QuickSort vs. MergeSort vs. HeapSort vs. BubbleSort.
+* **Searching Arena**: Linear Search vs. Binary Search vs. Jump Search.
+* **Pathfinding Arena**: Dijkstra's Search vs. A* Heuristic Search vs. BFS on interactive 2D grid mazes.
 
-## Sorting
+### 🧠 Memory Call Stack & Execution Inspector
+* Live Call Stack frame tracker showing active function signatures, parameter values, recursion depth, and stack push/pop transitions in real time.
 
-- Bubble Sort
-- Selection Sort
-- Insertion Sort
-- Merge Sort
-- Quick Sort
+### 💻 Multi-Language Code Playground
+* Execute custom code in **C++**, **C**, **Java**, **JavaScript**, and **Python**.
+* **Python**: Runs 100% client-side in WebAssembly via **Pyodide**.
+* **C++ / C / Java**: Compiled remotely via **Wandbox** & self-hosted **Piston API** servers.
 
-Features
-
-- Animated comparisons
-- Swap visualization
-- Speed control
-- Random array generation
+### 🏆 Interactive Challenge & Quiz Mode
+* Step-by-step prediction challenges testing algorithm concepts, time complexities, and data structure properties with streak counters and celebratory confetti.
 
 ---
 
-## Searching
+## 📚 Algorithm Coverage
 
-- Linear Search
-- Binary Search
-
-Features
-
-- Target highlighting
-- Step-by-step traversal
-- Sorted array visualization
-
----
-
-## Pathfinding
-
-- Breadth First Search (BFS)
-- Depth First Search (DFS)
-- Dijkstra's Algorithm
-
-Features
-
-- Interactive grid
-- Wall placement
-- Start and destination nodes
-- Shortest path animation
+| Category | Algorithms Implemented | Visual Features |
+| :--- | :--- | :--- |
+| **Sorting** | Quick Sort, Merge Sort, Heap Sort, Bubble Sort, Selection Sort, Insertion Sort | 2D/3D Bars, Swap Highlights, Comparisons, Audio Sonification |
+| **Searching** | Linear Search, Binary Search, Jump Search | Range Trimming, Target Highlighting, Index Trackers |
+| **Pathfinding** | Dijkstra's Search, A* Search, BFS, DFS | Interactive Grid, Visited Cells Expansion, Shortest Path Routing |
+| **Graph Theory** | Prim's MST, Kruskal's MST, Topological Sort, BFS/DFS | Interactive Node-Link Graphs, Edge Weight Highlights |
+| **Trees & Data Structures** | BST, AVL Tree (Rotations), Max/Min Heap, Segment Tree, Trie (Prefix Tree) | Tree Node Balancing, Dynamic Pointer Transitions |
+| **Recursion & Backtracking** | Tower of Hanoi, N-Queens Problem | Disc Movements, Chess Board Placements, Call Stack Frames |
+| **Dynamic Programming** | Fibonacci, 0/1 Knapsack, Longest Common Subsequence (LCS) | Memoization Tables, Grid Cell State Filling |
 
 ---
 
-## Graph Algorithms
+## 🛠️ Technology Stack
 
-- Prim's Algorithm
-- Kruskal's Algorithm
-- Topological Sort
-
-Features
-
-- Graph traversal
-- Minimum spanning tree visualization
-- Interactive graph rendering
-
----
-
-## Recursion
-
-- Tower of Hanoi
-- N-Queens Problem
-
-Features
-
-- Recursive execution visualization
-- Move animations
-- State transitions
+| Category | Technologies |
+| :--- | :--- |
+| **Frontend Core** | React 18, React Router v6, JavaScript (ESNext) |
+| **3D & Graphics** | Three.js (WebGL), HTML5 Canvas |
+| **Audio Synthesis** | Web Audio API (Polyphonic Synthesizer) |
+| **Styling & Design** | Tailwind CSS, Lucide React Icons, Framer Motion, Glassmorphism CSS |
+| **Code Editor & Execution** | Monaco Editor (`@monaco-editor/react`), Pyodide WASM, Wandbox API |
+| **Build & Tooling** | Vite 5, pnpm, PostCSS, Autoprefixer |
 
 ---
 
-# Technology Stack
-
-| Category | Technology |
-|----------|------------|
-| Frontend | React.js |
-| Styling | Tailwind CSS |
-| Routing | React Router |
-| Icons | Lucide React |
-| Build Tool | Vite |
-| Deployment | Vercel |
-
----
-
-# Project Structure
+## 📂 Directory Structure
 
 ```text
-AlgorithmVisualizer
-│
-├── public
-├── src
-│   ├── assets
-│   ├── components
-│   ├── pages
-│   ├── algorithms
-│   ├── hooks
-│   ├── utils
-│   └── App.jsx
-│
+AlgorithmVizualizer/
+├── public/                     # Static assets and icons
+├── src/
+│   ├── algorithms/             # Pure algorithm generators & step engines
+│   │   ├── sorting/            # Bubble, Quick, Merge, Heap, Selection, Insertion
+│   │   ├── searching/          # Linear, Binary, Jump Search
+│   │   ├── pathfinding/        # Dijkstra, A*, BFS, DFS
+│   │   ├── graph/              # Prim, Kruskal, Topological Sort
+│   │   ├── trees/              # BST, AVL, Heap, Segment Tree, Trie
+│   │   ├── recursion/          # Hanoi, N-Queens
+│   │   └── dp/                 # Fibonacci, Knapsack, LCS
+│   ├── components/             # Reusable UI components
+│   │   ├── 3D/                 # Sorting3DVisualizer (Three.js)
+│   │   ├── SoundControls.jsx   # Audio sonification toolbar
+│   │   ├── MemoryStackInspector.jsx  # Call stack inspector
+│   │   ├── GitLabIcon.jsx      # Vector logo component
+│   │   └── Navbar.jsx          # Header navigation bar
+│   ├── pages/                  # Page routes
+│   │   ├── Home.jsx            # Landing page
+│   │   ├── ArenaPage.jsx       # Multi-category battle arena
+│   │   ├── QuizPage.jsx        # Challenge quiz mode
+│   │   ├── PlaygroundPage.jsx  # Multi-language code editor
+│   │   └── SortingPage.jsx     # Detailed sorting visualizer
+│   ├── utils/
+│   │   └── soundEngine.js      # Web Audio API synthesizer
+│   ├── context/
+│   │   └── ThemeContext.jsx    # Dark / Light mode state provider
+│   ├── index.css               # Global CSS & Design System tokens
+│   └── App.jsx                 # Application router & routes
 ├── package.json
+├── pnpm-lock.yaml
 ├── vite.config.js
 └── README.md
 ```
 
 ---
 
-# Roadmap
+## 🚀 Getting Started
 
-- AVL Tree Visualization
-- Binary Search Tree
-- Heap Visualization
-- Segment Tree
-- Trie
-- Dynamic Programming Visualizations
-- Backtracking Algorithms
-- Greedy Algorithms
-- Complexity Comparison Charts
-- Code Editor Integration
+### Prerequisites
+
+Make sure you have **Node.js** (v18+) and **pnpm** installed on your system.
+
+```bash
+# Check Node version
+node -v
+
+# Install pnpm globally if not already installed
+npm install -g pnpm
+```
+
+### Installation
+
+1. **Clone the Repository:**
+
+```bash
+git clone https://gitlab.com/sireenyadav/algorithmvizualizer.git
+cd algorithmvizualizer
+```
+
+2. **Install Dependencies:**
+
+```bash
+pnpm install
+```
+
+3. **Start Development Server:**
+
+```bash
+pnpm run dev
+```
+
+Open your browser and navigate to `http://localhost:5173`.
+
+4. **Build for Production:**
+
+```bash
+pnpm run build
+```
 
 ---
 
-# Contributing
+## 📜 License
 
-Contributions are welcome.
-
-1. Fork the repository.
-2. Create a new feature branch.
-
-```bash
-git checkout -b feature/new-feature
-```
-
-3. Commit your changes.
-
-```bash
-git commit -m "Add new feature"
-```
-
-4. Push to your branch.
-
-```bash
-git push origin feature/new-feature
-```
-
-5. Open a Pull Request.
-
----
-
-# License
-
-This project is licensed under the MIT License.
+This project is open-source and available under the [MIT License](LICENSE).
 
 ---
 
 <div align="center">
 
-Developed by **Manish Kumar Sah**
+Crafted by **[Sireen Yadav](https://gitlab.com/sireenyadav)**
+
+[GitLab Repository](https://gitlab.com/sireenyadav/algorithmvizualizer) · [Report Issue](https://gitlab.com/sireenyadav/algorithmvizualizer/-/issues)
 
 </div>
