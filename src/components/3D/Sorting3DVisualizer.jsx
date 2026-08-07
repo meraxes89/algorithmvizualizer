@@ -69,7 +69,7 @@ const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot =
       animationFrameId = requestAnimationFrame(animate);
 
       if (cameraRef.current) {
-        const time = Date.now() * 0.00025;
+        const time = Date.now() * 0.00007;
         const radius = Math.max(55, (array.length || 30) * 1.4);
         cameraRef.current.position.x = Math.sin(time) * radius;
         cameraRef.current.position.z = Math.cos(time) * radius;

@@ -197,18 +197,56 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   };
 
   const handleGenerateMaze = () => {
-    if (isVisualizing) return;
-    const g = grid.map(row =>
+    if (isVisualizing || grid.length === 0) return;
+    const numRows = grid.length;
+    const numCols = grid[0].length;
+
+    // 1. Guarantee a valid solution path via randomized path carving from Start to End
+    const pathKeys = new Set();
+    let currR = startPos.row;
+    let currC = startPos.col;
+    pathKeys.add(`${currR},${currC}`);
+
+    let steps = 0;
+    while ((currR !== endPos.row || currC !== endPos.col) && steps < 1000) {
+      steps++;
+      const candidateMoves = [];
+      if (currR < endPos.row) candidateMoves.push([1, 0]);
+      if (currR > endPos.row) candidateMoves.push([-1, 0]);
+      if (currC < endPos.col) candidateMoves.push([0, 1]);
+      if (currC > endPos.col) candidateMoves.push([0, -1]);
+
+      // Add random side turns for winding corridors
+      if (Math.random() < 0.4 && candidateMoves.length > 0) {
+        const sideDirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        const rDir = sideDirs[Math.floor(Math.random() * sideDirs.length)];
+        currR = Math.max(0, Math.min(numRows - 1, currR + rDir[0]));
+        currC = Math.max(0, Math.min(numCols - 1, currC + rDir[1]));
+      } else if (candidateMoves.length > 0) {
+        const move = candidateMoves[Math.floor(Math.random() * candidateMoves.length)];
+        currR += move[0];
+        currC += move[1];
+      }
+      pathKeys.add(`${currR},${currC}`);
+    }
+    pathKeys.add(`${endPos.row},${endPos.col}`);
+
+    // 2. Generate walls only on non-path cells
+    const newGrid = grid.map(row =>
       row.map(node => {
-        if ((node.row === startPos.row && node.col === startPos.col) || (node.row === endPos.row && node.col === endPos.col)) {
-          return { ...node, isWall: false, isVisited: false, isPath: false };
+        const key = `${node.row},${node.col}`;
+        const isStartOrEnd = (node.row === startPos.row && node.col === startPos.col) || (node.row === endPos.row && node.col === endPos.col);
+        
+        if (pathKeys.has(key) || isStartOrEnd) {
+          return { ...node, isWall: false, isVisited: false, isPath: false, distance: Infinity, previousNode: null };
         }
-        // Generate procedural maze pattern with random corridors and walls
-        const isWall = Math.random() < 0.28 || (node.row % 2 === 1 && node.col % 2 === 1 && Math.random() < 0.65);
+        
+        const isWall = Math.random() < 0.32 || (node.row % 2 === 1 && node.col % 2 === 1 && Math.random() < 0.6);
         return { ...node, isWall, isVisited: false, isPath: false, distance: Infinity, previousNode: null };
       })
     );
-    setGrid(g);
+
+    setGrid(newGrid);
     setStats(null);
   };
 
