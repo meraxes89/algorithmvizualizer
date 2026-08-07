@@ -1,6 +1,6 @@
 # ⚡ Algorithm Visualizer
 
-> An interactive, high-performance web platform designed to visualize, explore, and master computer science algorithms through real-time step-by-step animations, 3D spatial rendering, dynamic audio sonification, and multi-language code execution.
+> An interactive, high-performance web platform designed to visualize, explore, and master computer science algorithms through real-time step-by-step animations, 3D spatial rendering, dynamic audio sonification, FPV drone camera navigation, and multi-language code execution.
 
 <p align="center">
   <a href="https://gitlab.com/sireenyadav/algorithmvizualizer">
@@ -18,7 +18,7 @@
 
 ## 🌟 Overview
 
-**Algorithm Visualizer** bridges the gap between theoretical computer science and intuitive understanding. Instead of static diagrams or complex code traceouts, users can watch algorithms execute live with frame-by-frame precision, inspect memory call stacks, hear frequency-mapped sound synthesis, and run multi-algorithm speed races in real time.
+**Algorithm Visualizer** bridges the gap between theoretical computer science and intuitive understanding. Instead of static diagrams or complex code traceouts, users can watch algorithms execute live with frame-by-frame precision, inspect memory call stacks, hear frequency-mapped sound synthesis, navigate 3D NYC skyscraper corridors with an FPV drone camera, and run multi-algorithm speed races in real time.
 
 Built with **React 18**, **Three.js WebGL**, **Web Audio API**, **Tailwind CSS**, and **Vite**, the application delivers 60 FPS animations, responsive glassmorphism design, full dark/light theme adaptability, and multi-language code execution support.
 
@@ -26,9 +26,13 @@ Built with **React 18**, **Three.js WebGL**, **Web Audio API**, **Tailwind CSS**
 
 ## 🔥 Key Features
 
-### 🌐 3D Spatial WebGL Rendering
-* Real-time 3D bar chart rendering using **Three.js** with ambient lighting, specular point lights, reflective ground floor grid, and camera rotation controls.
-* Seamless 1-click toggle between standard 2D view and 3D WebGL spatial view.
+### 🌐 3D Spatial WebGL & FPV Drone Camera Mode
+* Real-time 3D bar charts and 3D Voxel Pathfinding grids rendered with **Three.js** using `InstancedMesh` GPU batching for **60 FPS zero-lag** performance.
+* **FPV Drone Fly-Through Camera**: Swoops down to street-level height (`y = 1.3`) and glides smoothly frame-by-frame along shortest path nodes through 3D NYC skyscraper building corridors.
+* **Theme-Adaptive WebGL Canvas**: Automatically adapts 3D backgrounds and grid helpers to light or dark mode (`ThemeContext`).
+
+### 🧩 Guaranteed Solvable Maze Generator
+* Procedural path carving algorithm that guarantees 100% solvable mazes for Dijkstra, A*, BFS, and DFS every single time.
 
 ### 🎵 Web Audio API Sonification Engine
 * Synthesizes dynamic pitch frequencies mapped pentatonically (200Hz – 1200Hz) to array values, comparisons, and swaps.
@@ -59,7 +63,7 @@ Built with **React 18**, **Three.js WebGL**, **Web Audio API**, **Tailwind CSS**
 | :--- | :--- | :--- |
 | **Sorting** | Quick Sort, Merge Sort, Heap Sort, Bubble Sort, Selection Sort, Insertion Sort | 2D/3D Bars, Swap Highlights, Comparisons, Audio Sonification |
 | **Searching** | Linear Search, Binary Search, Jump Search | Range Trimming, Target Highlighting, Index Trackers |
-| **Pathfinding** | Dijkstra's Search, A* Search, BFS, DFS | Interactive Grid, Visited Cells Expansion, Shortest Path Routing |
+| **Pathfinding** | Dijkstra's Search, A* Search, BFS, DFS | 2D Grid, 3D Voxel Skyscraper Mode, FPV Drone Cam, Guaranteed Mazes |
 | **Graph Theory** | Prim's MST, Kruskal's MST, Topological Sort, BFS/DFS | Interactive Node-Link Graphs, Edge Weight Highlights |
 | **Trees & Data Structures** | BST, AVL Tree (Rotations), Max/Min Heap, Segment Tree, Trie (Prefix Tree) | Tree Node Balancing, Dynamic Pointer Transitions |
 | **Recursion & Backtracking** | Tower of Hanoi, N-Queens Problem | Disc Movements, Chess Board Placements, Call Stack Frames |
@@ -72,11 +76,11 @@ Built with **React 18**, **Three.js WebGL**, **Web Audio API**, **Tailwind CSS**
 | Category | Technologies |
 | :--- | :--- |
 | **Frontend Core** | React 18, React Router v6, JavaScript (ESNext) |
-| **3D & Graphics** | Three.js (WebGL), HTML5 Canvas |
+| **3D & Graphics** | Three.js (WebGL), InstancedMesh GPU Batching, HTML5 Canvas |
 | **Audio Synthesis** | Web Audio API (Polyphonic Synthesizer) |
 | **Styling & Design** | Tailwind CSS, Lucide React Icons, Framer Motion, Glassmorphism CSS |
 | **Code Editor & Execution** | Monaco Editor (`@monaco-editor/react`), Pyodide WASM, Wandbox API |
-| **Build & Tooling** | Vite 5, pnpm, PostCSS, Autoprefixer |
+| **Deployment & Build** | Vite 5, pnpm, Vercel SPA Rewrites (`vercel.json`), PostCSS |
 
 ---
 
@@ -95,7 +99,7 @@ AlgorithmVizualizer/
 │   │   ├── recursion/          # Hanoi, N-Queens
 │   │   └── dp/                 # Fibonacci, Knapsack, LCS
 │   ├── components/             # Reusable UI components
-│   │   ├── 3D/                 # Sorting3DVisualizer (Three.js)
+│   │   ├── 3D/                 # Sorting3DVisualizer & PathFinding3DVisualizer
 │   │   ├── SoundControls.jsx   # Audio sonification toolbar
 │   │   ├── MemoryStackInspector.jsx  # Call stack inspector
 │   │   ├── GitLabIcon.jsx      # Vector logo component
@@ -112,6 +116,7 @@ AlgorithmVizualizer/
 │   │   └── ThemeContext.jsx    # Dark / Light mode state provider
 │   ├── index.css               # Global CSS & Design System tokens
 │   └── App.jsx                 # Application router & routes
+├── vercel.json                 # Vercel SPA routing rewrites
 ├── package.json
 ├── pnpm-lock.yaml
 ├── vite.config.js
