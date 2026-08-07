@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ChevronDown, Search, Moon, Sun, Menu, X } from 'lucide-react';
+import { ChevronDown, Search, Moon, Sun, Menu, X, Swords, Trophy } from 'lucide-react';
 import GitHubIcon from './GitHubIcon';
 import { useTheme } from '../context/ThemeContext';
 
@@ -108,12 +108,14 @@ const Navbar = () => {
             </div>
 
             <Link to="/algorithms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Categories</Link>
-            <Link to="/arena" className="hover:text-amber-500 dark:hover:text-amber-400 font-bold flex items-center gap-1 transition-colors">
-              <span>⚔️ Battle Arena</span>
-              <span className="px-1.5 py-0.2 rounded bg-amber-500/20 text-amber-500 text-[9px] font-black uppercase">NEW</span>
+            <Link to="/arena" className="hover:text-amber-600 dark:hover:text-amber-400 font-semibold flex items-center gap-1.5 transition-colors">
+              <Swords className="w-3.5 h-3.5 text-amber-500" />
+              <span>Battle Arena</span>
+              <span className="px-1.5 py-0.5 rounded-full bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider border border-amber-500/20">NEW</span>
             </Link>
-            <Link to="/quiz" className="hover:text-purple-500 dark:hover:text-purple-400 font-bold flex items-center gap-1 transition-colors">
-              <span>🏆 Quiz</span>
+            <Link to="/quiz" className="hover:text-purple-600 dark:hover:text-purple-400 font-semibold flex items-center gap-1.5 transition-colors">
+              <Trophy className="w-3.5 h-3.5 text-purple-500" />
+              <span>Quiz</span>
             </Link>
             <Link to="/playground" className="hover:text-slate-900 dark:hover:text-white transition-colors">Playground</Link>
             <a

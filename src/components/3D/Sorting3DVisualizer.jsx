@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
+import { Box } from 'lucide-react';
 
 const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot = null }) => {
   const mountRef = useRef(null);
@@ -105,7 +106,6 @@ const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot =
     array.forEach((val, idx) => {
       const barHeight = (val / 100) * 28 + 1;
 
-      // Color selection
       let colorHex = 0x3b82f6; // Blue default
       if (swapped.includes(idx)) colorHex = 0xf43f5e; // Rose/Red swap
       else if (comparing.includes(idx)) colorHex = 0xf59e0b; // Amber compare
@@ -131,10 +131,10 @@ const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot =
   }, [array, comparing, swapped, pivot]);
 
   return (
-    <div className="relative w-full h-[450px] rounded-3xl overflow-hidden border border-slate-700/60 shadow-2xl bg-slate-900">
-      <div className="absolute top-4 left-4 z-10 bg-slate-900/80 backdrop-blur-md border border-slate-700 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-300 flex items-center gap-2">
-        <span className="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping" />
-        3D Spatial WebGL Render
+    <div className="relative w-full h-[450px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-900 shadow-sm">
+      <div className="absolute top-3 left-3 z-10 bg-slate-900/80 backdrop-blur-md border border-slate-700/60 px-2.5 py-1 rounded-lg text-[11px] font-medium text-slate-300 flex items-center gap-1.5">
+        <Box className="w-3.5 h-3.5 text-cyan-400" />
+        <span>3D WebGL Render</span>
       </div>
       <div ref={mountRef} className="w-full h-full" />
     </div>

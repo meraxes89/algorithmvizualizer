@@ -6,11 +6,11 @@ import Navbar from '../components/Navbar';
 import { useTheme } from '../context/ThemeContext';
 
 const LANGUAGE_ICONS = {
-  c:          '🔵',
-  cpp:        '🟣',
-  java:       '☕',
-  javascript: '🟡',
-  python:     '🐍',
+  c:          'C',
+  cpp:        'C++',
+  java:       'JAVA',
+  javascript: 'JS',
+  python:     'PY',
 };
 
 // Wandbox compiler IDs — confirmed from https://wandbox.org/api/list.json

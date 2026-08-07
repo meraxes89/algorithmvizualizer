@@ -1,9 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Swords, Trophy, Zap, Activity, Cpu, ArrowLeft, Volume2, Sparkles } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, RotateCcw, Swords, Trophy, Sparkles, CheckCircle2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import SoundControls from '../components/SoundControls';
 import soundEngine from '../utils/soundEngine';
+import { useTheme } from '../context/ThemeContext';
 
 const SORTING_ALGORITHMS = {
   bubbleSort: {
@@ -170,16 +170,16 @@ const SORTING_ALGORITHMS = {
 };
 
 const ArenaPage = () => {
+  const { isDark } = useTheme();
   const [arraySize, setArraySize] = useState(30);
   const [speed, setSpeed] = useState(40);
   const [baseArray, setBaseArray] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [winner, setWinner] = useState(null);
 
-  const [selectedAlgs, setSelectedAlgs] = useState(['quickSort', 'mergeSort', 'heapSort', 'bubbleSort']);
+  const [selectedAlgs] = useState(['quickSort', 'mergeSort', 'heapSort', 'bubbleSort']);
   const [runners, setRunners] = useState({});
 
-  // Generate initial synchronized array
   const generateArray = (size = arraySize) => {
     const arr = Array.from({ length: size }, () => Math.floor(Math.random() * 85) + 15);
     setBaseArray(arr);
@@ -196,7 +196,6 @@ const ArenaPage = () => {
         comps: 0,
         swaps: 0,
         finished: false,
-        rank: null,
         generator: SORTING_ALGORITHMS[key].generator(arr)
       };
     });
@@ -207,7 +206,6 @@ const ArenaPage = () => {
     generateArray();
   }, [arraySize, selectedAlgs]);
 
-  // Main race animation loop
   useEffect(() => {
     let intervalId = null;
     if (isRunning) {
@@ -238,7 +236,6 @@ const ArenaPage = () => {
                   ...runner,
                   ...res.value
                 };
-                // Sonify comparisons for lead runner
                 if (res.value.comparing?.length > 0) {
                   soundEngine.playCompare(res.value.array[res.value.comparing[0]], 15, 100);
                 }
@@ -246,7 +243,6 @@ const ArenaPage = () => {
             }
           });
 
-          // Check winner declaration
           if (newlyFinished.length > 0) {
             setWinner(prevWinner => {
               if (!prevWinner) {
@@ -276,22 +272,22 @@ const ArenaPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-blue-500 selection:text-white">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
       <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-800/60 p-6 rounded-3xl border border-slate-700/50 backdrop-blur-xl shadow-2xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800/60 p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 backdrop-blur-xl shadow-sm">
           <div>
             <div className="flex items-center gap-3 mb-1">
-              <span className="p-2 rounded-xl bg-gradient-to-r from-amber-500 to-rose-500 text-white shadow-lg shadow-rose-500/20">
-                <Swords className="w-6 h-6 animate-pulse" />
+              <span className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
+                <Swords className="w-5 h-5" />
               </span>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                 Algorithm Battle Arena
               </h1>
             </div>
-            <p className="text-sm text-slate-400">
+            <p className="text-xs text-slate-500 dark:text-slate-400">
               Watch algorithms compete side-by-side in real time on identical data sets.
             </p>
           </div>
@@ -301,16 +297,16 @@ const ArenaPage = () => {
             <button
               onClick={() => generateArray()}
               disabled={isRunning}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-xs font-bold transition-all"
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 text-xs font-semibold transition-all border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200"
             >
-              <RotateCcw className="w-4 h-4" /> Reset Array
+              <RotateCcw className="w-3.5 h-3.5" /> Reset Array
             </button>
             <button
               onClick={toggleRun}
-              className={`flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-extrabold transition-all shadow-lg ${
+              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
                 isRunning
-                  ? 'bg-amber-500 hover:bg-amber-600 text-slate-950 shadow-amber-500/20'
-                  : 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-blue-500/25'
+                  ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'
               }`}
             >
               {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
@@ -320,9 +316,9 @@ const ArenaPage = () => {
         </div>
 
         {/* Controls Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-800/40 p-4 rounded-2xl border border-slate-800">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-slate-400 w-24">Array Size: {arraySize}</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-24">Array Size: {arraySize}</span>
             <input
               type="range"
               min="15"
@@ -330,24 +326,24 @@ const ArenaPage = () => {
               value={arraySize}
               disabled={isRunning}
               onChange={(e) => setArraySize(Number(e.target.value))}
-              className="flex-1 accent-blue-500 cursor-pointer"
+              className="flex-1 accent-indigo-600 cursor-pointer"
             />
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-slate-400 w-24">Speed: {speed}%</span>
+            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-24">Speed: {speed}%</span>
             <input
               type="range"
               min="1"
               max="95"
               value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}
-              className="flex-1 accent-blue-500 cursor-pointer"
+              className="flex-1 accent-indigo-600 cursor-pointer"
             />
           </div>
 
           {winner && (
-            <div className="flex items-center justify-center gap-2 px-4 py-2 bg-amber-500/20 border border-amber-500/40 text-amber-400 rounded-xl text-xs font-black animate-bounce">
-              <Trophy className="w-4 h-4 text-amber-400" /> WINNER: {winner}!
+            <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-xl text-xs font-bold">
+              <Trophy className="w-4 h-4 text-amber-500" /> Winner: {winner}
             </div>
           )}
         </div>
@@ -362,40 +358,40 @@ const ArenaPage = () => {
             return (
               <div
                 key={key}
-                className={`relative flex flex-col bg-slate-800/70 border rounded-3xl p-5 backdrop-blur-md transition-all ${
+                className={`relative flex flex-col bg-white dark:bg-slate-800/70 border rounded-3xl p-5 backdrop-blur-md transition-all shadow-sm ${
                   runner.finished && winner === algInfo.name
-                    ? 'border-amber-500/60 ring-2 ring-amber-500/20 shadow-2xl shadow-amber-500/10'
-                    : 'border-slate-700/60'
+                    ? 'border-amber-500/60 ring-2 ring-amber-500/20'
+                    : 'border-slate-200 dark:border-slate-700/60'
                 }`}
               >
                 {/* Header info */}
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-2.5">
                     <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${algInfo.color}`} />
-                    <h3 className="font-extrabold text-base text-slate-100">{algInfo.name}</h3>
-                    <span className="px-2 py-0.5 rounded-full bg-slate-700/60 text-[10px] font-mono text-slate-300">
+                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{algInfo.name}</h3>
+                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-300">
                       {algInfo.complexity}
                     </span>
                   </div>
 
                   {runner.finished && (
-                    <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-[10px] font-extrabold flex items-center gap-1">
-                      <Sparkles className="w-3 h-3" /> FINISHED
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" /> Finished
                     </span>
                   )}
                 </div>
 
                 {/* Bars Visualizer */}
-                <div className="h-44 bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-800/80 mb-4 overflow-hidden">
+                <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
                   {runner.array.map((val, idx) => {
                     const isComparing = runner.comparing?.includes(idx);
                     const isSwapped = runner.swapped?.includes(idx);
                     const isPivot = runner.pivot === idx;
 
                     let barColor = `bg-gradient-to-t ${algInfo.color}`;
-                    if (isSwapped) barColor = 'bg-rose-500 shadow-lg shadow-rose-500/50';
-                    else if (isComparing) barColor = 'bg-amber-400 shadow-lg shadow-amber-400/50';
-                    else if (isPivot) barColor = 'bg-emerald-400 shadow-lg shadow-emerald-400/50';
+                    if (isSwapped) barColor = 'bg-rose-500';
+                    else if (isComparing) barColor = 'bg-amber-400';
+                    else if (isPivot) barColor = 'bg-emerald-400';
 
                     return (
                       <div
@@ -408,14 +404,14 @@ const ArenaPage = () => {
                 </div>
 
                 {/* Stats Footer */}
-                <div className="grid grid-cols-2 gap-3 text-xs bg-slate-900/50 p-3 rounded-xl border border-slate-800">
+                <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Comparisons</span>
-                    <span className="text-base font-extrabold text-slate-200 font-mono">{runner.comps}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Comparisons</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">{runner.comps}</span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-400 uppercase tracking-wider font-semibold">Array Swaps</span>
-                    <span className="text-base font-extrabold text-slate-200 font-mono">{runner.swaps}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Array Swaps</span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">{runner.swaps}</span>
                   </div>
                 </div>
               </div>
