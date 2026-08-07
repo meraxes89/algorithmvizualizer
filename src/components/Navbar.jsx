@@ -111,7 +111,6 @@ const Navbar = () => {
             <Link to="/arena" className="hover:text-amber-600 dark:hover:text-amber-400 font-semibold flex items-center gap-1.5 transition-colors">
               <Swords className="w-3.5 h-3.5 text-amber-500" />
               <span>Battle Arena</span>
-              <span className="px-1.5 py-0.5 rounded-full bg-amber-500/10 dark:bg-amber-500/20 text-amber-600 dark:text-amber-400 text-[10px] font-bold uppercase tracking-wider border border-amber-500/20">NEW</span>
             </Link>
             <Link to="/quiz" className="hover:text-purple-600 dark:hover:text-purple-400 font-semibold flex items-center gap-1.5 transition-colors">
               <Trophy className="w-3.5 h-3.5 text-purple-500" />

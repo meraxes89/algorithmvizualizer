@@ -1,40 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { Play, Pause, RotateCcw, Swords, Trophy, Sparkles, CheckCircle2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, Swords, Trophy, CheckCircle2, Search as SearchIcon, Network, BarChart2 } from 'lucide-react';
 import Navbar from '../components/Navbar';
 import SoundControls from '../components/SoundControls';
 import soundEngine from '../utils/soundEngine';
 import { useTheme } from '../context/ThemeContext';
 
+// ----------------------------------------------------
+// 1. SORTING ALGORITHMS
+// ----------------------------------------------------
 const SORTING_ALGORITHMS = {
-  bubbleSort: {
-    name: 'Bubble Sort',
-    complexity: 'O(N²)',
-    color: 'from-amber-500 to-orange-600',
-    generator: function* (arr) {
-      const a = [...arr];
-      let comps = 0, swaps = 0;
-      for (let i = 0; i < a.length; i++) {
-        for (let j = 0; j < a.length - i - 1; j++) {
-          comps++;
-          yield { array: [...a], comparing: [j, j + 1], comps, swaps };
-          if (a[j] > a[j + 1]) {
-            [a[j], a[j + 1]] = [a[j + 1], a[j]];
-            swaps++;
-            yield { array: [...a], comparing: [j, j + 1], swapped: [j, j + 1], comps, swaps };
-          }
-        }
-      }
-      yield { array: [...a], comparing: [], finished: true, comps, swaps };
-    }
-  },
   quickSort: {
     name: 'Quick Sort',
+    category: 'Sorting',
     complexity: 'O(N log N)',
     color: 'from-blue-500 to-indigo-600',
     generator: function* (arr) {
       const a = [...arr];
       let comps = 0, swaps = 0;
-
       function* partition(low, high) {
         const pivot = a[high];
         let i = low - 1;
@@ -53,7 +35,6 @@ const SORTING_ALGORITHMS = {
         yield { array: [...a], comparing: [i + 1, high], swapped: [i + 1, high], comps, swaps };
         return i + 1;
       }
-
       function* quickSortHelper(low, high) {
         if (low < high) {
           const pi = yield* partition(low, high);
@@ -61,25 +42,23 @@ const SORTING_ALGORITHMS = {
           yield* quickSortHelper(pi + 1, high);
         }
       }
-
       yield* quickSortHelper(0, a.length - 1);
       yield { array: [...a], comparing: [], finished: true, comps, swaps };
     }
   },
   mergeSort: {
     name: 'Merge Sort',
+    category: 'Sorting',
     complexity: 'O(N log N)',
     color: 'from-purple-500 to-pink-600',
     generator: function* (arr) {
       const a = [...arr];
       let comps = 0, swaps = 0;
-
       function* merge(l, m, r) {
         const n1 = m - l + 1;
         const n2 = r - m;
         const L = a.slice(l, m + 1);
         const R = a.slice(m + 1, r + 1);
-
         let i = 0, j = 0, k = l;
         while (i < n1 && j < n2) {
           comps++;
@@ -96,19 +75,14 @@ const SORTING_ALGORITHMS = {
           k++;
         }
         while (i < n1) {
-          a[k] = L[i];
-          i++;
-          k++;
+          a[k] = L[i]; i++; k++;
           yield { array: [...a], comparing: [k - 1], comps, swaps };
         }
         while (j < n2) {
-          a[k] = R[j];
-          j++;
-          k++;
+          a[k] = R[j]; j++; k++;
           yield { array: [...a], comparing: [k - 1], comps, swaps };
         }
       }
-
       function* mergeSortHelper(l, r) {
         if (l < r) {
           const m = Math.floor(l + (r - l) / 2);
@@ -117,24 +91,21 @@ const SORTING_ALGORITHMS = {
           yield* merge(l, m, r);
         }
       }
-
       yield* mergeSortHelper(0, a.length - 1);
       yield { array: [...a], comparing: [], finished: true, comps, swaps };
     }
   },
   heapSort: {
     name: 'Heap Sort',
+    category: 'Sorting',
     complexity: 'O(N log N)',
     color: 'from-emerald-500 to-teal-600',
     generator: function* (arr) {
       const a = [...arr];
       let comps = 0, swaps = 0;
-
       function* heapify(n, i) {
         let largest = i;
-        const l = 2 * i + 1;
-        const r = 2 * i + 2;
-
+        const l = 2 * i + 1, r = 2 * i + 2;
         if (l < n) {
           comps++;
           yield { array: [...a], comparing: [l, largest], comps, swaps };
@@ -145,7 +116,6 @@ const SORTING_ALGORITHMS = {
           yield { array: [...a], comparing: [r, largest], comps, swaps };
           if (a[r] > a[largest]) largest = r;
         }
-
         if (largest !== i) {
           [a[i], a[largest]] = [a[largest], a[i]];
           swaps++;
@@ -153,58 +123,310 @@ const SORTING_ALGORITHMS = {
           yield* heapify(n, largest);
         }
       }
-
-      for (let i = Math.floor(a.length / 2) - 1; i >= 0; i--) {
-        yield* heapify(a.length, i);
-      }
+      for (let i = Math.floor(a.length / 2) - 1; i >= 0; i--) yield* heapify(a.length, i);
       for (let i = a.length - 1; i > 0; i--) {
         [a[0], a[i]] = [a[i], a[0]];
         swaps++;
         yield { array: [...a], comparing: [0, i], swapped: [0, i], comps, swaps };
         yield* heapify(i, 0);
       }
-
       yield { array: [...a], comparing: [], finished: true, comps, swaps };
+    }
+  },
+  bubbleSort: {
+    name: 'Bubble Sort',
+    category: 'Sorting',
+    complexity: 'O(N²)',
+    color: 'from-amber-500 to-orange-600',
+    generator: function* (arr) {
+      const a = [...arr];
+      let comps = 0, swaps = 0;
+      for (let i = 0; i < a.length; i++) {
+        for (let j = 0; j < a.length - i - 1; j++) {
+          comps++;
+          yield { array: [...a], comparing: [j, j + 1], comps, swaps };
+          if (a[j] > a[j + 1]) {
+            [a[j], a[j + 1]] = [a[j + 1], a[j]];
+            swaps++;
+            yield { array: [...a], comparing: [j, j + 1], swapped: [j, j + 1], comps, swaps };
+          }
+        }
+      }
+      yield { array: [...a], comparing: [], finished: true, comps, swaps };
+    }
+  }
+};
+
+// ----------------------------------------------------
+// 2. SEARCHING ALGORITHMS
+// ----------------------------------------------------
+const SEARCHING_ALGORITHMS = {
+  binarySearch: {
+    name: 'Binary Search',
+    category: 'Searching',
+    complexity: 'O(log N)',
+    color: 'from-cyan-500 to-blue-600',
+    generator: function* (arr, target) {
+      const a = [...arr].sort((x, y) => x - y);
+      let low = 0, high = a.length - 1, comps = 0;
+      while (low <= high) {
+        const mid = Math.floor((low + high) / 2);
+        comps++;
+        yield { array: [...a], comparing: [mid], range: [low, high], comps, found: a[mid] === target };
+        if (a[mid] === target) {
+          yield { array: [...a], comparing: [mid], foundIndex: mid, finished: true, comps };
+          return;
+        }
+        if (a[mid] < target) low = mid + 1;
+        else high = mid - 1;
+      }
+      yield { array: [...a], comparing: [], finished: true, comps, notFound: true };
+    }
+  },
+  linearSearch: {
+    name: 'Linear Search',
+    category: 'Searching',
+    complexity: 'O(N)',
+    color: 'from-rose-500 to-pink-600',
+    generator: function* (arr, target) {
+      const a = [...arr].sort((x, y) => x - y);
+      let comps = 0;
+      for (let i = 0; i < a.length; i++) {
+        comps++;
+        yield { array: [...a], comparing: [i], comps, found: a[i] === target };
+        if (a[i] === target) {
+          yield { array: [...a], comparing: [i], foundIndex: i, finished: true, comps };
+          return;
+        }
+      }
+      yield { array: [...a], comparing: [], finished: true, comps, notFound: true };
+    }
+  },
+  jumpSearch: {
+    name: 'Jump Search',
+    category: 'Searching',
+    complexity: 'O(√N)',
+    color: 'from-amber-500 to-emerald-600',
+    generator: function* (arr, target) {
+      const a = [...arr].sort((x, y) => x - y);
+      const n = a.length;
+      let step = Math.floor(Math.sqrt(n));
+      let prev = 0;
+      let comps = 0;
+
+      while (a[Math.min(step, n) - 1] < target) {
+        comps++;
+        yield { array: [...a], comparing: [Math.min(step, n) - 1], comps };
+        prev = step;
+        step += Math.floor(Math.sqrt(n));
+        if (prev >= n) {
+          yield { array: [...a], comparing: [], finished: true, comps, notFound: true };
+          return;
+        }
+      }
+
+      while (a[prev] < target) {
+        comps++;
+        yield { array: [...a], comparing: [prev], comps };
+        prev++;
+        if (prev === Math.min(step, n)) {
+          yield { array: [...a], comparing: [], finished: true, comps, notFound: true };
+          return;
+        }
+      }
+
+      comps++;
+      if (a[prev] === target) {
+        yield { array: [...a], comparing: [prev], foundIndex: prev, finished: true, comps };
+      } else {
+        yield { array: [...a], comparing: [], finished: true, comps, notFound: true };
+      }
+    }
+  }
+};
+
+// ----------------------------------------------------
+// 3. PATHFINDING ALGORITHMS
+// ----------------------------------------------------
+const PATHFINDING_ALGORITHMS = {
+  dijkstra: {
+    name: "Dijkstra's Search",
+    category: 'Pathfinding',
+    complexity: 'O(V log V + E)',
+    color: 'from-indigo-500 to-purple-600',
+    generator: function* (rows = 10, cols = 15) {
+      const start = [1, 1], end = [8, 13];
+      const visited = new Set();
+      const queue = [[...start, 0]];
+      let steps = 0;
+
+      while (queue.length > 0) {
+        queue.sort((a, b) => a[2] - b[2]);
+        const [r, c, dist] = queue.shift();
+        const key = `${r},${c}`;
+        if (visited.has(key)) continue;
+        visited.add(key);
+        steps++;
+
+        yield { visitedCount: visited.size, activeNode: [r, c], finished: r === end[0] && c === end[1], steps };
+
+        if (r === end[0] && c === end[1]) {
+          yield { visitedCount: visited.size, activeNode: [r, c], finished: true, steps };
+          return;
+        }
+
+        const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        for (const [dr, dc] of dirs) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(`${nr},${nc}`)) {
+            queue.push([nr, nc, dist + 1]);
+          }
+        }
+      }
+      yield { visitedCount: visited.size, finished: true, steps };
+    }
+  },
+  astar: {
+    name: 'A* Heuristic Search',
+    category: 'Pathfinding',
+    complexity: 'O(E)',
+    color: 'from-emerald-500 to-cyan-600',
+    generator: function* (rows = 10, cols = 15) {
+      const start = [1, 1], end = [8, 13];
+      const visited = new Set();
+      const queue = [[...start, 0, Math.abs(1 - 8) + Math.abs(1 - 13)]];
+      let steps = 0;
+
+      while (queue.length > 0) {
+        queue.sort((a, b) => (a[2] + a[3]) - (b[2] + b[3]));
+        const [r, c, dist] = queue.shift();
+        const key = `${r},${c}`;
+        if (visited.has(key)) continue;
+        visited.add(key);
+        steps++;
+
+        yield { visitedCount: visited.size, activeNode: [r, c], finished: r === end[0] && c === end[1], steps };
+
+        if (r === end[0] && c === end[1]) {
+          yield { visitedCount: visited.size, activeNode: [r, c], finished: true, steps };
+          return;
+        }
+
+        const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        for (const [dr, dc] of dirs) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(`${nr},${nc}`)) {
+            const h = Math.abs(nr - end[0]) + Math.abs(nc - end[1]);
+            queue.push([nr, nc, dist + 1, h]);
+          }
+        }
+      }
+      yield { visitedCount: visited.size, finished: true, steps };
+    }
+  },
+  bfs: {
+    name: 'BFS Breadth-First',
+    category: 'Pathfinding',
+    complexity: 'O(V + E)',
+    color: 'from-blue-500 to-teal-500',
+    generator: function* (rows = 10, cols = 15) {
+      const start = [1, 1], end = [8, 13];
+      const visited = new Set();
+      const queue = [[...start]];
+      let steps = 0;
+
+      while (queue.length > 0) {
+        const [r, c] = queue.shift();
+        const key = `${r},${c}`;
+        if (visited.has(key)) continue;
+        visited.add(key);
+        steps++;
+
+        yield { visitedCount: visited.size, activeNode: [r, c], finished: r === end[0] && c === end[1], steps };
+
+        if (r === end[0] && c === end[1]) {
+          yield { visitedCount: visited.size, activeNode: [r, c], finished: true, steps };
+          return;
+        }
+
+        const dirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
+        for (const [dr, dc] of dirs) {
+          const nr = r + dr, nc = c + dc;
+          if (nr >= 0 && nr < rows && nc >= 0 && nc < cols && !visited.has(`${nr},${nc}`)) {
+            queue.push([nr, nc]);
+          }
+        }
+      }
+      yield { visitedCount: visited.size, finished: true, steps };
     }
   }
 };
 
 const ArenaPage = () => {
   const { isDark } = useTheme();
+  const [activeCategory, setActiveCategory] = useState('sorting'); // 'sorting' | 'searching' | 'pathfinding'
   const [arraySize, setArraySize] = useState(30);
   const [speed, setSpeed] = useState(40);
-  const [baseArray, setBaseArray] = useState([]);
   const [isRunning, setIsRunning] = useState(false);
   const [winner, setWinner] = useState(null);
 
-  const [selectedAlgs] = useState(['quickSort', 'mergeSort', 'heapSort', 'bubbleSort']);
   const [runners, setRunners] = useState({});
+  const [searchTarget, setSearchTarget] = useState(45);
 
-  const generateArray = (size = arraySize) => {
-    const arr = Array.from({ length: size }, () => Math.floor(Math.random() * 85) + 15);
-    setBaseArray(arr);
-    setWinner(null);
+  const initCategory = (cat = activeCategory) => {
     setIsRunning(false);
+    setWinner(null);
 
-    const initialRunners = {};
-    selectedAlgs.forEach(key => {
-      initialRunners[key] = {
-        array: [...arr],
-        comparing: [],
-        swapped: [],
-        pivot: null,
-        comps: 0,
-        swaps: 0,
-        finished: false,
-        generator: SORTING_ALGORITHMS[key].generator(arr)
-      };
-    });
-    setRunners(initialRunners);
+    if (cat === 'sorting') {
+      const arr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 85) + 15);
+      const initialRunners = {};
+      Object.keys(SORTING_ALGORITHMS).forEach(key => {
+        initialRunners[key] = {
+          array: [...arr],
+          comparing: [],
+          swapped: [],
+          comps: 0,
+          swaps: 0,
+          finished: false,
+          generator: SORTING_ALGORITHMS[key].generator(arr)
+        };
+      });
+      setRunners(initialRunners);
+    } else if (cat === 'searching') {
+      const arr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 90) + 10).sort((a, b) => a - b);
+      const target = arr[Math.floor(Math.random() * arr.length)];
+      setSearchTarget(target);
+
+      const initialRunners = {};
+      Object.keys(SEARCHING_ALGORITHMS).forEach(key => {
+        initialRunners[key] = {
+          array: [...arr],
+          comparing: [],
+          comps: 0,
+          finished: false,
+          foundIndex: null,
+          generator: SEARCHING_ALGORITHMS[key].generator(arr, target)
+        };
+      });
+      setRunners(initialRunners);
+    } else if (cat === 'pathfinding') {
+      const initialRunners = {};
+      Object.keys(PATHFINDING_ALGORITHMS).forEach(key => {
+        initialRunners[key] = {
+          visitedCount: 0,
+          activeNode: null,
+          steps: 0,
+          finished: false,
+          generator: PATHFINDING_ALGORITHMS[key].generator(10, 15)
+        };
+      });
+      setRunners(initialRunners);
+    }
   };
 
   useEffect(() => {
-    generateArray();
-  }, [arraySize, selectedAlgs]);
+    initCategory(activeCategory);
+  }, [activeCategory, arraySize]);
 
   useEffect(() => {
     let intervalId = null;
@@ -222,12 +444,8 @@ const ArenaPage = () => {
               if (res.done || res.value.finished) {
                 updated[key] = {
                   ...runner,
-                  array: res.value?.array || runner.array,
-                  comparing: [],
-                  swapped: [],
-                  finished: true,
-                  comps: res.value?.comps || runner.comps,
-                  swaps: res.value?.swaps || runner.swaps
+                  ...res.value,
+                  finished: true
                 };
                 newlyFinished.push(key);
               } else {
@@ -236,9 +454,7 @@ const ArenaPage = () => {
                   ...runner,
                   ...res.value
                 };
-                if (res.value.comparing?.length > 0) {
-                  soundEngine.playCompare(res.value.array[res.value.comparing[0]], 15, 100);
-                }
+                soundEngine.playCompare(res.value.visitedCount || res.value.comps || 50, 10, 100);
               }
             }
           });
@@ -247,7 +463,11 @@ const ArenaPage = () => {
             setWinner(prevWinner => {
               if (!prevWinner) {
                 soundEngine.playSuccess();
-                return SORTING_ALGORITHMS[newlyFinished[0]].name;
+                let name = '';
+                if (activeCategory === 'sorting') name = SORTING_ALGORITHMS[newlyFinished[0]]?.name;
+                else if (activeCategory === 'searching') name = SEARCHING_ALGORITHMS[newlyFinished[0]]?.name;
+                else if (activeCategory === 'pathfinding') name = PATHFINDING_ALGORITHMS[newlyFinished[0]]?.name;
+                return name;
               }
               return prevWinner;
             });
@@ -262,13 +482,19 @@ const ArenaPage = () => {
       }, 100 - speed);
     }
     return () => clearInterval(intervalId);
-  }, [isRunning, speed]);
+  }, [isRunning, speed, activeCategory]);
 
   const toggleRun = () => {
     if (Object.values(runners).every(r => r.finished)) {
-      generateArray();
+      initCategory(activeCategory);
     }
     setIsRunning(!isRunning);
+  };
+
+  const getActiveDict = () => {
+    if (activeCategory === 'sorting') return SORTING_ALGORITHMS;
+    if (activeCategory === 'searching') return SEARCHING_ALGORITHMS;
+    return PATHFINDING_ALGORITHMS;
   };
 
   return (
@@ -288,18 +514,18 @@ const ArenaPage = () => {
               </h1>
             </div>
             <p className="text-xs text-slate-500 dark:text-slate-400">
-              Watch algorithms compete side-by-side in real time on identical data sets.
+              Race algorithms side-by-side across Sorting, Searching, and Pathfinding categories.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <SoundControls />
             <button
-              onClick={() => generateArray()}
+              onClick={() => initCategory(activeCategory)}
               disabled={isRunning}
               className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 text-xs font-semibold transition-all border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200"
             >
-              <RotateCcw className="w-3.5 h-3.5" /> Reset Array
+              <RotateCcw className="w-3.5 h-3.5" /> Reset Battle
             </button>
             <button
               onClick={toggleRun}
@@ -315,20 +541,50 @@ const ArenaPage = () => {
           </div>
         </div>
 
+        {/* Category Navigation Tabs */}
+        <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/80 w-fit">
+          {[
+            { id: 'sorting', label: 'Sorting Race', icon: BarChart2 },
+            { id: 'searching', label: 'Search Race', icon: SearchIcon },
+            { id: 'pathfinding', label: 'Pathfinding Race', icon: Network },
+          ].map(cat => {
+            const Icon = cat.icon;
+            const isActive = activeCategory === cat.id;
+            return (
+              <button
+                key={cat.id}
+                onClick={() => setActiveCategory(cat.id)}
+                disabled={isRunning}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  isActive
+                    ? 'bg-indigo-600 text-white shadow-sm'
+                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5" />
+                <span>{cat.label}</span>
+              </button>
+            );
+          })}
+        </div>
+
         {/* Controls Bar */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-24">Array Size: {arraySize}</span>
-            <input
-              type="range"
-              min="15"
-              max="60"
-              value={arraySize}
-              disabled={isRunning}
-              onChange={(e) => setArraySize(Number(e.target.value))}
-              className="flex-1 accent-indigo-600 cursor-pointer"
-            />
-          </div>
+          {activeCategory !== 'pathfinding' && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-24">Data Size: {arraySize}</span>
+              <input
+                type="range"
+                min="15"
+                max="50"
+                value={arraySize}
+                disabled={isRunning}
+                onChange={(e) => setArraySize(Number(e.target.value))}
+                className="flex-1 accent-indigo-600 cursor-pointer"
+              />
+            </div>
+          )}
+
           <div className="flex items-center gap-3">
             <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-24">Speed: {speed}%</span>
             <input
@@ -341,6 +597,12 @@ const ArenaPage = () => {
             />
           </div>
 
+          {activeCategory === 'searching' && (
+            <div className="flex items-center justify-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 rounded-xl text-xs font-bold">
+              <span>Target Value: {searchTarget}</span>
+            </div>
+          )}
+
           {winner && (
             <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-xl text-xs font-bold">
               <Trophy className="w-4 h-4 text-amber-500" /> Winner: {winner}
@@ -350,10 +612,9 @@ const ArenaPage = () => {
 
         {/* Arena Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {selectedAlgs.map((key) => {
-            const runner = runners[key] || { array: [], comps: 0, swaps: 0, finished: false };
-            const algInfo = SORTING_ALGORITHMS[key];
-            const maxVal = Math.max(...runner.array, 100);
+          {Object.keys(getActiveDict()).map((key) => {
+            const runner = runners[key] || {};
+            const algInfo = getActiveDict()[key];
 
             return (
               <div
@@ -381,37 +642,79 @@ const ArenaPage = () => {
                   )}
                 </div>
 
-                {/* Bars Visualizer */}
-                <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
-                  {runner.array.map((val, idx) => {
-                    const isComparing = runner.comparing?.includes(idx);
-                    const isSwapped = runner.swapped?.includes(idx);
-                    const isPivot = runner.pivot === idx;
+                {/* Visualizer Renderer */}
+                {activeCategory === 'sorting' && (
+                  <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                    {runner.array?.map((val, idx) => {
+                      const maxVal = Math.max(...runner.array, 100);
+                      const isComparing = runner.comparing?.includes(idx);
+                      const isSwapped = runner.swapped?.includes(idx);
 
-                    let barColor = `bg-gradient-to-t ${algInfo.color}`;
-                    if (isSwapped) barColor = 'bg-rose-500';
-                    else if (isComparing) barColor = 'bg-amber-400';
-                    else if (isPivot) barColor = 'bg-emerald-400';
+                      let barColor = `bg-gradient-to-t ${algInfo.color}`;
+                      if (isSwapped) barColor = 'bg-rose-500';
+                      else if (isComparing) barColor = 'bg-amber-400';
 
-                    return (
-                      <div
-                        key={idx}
-                        style={{ height: `${(val / maxVal) * 100}%` }}
-                        className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
-                      />
-                    );
-                  })}
-                </div>
+                      return (
+                        <div
+                          key={idx}
+                          style={{ height: `${(val / maxVal) * 100}%` }}
+                          className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+
+                {activeCategory === 'searching' && (
+                  <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                    {runner.array?.map((val, idx) => {
+                      const maxVal = Math.max(...runner.array, 100);
+                      const isComparing = runner.comparing?.includes(idx);
+                      const isFound = runner.foundIndex === idx;
+
+                      let barColor = 'bg-indigo-400/50 dark:bg-indigo-600/40';
+                      if (isFound) barColor = 'bg-emerald-500 ring-2 ring-emerald-400';
+                      else if (isComparing) barColor = 'bg-amber-400';
+
+                      return (
+                        <div
+                          key={idx}
+                          style={{ height: `${(val / maxVal) * 100}%` }}
+                          className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+
+                {activeCategory === 'pathfinding' && (
+                  <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-center justify-center border border-slate-200 dark:border-slate-800 mb-4">
+                    <div className="flex flex-col items-center justify-center gap-2">
+                      <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 font-mono">
+                        {runner.visitedCount || 0}
+                      </div>
+                      <span className="text-xs text-slate-500 dark:text-slate-400 font-medium">Nodes Explored</span>
+                    </div>
+                  </div>
+                )}
 
                 {/* Stats Footer */}
                 <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Comparisons</span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">{runner.comps}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                      {activeCategory === 'pathfinding' ? 'Total Operations' : 'Comparisons'}
+                    </span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">
+                      {runner.steps || runner.comps || 0}
+                    </span>
                   </div>
                   <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">Array Swaps</span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">{runner.swaps}</span>
+                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                      {activeCategory === 'sorting' ? 'Array Swaps' : activeCategory === 'searching' ? 'Status' : 'Exploration'}
+                    </span>
+                    <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">
+                      {activeCategory === 'sorting' ? runner.swaps || 0 : runner.foundIndex !== undefined && runner.foundIndex !== null ? 'TARGET FOUND' : runner.finished ? 'DONE' : 'RUNNING'}
+                    </span>
                   </div>
                 </div>
               </div>
