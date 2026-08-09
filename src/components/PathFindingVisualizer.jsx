@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, RotateCcw, Eraser, Zap, Box, Grid } from 'lucide-react';
+import { Play, RotateCcw, Eraser, Zap, Box, Grid, Sparkles, ChevronDown } from 'lucide-react';
 import { createInitialGrid, resetGrid, SPEED_PRESETS } from '../utils/animationHelpers';
 import { getNodesInShortestPathOrder } from '../algorithms/pathfinding/dijkstra';
+import { generateComplexMaze } from '../algorithms/pathfinding/mazeGenerator';
 import PathFinding3DVisualizer from './3D/PathFinding3DVisualizer';
 import SoundControls from './SoundControls';
 import soundEngine from '../utils/soundEngine';
@@ -147,6 +148,7 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   const [is3DMode, setIs3DMode] = useState(false);
   const [liveMode, setLiveMode] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
+  const [selectedMazeType, setSelectedMazeType] = useState('dfs'); // 'dfs' | 'recursive_division' | 'prims'
   const [stats, setStats] = useState(null);
   const animationRef = useRef(null);
   const algorithmKey = algorithmInfo?.name?.toLowerCase().includes('a*') ? 'astar'
@@ -196,56 +198,10 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
     setStats(null);
   };
 
-  const handleGenerateMaze = () => {
+  const handleGenerateMaze = (overrideType) => {
     if (isVisualizing || grid.length === 0) return;
-    const numRows = grid.length;
-    const numCols = grid[0].length;
-
-    // 1. Guarantee a valid solution path via randomized path carving from Start to End
-    const pathKeys = new Set();
-    let currR = startPos.row;
-    let currC = startPos.col;
-    pathKeys.add(`${currR},${currC}`);
-
-    let steps = 0;
-    while ((currR !== endPos.row || currC !== endPos.col) && steps < 1000) {
-      steps++;
-      const candidateMoves = [];
-      if (currR < endPos.row) candidateMoves.push([1, 0]);
-      if (currR > endPos.row) candidateMoves.push([-1, 0]);
-      if (currC < endPos.col) candidateMoves.push([0, 1]);
-      if (currC > endPos.col) candidateMoves.push([0, -1]);
-
-      // Add random side turns for winding corridors
-      if (Math.random() < 0.4 && candidateMoves.length > 0) {
-        const sideDirs = [[0, 1], [1, 0], [0, -1], [-1, 0]];
-        const rDir = sideDirs[Math.floor(Math.random() * sideDirs.length)];
-        currR = Math.max(0, Math.min(numRows - 1, currR + rDir[0]));
-        currC = Math.max(0, Math.min(numCols - 1, currC + rDir[1]));
-      } else if (candidateMoves.length > 0) {
-        const move = candidateMoves[Math.floor(Math.random() * candidateMoves.length)];
-        currR += move[0];
-        currC += move[1];
-      }
-      pathKeys.add(`${currR},${currC}`);
-    }
-    pathKeys.add(`${endPos.row},${endPos.col}`);
-
-    // 2. Generate walls only on non-path cells
-    const newGrid = grid.map(row =>
-      row.map(node => {
-        const key = `${node.row},${node.col}`;
-        const isStartOrEnd = (node.row === startPos.row && node.col === startPos.col) || (node.row === endPos.row && node.col === endPos.col);
-        
-        if (pathKeys.has(key) || isStartOrEnd) {
-          return { ...node, isWall: false, isVisited: false, isPath: false, distance: Infinity, previousNode: null };
-        }
-        
-        const isWall = Math.random() < 0.32 || (node.row % 2 === 1 && node.col % 2 === 1 && Math.random() < 0.6);
-        return { ...node, isWall, isVisited: false, isPath: false, distance: Infinity, previousNode: null };
-      })
-    );
-
+    const typeToUse = typeof overrideType === 'string' ? overrideType : selectedMazeType;
+    const newGrid = generateComplexMaze(grid, startPos, endPos, typeToUse);
     setGrid(newGrid);
     setStats(null);
   };
@@ -508,13 +464,30 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
           <Play size={16} /> Visualize
         </button>
 
-        <button
-          onClick={handleGenerateMaze}
-          disabled={isVisualizing}
-          className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
-        >
-          <Grid size={16} className="text-indigo-500" /> Generate Maze
-        </button>
+        {/* Maze Generator Group */}
+        <div className="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-1 shadow-sm">
+          <button
+            onClick={() => handleGenerateMaze()}
+            disabled={isVisualizing}
+            className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 px-3.5 py-1.5 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
+          >
+            <Sparkles size={16} className="text-indigo-500" /> Generate Maze
+          </button>
+          
+          <select
+            value={selectedMazeType}
+            onChange={(e) => {
+              setSelectedMazeType(e.target.value);
+              handleGenerateMaze(e.target.value);
+            }}
+            disabled={isVisualizing}
+            className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 px-2 py-1.5 focus:outline-none cursor-pointer disabled:opacity-50 border-l border-slate-200 dark:border-slate-700"
+          >
+            <option value="dfs" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">DFS Corridors</option>
+            <option value="recursive_division" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">Recursive Division</option>
+            <option value="prims" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">Prim's Labyrinth</option>
+          </select>
+        </div>
 
         <button
           onClick={handleReset}
