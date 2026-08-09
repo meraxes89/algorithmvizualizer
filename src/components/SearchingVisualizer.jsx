@@ -75,10 +75,10 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
     return '#a7f3d0'; // emerald-200 (using a light green base)
   };
 
-  const maxValue = Math.max(...array);
+  const maxValue = Math.max(...array, 1);
 
   return (
-    <div className="w-full h-full relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
+    <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
       
       {/* Visualization Area */}
       <div className="absolute inset-0 flex">

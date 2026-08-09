@@ -219,10 +219,10 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
     return COLORS.DEFAULT || '#a5b4fc';
   };
 
-  const maxValue = Math.max(...array);
+  const maxValue = Math.max(...array, 1);
 
   return (
-    <div className="w-full h-full relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
+    <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
       
       {/* Main Render View (Background) */}
       <div className="absolute inset-0 flex">
