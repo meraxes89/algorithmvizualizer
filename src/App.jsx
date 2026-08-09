@@ -1,28 +1,37 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import Navbar from './components/Navbar';
 import BottomDock from './components/BottomDock';
-import Home from './pages/Home';
-import CategoriesPage from './pages/CategoriesPage';
-import SortingPage from './pages/SortingPage';
-import SearchingPage from './pages/SearchingPage';
-import PathFindingPage from './pages/PathFindingPage';
-import GraphPage from './pages/GraphPage';
-import TreeAlgorithms from './pages/TreeAlgorithms';
-import RecursionAlgorithms from './pages/RecursionAlgorithms';
-import PlaygroundPage from './pages/PlaygroundPage';
-import DPPage from './pages/DPPage';
-import ArenaPage from './pages/ArenaPage';
-import QuizPage from './pages/QuizPage';
+
+// Lazy load pages for huge performance boost (Code Splitting)
+const Home = lazy(() => import('./pages/Home'));
+const CategoriesPage = lazy(() => import('./pages/CategoriesPage'));
+const SortingPage = lazy(() => import('./pages/SortingPage'));
+const SearchingPage = lazy(() => import('./pages/SearchingPage'));
+const PathFindingPage = lazy(() => import('./pages/PathFindingPage'));
+const GraphPage = lazy(() => import('./pages/GraphPage'));
+const TreeAlgorithms = lazy(() => import('./pages/TreeAlgorithms'));
+const RecursionAlgorithms = lazy(() => import('./pages/RecursionAlgorithms'));
+const PlaygroundPage = lazy(() => import('./pages/PlaygroundPage'));
+const DPPage = lazy(() => import('./pages/DPPage'));
+const ArenaPage = lazy(() => import('./pages/ArenaPage'));
+const QuizPage = lazy(() => import('./pages/QuizPage'));
 
 const pageVariants = {
   initial: { opacity: 0, y: 15, scale: 0.98 },
   animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
   exit: { opacity: 0, y: -15, scale: 0.98, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }
 };
+
+// Loading fallback for lazy pages
+const PageLoader = () => (
+  <div className="w-full min-h-screen flex items-center justify-center pt-24">
+    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
+);
 
 const PageWrapper = ({ children }) => {
   return (
@@ -43,20 +52,22 @@ const AnimatedRoutes = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <Routes location={location} key={location.pathname}>
-        <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
-        <Route path="/algorithms" element={<PageWrapper><CategoriesPage /></PageWrapper>} />
-        <Route path="/sorting" element={<PageWrapper><SortingPage /></PageWrapper>} />
-        <Route path="/searching" element={<PageWrapper><SearchingPage /></PageWrapper>} />
-        <Route path="/pathfinding" element={<PageWrapper><PathFindingPage /></PageWrapper>} />
-        <Route path="/graph" element={<PageWrapper><GraphPage /></PageWrapper>} />
-        <Route path="/recursion" element={<PageWrapper><RecursionAlgorithms /></PageWrapper>} />
-        <Route path="/trees" element={<PageWrapper><TreeAlgorithms /></PageWrapper>} />
-        <Route path="/dp" element={<PageWrapper><DPPage /></PageWrapper>} />
-        <Route path="/playground" element={<PageWrapper><PlaygroundPage /></PageWrapper>} />
-        <Route path="/arena" element={<PageWrapper><ArenaPage /></PageWrapper>} />
-        <Route path="/quiz" element={<PageWrapper><QuizPage /></PageWrapper>} />
-      </Routes>
+      <Suspense fallback={<PageLoader />}>
+        <Routes location={location} key={location.pathname}>
+          <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
+          <Route path="/algorithms" element={<PageWrapper><CategoriesPage /></PageWrapper>} />
+          <Route path="/sorting" element={<PageWrapper><SortingPage /></PageWrapper>} />
+          <Route path="/searching" element={<PageWrapper><SearchingPage /></PageWrapper>} />
+          <Route path="/pathfinding" element={<PageWrapper><PathFindingPage /></PageWrapper>} />
+          <Route path="/graph" element={<PageWrapper><GraphPage /></PageWrapper>} />
+          <Route path="/recursion" element={<PageWrapper><RecursionAlgorithms /></PageWrapper>} />
+          <Route path="/trees" element={<PageWrapper><TreeAlgorithms /></PageWrapper>} />
+          <Route path="/dp" element={<PageWrapper><DPPage /></PageWrapper>} />
+          <Route path="/playground" element={<PageWrapper><PlaygroundPage /></PageWrapper>} />
+          <Route path="/arena" element={<PageWrapper><ArenaPage /></PageWrapper>} />
+          <Route path="/quiz" element={<PageWrapper><QuizPage /></PageWrapper>} />
+        </Routes>
+      </Suspense>
     </AnimatePresence>
   );
 };
