@@ -78,10 +78,10 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
   const maxValue = Math.max(...array, 1);
 
   return (
-    <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
+    <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-black rounded-3xl overflow-hidden border border-slate-200 dark:border-zinc-800/80">
       
       {/* Top Header & Telemetry Bar */}
-      <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
+      <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-zinc-800/80">
         <div>
           <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <Search className="w-5 h-5 text-emerald-500" />
@@ -94,10 +94,10 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
 
         {/* Telemetry & Search Result Float */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+          <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
             <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo.timeComplexity}</span>
           </div>
-          <div className="bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+          <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
             <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo.spaceComplexity}</span>
           </div>
           {searchResult && (
@@ -136,7 +136,7 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
       <div className="absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-20 flex flex-col items-center gap-2 w-full max-w-full px-2 pointer-events-none">
         
         {/* Compact Horizontal Legend Dock */}
-        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full scrollbar-hide">
+        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/75 dark:bg-zinc-950/85 backdrop-blur-xl border border-slate-200/50 dark:border-zinc-800/80 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full scrollbar-hide">
           <div className="flex items-center gap-1.5 whitespace-nowrap">
             <div className="w-2.5 h-2.5 rounded-full bg-[#a7f3d0]" />
             <span className="uppercase tracking-wider">Unsearched</span>
@@ -157,7 +157,7 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
 
         {/* Floating HUD Controls Pill Container */}
         <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-emerald-500/10 min-w-max mx-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border border-slate-200/60 dark:border-zinc-800/80 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-emerald-500/10 min-w-max mx-auto">
             
             <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl px-2 py-1 focus-within:border-emerald-500/50 transition-colors mr-0.5">
               <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-0.5">Target</span>
@@ -245,9 +245,9 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
 
       {showCodeViewer && (
         <div className="absolute bottom-28 right-4 sm:right-6 h-[60%] w-[90%] sm:w-[400px] z-40">
-          <div className="w-full h-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-2xl overflow-hidden relative">
+          <div className="w-full h-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-3xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-2xl overflow-hidden relative">
             <div className="absolute top-2 right-2 z-50">
-              <button onClick={() => setShowCodeViewer(false)} className="bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 p-1.5 rounded-full"><BookOpen size={14} /></button>
+              <button onClick={() => setShowCodeViewer(false)} className="bg-slate-100 dark:bg-zinc-800 text-slate-500 hover:text-slate-700 p-1.5 rounded-full"><BookOpen size={14} /></button>
             </div>
              <CodeViewer
               codeSnippets={algorithmDatabase.searching[algorithmInfo.name === 'Binary Search' ? 'binarySearch' : 'linearSearch']?.codeSnippets}
@@ -260,7 +260,7 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
 
       {showCustomTest && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md z-50">
-          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-2xl overflow-hidden p-2">
+          <div className="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-3xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-2xl overflow-hidden p-2">
             <CustomTestCases
               onApplyTest={(customArr) => {
                 const sorted = [...customArr].sort((a, b) => a - b);

@@ -613,7 +613,7 @@ builtins.input = _mock_input
   }, [isRunning, handleRun]);
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-sans flex flex-col transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans flex flex-col transition-colors duration-200">
 
       <main className="flex-1 flex flex-col p-4 md:p-6 max-w-[1600px] w-full mx-auto gap-4">
         {/* Navigation & Header Toolbar */}

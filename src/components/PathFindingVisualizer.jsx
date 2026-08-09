@@ -425,10 +425,10 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   };
 
   return (
-    <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
+    <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-black rounded-3xl overflow-hidden border border-slate-200 dark:border-zinc-800/80">
       
       {/* Top Header & Telemetry Bar */}
-      <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
+      <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-zinc-800/80">
         <div>
           <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
             <Activity className="w-5 h-5 text-indigo-500" />
@@ -441,10 +441,10 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
 
         {/* Telemetry & Info Badges */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+          <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
             <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo?.timeComplexity || 'O(V+E)'}</span>
           </div>
-          <div className="bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+          <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
             <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo?.spaceComplexity || 'O(V)'}</span>
           </div>
           {stats && (
@@ -468,7 +468,7 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
           </div>
         ) : (
           <div
-            className="inline-block rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800/60 shadow-2xl shadow-indigo-500/5 bg-white dark:bg-slate-900 p-1 max-w-full"
+            className="inline-block rounded-2xl overflow-hidden border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl shadow-indigo-500/5 bg-white dark:bg-zinc-950 p-1 max-w-full"
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
@@ -477,7 +477,7 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
                 {row.map((node, cIdx) => (
                   <div
                     key={cIdx}
-                    className={`w-4 h-4 sm:w-5 sm:h-5 border-r border-b border-slate-100/50 dark:border-slate-800/50 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
+                    className={`w-4 h-4 sm:w-5 sm:h-5 border-r border-b border-slate-100/50 dark:border-zinc-900/60 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
                     onMouseDown={() => handleMouseDown(node.row, node.col)}
                     onMouseEnter={() => handleMouseEnter(node.row, node.col)}
                   />
@@ -492,7 +492,7 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
       <div className="absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-20 flex flex-col items-center gap-2 w-full max-w-full px-2 pointer-events-none">
         
         {/* Compact Horizontal Legend Dock */}
-        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full scrollbar-hide">
+        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/75 dark:bg-zinc-950/85 backdrop-blur-xl border border-slate-200/50 dark:border-zinc-800/80 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full scrollbar-hide">
           {[
             ['bg-emerald-500', 'Start'],
             ['bg-rose-500', 'End'],
@@ -509,7 +509,7 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
 
         {/* Floating HUD Controls Pill Container */}
         <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max mx-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border border-slate-200/60 dark:border-zinc-800/80 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max mx-auto">
             
             <button
               onClick={visualize}

@@ -8,14 +8,14 @@ const ExplanationPanel = ({ algorithmInfo, isOpen, onClose }) => {
 
   return (
     <div
-      className={`fixed right-0 top-0 h-full bg-white dark:bg-slate-900 shadow-2xl z-50 transition-all duration-300 border-l border-slate-200 dark:border-slate-700 ${
+      className={`fixed right-0 top-0 h-full bg-white dark:bg-zinc-950 shadow-2xl z-50 transition-all duration-300 border-l border-slate-200 dark:border-zinc-800/80 ${
         isExpanded ? 'w-96' : 'w-12'
       }`}
     >
       {/* Toggle Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="absolute -left-12 top-1/2 -translate-y-1/2 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 p-2 rounded-l-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors border-y border-l border-slate-200 dark:border-slate-700"
+        className="absolute -left-12 top-1/2 -translate-y-1/2 bg-white dark:bg-zinc-900 text-slate-700 dark:text-slate-200 p-2 rounded-l-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] hover:bg-slate-50 dark:hover:bg-zinc-800 transition-colors border-y border-l border-slate-200 dark:border-zinc-800"
       >
         {isExpanded ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
       </button>

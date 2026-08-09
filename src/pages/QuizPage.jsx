@@ -108,7 +108,7 @@ const QuizPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
         {/* Header */}

@@ -32,7 +32,7 @@ const SortingPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-sans selection:bg-indigo-100 flex flex-col">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-indigo-100 flex flex-col">
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col">
         {/* Header Section */}
@@ -49,7 +49,7 @@ const SortingPage = () => {
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all shadow-sm ${
               isCompareOpen
                 ? 'bg-indigo-600 text-white shadow-indigo-200'
-                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700'
+                : 'bg-white dark:bg-zinc-900 border border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-zinc-800'
             }`}
           >
             <Scale className="w-4 h-4 text-indigo-500" />
@@ -59,7 +59,7 @@ const SortingPage = () => {
 
         {/* Comparison Selector */}
         {isCompareOpen && (
-          <div className="mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-slate-700">
+          <div className="mb-8 rounded-2xl overflow-hidden shadow-lg border border-slate-200 dark:border-zinc-800">
             <ComparisonMode
               algorithms={algorithms}
               onCompare={handleCompare}
@@ -80,7 +80,7 @@ const SortingPage = () => {
                   className={`px-5 py-2.5 rounded-full text-[14px] font-semibold transition-all shadow-sm ${
                     isActive
                       ? 'bg-indigo-600 text-white shadow-indigo-200'
-                      : 'bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-indigo-600'
+                      : 'bg-white dark:bg-zinc-900 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-zinc-800 hover:bg-slate-50 dark:hover:bg-zinc-800 hover:text-indigo-600'
                   }`}
                 >
                   {algo.name}
@@ -93,13 +93,13 @@ const SortingPage = () => {
         {/* Visualizer Container */}
         {compareAlgos ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1 min-h-[600px] w-full">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-black border border-slate-200 dark:border-zinc-800/80 rounded-3xl shadow-sm overflow-hidden flex flex-col">
               <SortingVisualizer
                 algorithm={compareAlgos[0].algorithm}
                 algorithmInfo={compareAlgos[0].info}
               />
             </div>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+            <div className="bg-white dark:bg-black border border-slate-200 dark:border-zinc-800/80 rounded-3xl shadow-sm overflow-hidden flex flex-col">
               <SortingVisualizer
                 algorithm={compareAlgos[1].algorithm}
                 algorithmInfo={compareAlgos[1].info}
@@ -107,7 +107,7 @@ const SortingPage = () => {
             </div>
           </div>
         ) : (
-          <div className="flex-1 min-h-[600px] w-full bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm overflow-hidden flex flex-col">
+          <div className="flex-1 min-h-[600px] w-full bg-white dark:bg-black border border-slate-200 dark:border-zinc-800/80 rounded-3xl shadow-sm overflow-hidden flex flex-col">
             <SortingVisualizer
               algorithm={selectedAlgorithm.algorithm}
               algorithmInfo={selectedAlgorithm.info}
@@ -117,12 +117,10 @@ const SortingPage = () => {
       </main>
       
       {/* Footer */}
-      <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-8 py-8 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-           <img src="/logo-icon.svg" alt="Algo Visualizer" className="w-6 h-6 select-none" draggable="false" />
-             <span className="text-sm font-medium text-slate-500 dark:text-slate-400">© 2025 Algorithm Visualizer.</span>
-          </div>
+      <footer className="border-t border-slate-200 dark:border-zinc-900 bg-white dark:bg-black px-8 py-8 mt-auto">
+        <div className="max-w-7xl mx-auto flex items-center gap-2">
+          <img src="/logo-icon.svg" alt="Algo Visualizer" className="w-6 h-6 select-none" draggable="false" />
+          <span className="text-sm font-medium text-slate-500 dark:text-slate-400">© 2025 Algorithm Visualizer.</span>
         </div>
       </footer>
     </div>

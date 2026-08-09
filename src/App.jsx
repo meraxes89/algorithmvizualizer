@@ -64,7 +64,7 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300">
           <Navbar />
           <AnimatedRoutes />
         </div>

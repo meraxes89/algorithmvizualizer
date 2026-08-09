@@ -69,7 +69,7 @@ const CategoriesPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-sans selection:bg-blue-100">
+    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-blue-100">
       
       <main className="max-w-7xl mx-auto px-6 py-16">
         <div className="mb-12">
@@ -84,10 +84,10 @@ const CategoriesPage = () => {
             <Link 
               key={index} 
               to={category.path}
-              className={`bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 group relative overflow-hidden ${category.hoverColor}`}
+              className={`bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 group relative overflow-hidden ${category.hoverColor}`}
             >
               {/* Background Accent */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-slate-700 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-zinc-900/50 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
               
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-sm ${category.color}`}>
                 {category.icon}
@@ -112,7 +112,7 @@ const CategoriesPage = () => {
                 )}
               </div>
               
-              <div className={`absolute bottom-8 right-8 w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 dark:border-slate-700 text-slate-400 group-hover:border-transparent group-hover:text-white group-hover:${category.color.split(' ')[0]} transition-all shadow-sm`}>
+              <div className={`absolute bottom-8 right-8 w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 dark:border-zinc-800 text-slate-400 group-hover:border-transparent group-hover:text-white group-hover:${category.color.split(' ')[0]} transition-all shadow-sm`}>
                 <ArrowRight className="w-5 h-5" />
               </div>
             </Link>
@@ -121,7 +121,7 @@ const CategoriesPage = () => {
       </main>
       
       {/* Footer */}
-      <footer className="border-t border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 px-8 py-12 mt-12">
+      <footer className="border-t border-slate-100 dark:border-zinc-900 bg-white dark:bg-black px-8 py-12 mt-12">
         <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
          <div className="flex items-center gap-2">
            <img src="/logo-icon.svg" alt="Algo Visualizer" className="w-6 h-6 select-none" draggable="false" />

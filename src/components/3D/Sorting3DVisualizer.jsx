@@ -22,7 +22,7 @@ const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot =
 
     // 1. Scene
     const scene = new THREE.Scene();
-    const bgHex = isDark ? 0x0f172a : 0xf8fafc;
+    const bgHex = isDark ? 0x000000 : 0xf8fafc;
     scene.background = new THREE.Color(bgHex);
     sceneRef.current = scene;
 
@@ -56,8 +56,8 @@ const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot =
     scene.add(pointLight);
 
     // 5. Grid Helper matching current theme
-    const gridCenterColor = isDark ? 0x334155 : 0xcbd5e1;
-    const gridLineColor = isDark ? 0x1e293b : 0xe2e8f0;
+    const gridCenterColor = isDark ? 0x27272a : 0xcbd5e1;
+    const gridLineColor = isDark ? 0x18181b : 0xe2e8f0;
     const gridHelper = new THREE.GridHelper(120, 40, gridCenterColor, gridLineColor);
     gridHelper.position.y = 0;
     scene.add(gridHelper);
@@ -156,8 +156,8 @@ const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot =
   }, [array, comparing, swapped, pivot, isDark]);
 
   return (
-    <div className="relative w-full h-[450px] rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 shadow-sm transition-colors duration-200">
-      <div className="absolute top-3 left-3 z-10 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-700/60 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shadow-sm">
+    <div className="relative w-full h-[450px] rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800/80 bg-slate-50 dark:bg-black shadow-sm transition-colors duration-200">
+      <div className="absolute top-3 left-3 z-10 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border border-slate-200 dark:border-zinc-800/80 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shadow-sm">
         <Box className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400" />
         <span>3D WebGL Render</span>
       </div>
