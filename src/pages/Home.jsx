@@ -70,11 +70,31 @@ const QUICK_SORT_FRAMES = [
 ];
 
 const TYPEWRITER_PHRASES = [
-  { text: "Watching.", color: "text-indigo-600 dark:text-indigo-400" },
-  { text: "Step-by-Step Execution.", color: "text-blue-600 dark:text-blue-400" },
-  { text: "Interactive 3D Rendering.", color: "text-cyan-600 dark:text-cyan-400" },
-  { text: "Building Intuition.", color: "text-emerald-600 dark:text-emerald-400" },
-  { text: "Mastering Code Logic.", color: "text-amber-600 dark:text-amber-400" },
+  { 
+    text: "Watching.", 
+    color: "text-indigo-600 dark:text-indigo-400", 
+    font: "font-heading font-extrabold tracking-tight" 
+  },
+  { 
+    text: "Step-by-Step Execution.", 
+    color: "text-blue-600 dark:text-blue-400", 
+    font: "font-mono font-semibold tracking-tighter" 
+  },
+  { 
+    text: "Interactive 3D Rendering.", 
+    color: "text-cyan-600 dark:text-cyan-400", 
+    font: "font-grotesk font-bold tracking-wide" 
+  },
+  { 
+    text: "Building Intuition.", 
+    color: "text-emerald-600 dark:text-emerald-400", 
+    font: "font-serif italic font-medium" 
+  },
+  { 
+    text: "Mastering Code Logic.", 
+    color: "text-amber-600 dark:text-amber-400", 
+    font: "font-sans font-bold uppercase tracking-wider" 
+  },
 ];
 
 const TypewriterText = () => {
@@ -113,7 +133,7 @@ const TypewriterText = () => {
 
   return (
     <span className="inline">
-      <span className={`${currentPhrase.color} font-extrabold transition-colors duration-300`}>
+      <span className={`${currentPhrase.color} ${currentPhrase.font} transition-all duration-300`}>
         {currentText}
       </span>
       <span className="inline-block w-[3px] h-[0.8em] bg-current ml-1.5 rounded-full animate-pulse align-middle" />
