@@ -14,10 +14,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
   // FPV State Tracking
   const fpvStateRef = useRef({
-    curve: null,
-    progress: 0,
     headPos: new THREE.Vector3(),
-    hasPath: false,
   });
 
   // Persistent Mesh Refs
@@ -28,7 +25,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     ground: null,
   });
 
-  // ── 2-Phase Cinematic FPV Tracking Logic
+  // ── Cinematic Helicopter Tracking Logic
   useEffect(() => {
     if (!grid || grid.length === 0) return;
     const numRows = grid.length;
@@ -39,7 +36,6 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
     let startNode = null;
     let endNode = null;
-    const pathNodes = new Set();
     const visitedNodes = [];
 
     for (let r = 0; r < numRows; r++) {
@@ -47,14 +43,13 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
         const n = grid[r][c];
         if (n.isStart) startNode = n;
         if (n.isEnd) endNode = n;
-        if (n.isPath) pathNodes.add(`${r},${c}`);
-        if (n.isVisited) visitedNodes.push(n);
+        if (n.isVisited || n.isPath) visitedNodes.push(n);
       }
     }
 
     if (!startNode) return;
 
-    // Phase 1: Track the "Search Head" (Helicopter Mode)
+    // Track the "Search Head" (Helicopter Mode only)
     let head = startNode;
     if (visitedNodes.length > 0) {
       let minDist = Infinity;
@@ -73,51 +68,6 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       0, 
       startZ + head.row * tileSize
     );
-
-    // Phase 2: Trace actual path (Rollercoaster Mode)
-    const hasPath = pathNodes.size > 0;
-    if (hasPath && !fpvStateRef.current.hasPath) {
-      const orderedPath = [startNode];
-      let cur = startNode;
-      const localPathSet = new Set(pathNodes);
-      
-      let searching = true;
-      while (searching) {
-        let foundNext = false;
-        for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
-          const nr = cur.row + dr;
-          const nc = cur.col + dc;
-          const key = `${nr},${nc}`;
-          
-          if (localPathSet.has(key) || (endNode && nr === endNode.row && nc === endNode.col)) {
-            const nextNode = grid[nr][nc];
-            orderedPath.push(nextNode);
-            localPathSet.delete(key);
-            cur = nextNode;
-            foundNext = true;
-            if (nextNode === endNode) searching = false;
-            break; 
-          }
-        }
-        if (!foundNext) searching = false;
-      }
-
-      if (orderedPath.length >= 2) {
-        const pts = orderedPath.map(node => {
-          return new THREE.Vector3(
-            startX + node.col * tileSize,
-            2.1, // Perfect flight height amidst the glass buildings
-            startZ + node.row * tileSize
-          );
-        });
-        fpvStateRef.current.curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.15);
-      }
-    } else if (!hasPath) {
-      fpvStateRef.current.curve = null;
-      fpvStateRef.current.progress = 0;
-    }
-    
-    fpvStateRef.current.hasPath = hasPath;
   }, [grid]);
 
   // ── Scene, Renderer, Camera, Lights & Mesh Pre-allocation (Runs Once)
@@ -248,43 +198,19 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       if (isFPV) {
         const fpv = fpvStateRef.current;
         
-        if (fpv.hasPath && fpv.curve) {
-          // Rollercoaster Mode (Fast drone flight along final path)
-          fpv.progress += 0.0015; // Flight speed
-          if (fpv.progress >= 1.0) fpv.progress = 0.0;
-          
-          const t = fpv.progress;
-          const pos = fpv.curve.getPointAt(t);
-          
-          const lookT = Math.min(0.999, t + 0.06);
-          const lookPos = fpv.curve.getPointAt(lookT);
-          
-          cameraRef.current.position.lerp(pos, 0.08);
-          lookTarget.lerp(new THREE.Vector3(lookPos.x, 1.8, lookPos.z), 0.1);
-          cameraRef.current.lookAt(lookTarget);
-
-          // Bank roll on turns
-          const tangent = fpv.curve.getTangentAt(t);
-          const nextTangent = fpv.curve.getTangentAt(Math.min(0.999, t + 0.02));
-          const curvature = tangent.x * nextTangent.z - tangent.z * nextTangent.x;
-          const targetRoll = THREE.MathUtils.clamp(-curvature * 2.2, -0.4, 0.4);
-          cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, targetRoll, 0.05);
-
-        } else {
-          // Helicopter Mode (Hovering & Tracking active search wave)
-          const targetCamPos = new THREE.Vector3(
-            fpv.headPos.x,
-            20, // Hover height
-            fpv.headPos.z + 16 // Offset slightly back
-          );
-          cameraRef.current.position.lerp(targetCamPos, 0.03); // Smooth slow chase
-          
-          lookTarget.lerp(fpv.headPos, 0.05);
-          cameraRef.current.lookAt(lookTarget);
-          
-          // Reset roll
-          cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, 0, 0.1);
-        }
+        // Helicopter Mode (Hovering & Tracking active search wave)
+        const targetCamPos = new THREE.Vector3(
+          fpv.headPos.x,
+          20, // Hover height
+          fpv.headPos.z + 16 // Offset slightly back
+        );
+        cameraRef.current.position.lerp(targetCamPos, 0.03); // Smooth slow chase
+        
+        lookTarget.lerp(fpv.headPos, 0.05);
+        cameraRef.current.lookAt(lookTarget);
+        
+        // Reset roll
+        cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, 0, 0.1);
       } else {
         // Orbit Overview Camera
         if (cameraRef.current.rotation.z !== 0) {
