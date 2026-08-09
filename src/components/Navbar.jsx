@@ -74,7 +74,7 @@ const Navbar = () => {
 
   return (
     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none px-4 transition-all duration-300">
-      <nav className="pointer-events-auto w-full max-w-5xl border border-slate-200/50 dark:border-zinc-800/80 bg-white/70 dark:bg-black/80 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 dark:shadow-indigo-500/10 rounded-2xl relative transition-colors duration-300">
+      <nav className="pointer-events-auto w-full max-w-5xl border border-stone-200/80 dark:border-zinc-800/80 bg-[#fbf9f5]/80 dark:bg-black/80 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 dark:shadow-indigo-500/10 rounded-2xl relative transition-colors duration-300">
         <div className="px-5 md:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-8">
             {/* Logo */}

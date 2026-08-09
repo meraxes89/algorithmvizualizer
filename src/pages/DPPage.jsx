@@ -7,7 +7,7 @@ const DPPage = () => {
   const [selectedAlgo, setSelectedAlgo] = useState('knapsack');
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans flex flex-col">
+    <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-white font-sans flex flex-col">
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col">
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">

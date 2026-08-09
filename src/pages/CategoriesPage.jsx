@@ -69,7 +69,7 @@ const CategoriesPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-blue-100">
+    <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-blue-100">
       
       <main className="max-w-7xl mx-auto px-6 py-16">
         <div className="mb-12">

@@ -88,7 +88,7 @@ const Home = () => {
   const handleNext = () => setCurrentFrame((prev) => Math.min(prev + 1, QUICK_SORT_FRAMES.length - 1));
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-blue-100 transition-colors duration-200">
+    <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-blue-100 transition-colors duration-200">
 
       <main className="max-w-7xl mx-auto px-6 pt-20 pb-24">
         {/* Hero Section */}
