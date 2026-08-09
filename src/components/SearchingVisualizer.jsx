@@ -133,10 +133,10 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
       </div>
 
       {/* Legend & HUD Floating Control Dock */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 w-[95%] max-w-fit pointer-events-none">
+      <div className="absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-20 flex flex-col items-center gap-2 w-full max-w-full px-2 pointer-events-none">
         
         {/* Compact Horizontal Legend Dock */}
-        <div className="pointer-events-auto flex items-center gap-3 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-4 py-1.5 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full">
+        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full scrollbar-hide">
           <div className="flex items-center gap-1.5 whitespace-nowrap">
             <div className="w-2.5 h-2.5 rounded-full bg-[#a7f3d0]" />
             <span className="uppercase tracking-wider">Unsearched</span>
@@ -155,82 +155,85 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
           </div>
         </div>
 
-        {/* Floating HUD Controls Pill */}
-        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 bg-white/85 dark:bg-slate-900/85 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-emerald-500/10 max-w-full overflow-x-auto scrollbar-hide">
-          
-          <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl px-2 py-1 focus-within:border-emerald-500/50 transition-colors mr-0.5">
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-0.5">Target</span>
-            <input
-              type="number"
-              value={target}
-              onChange={(e) => setTarget(Number(e.target.value))}
+        {/* Floating HUD Controls Pill Container */}
+        <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-emerald-500/10 min-w-max mx-auto">
+            
+            <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl px-2 py-1 focus-within:border-emerald-500/50 transition-colors mr-0.5">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-0.5">Target</span>
+              <input
+                type="number"
+                value={target}
+                onChange={(e) => setTarget(Number(e.target.value))}
+                disabled={isSearching}
+                className="w-12 bg-transparent text-slate-900 dark:text-white font-bold text-xs outline-none text-center appearance-none"
+              />
+            </div>
+
+            <button
+              onClick={handleSearch}
               disabled={isSearching}
-              className="w-12 bg-transparent text-slate-900 dark:text-white font-bold text-xs outline-none text-center appearance-none"
-            />
-          </div>
+              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-emerald-600/20 hover:scale-105 active:scale-95 whitespace-nowrap"
+            >
+              <Search size={15} /> {isSearching ? 'Wait...' : 'Search'}
+            </button>
 
-          <button
-            onClick={handleSearch}
-            disabled={isSearching}
-            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-emerald-600/20 hover:scale-105 active:scale-95 whitespace-nowrap"
-          >
-            <Search size={15} /> {isSearching ? 'Wait...' : 'Search'}
-          </button>
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
 
-          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
-
-          <button
-            onClick={resetArray}
-            disabled={isSearching}
-            title="New Random Array"
-            className="flex items-center gap-1 px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all whitespace-nowrap"
-          >
-            <Shuffle size={15} className="text-slate-400" /> Array
-          </button>
-
-          {/* Array Size slider inside HUD */}
-          <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl px-2 py-1">
-            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Size</span>
-            <input
-              type="range"
-              min="10"
-              max="50"
-              value={arraySize}
-              onChange={(e) => setArraySize(Number(e.target.value))}
+            <button
+              onClick={resetArray}
               disabled={isSearching}
-              className="w-14 accent-emerald-500"
-            />
-            <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 w-3 text-center">{arraySize}</span>
+              title="New Random Array"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all whitespace-nowrap"
+            >
+              <Shuffle size={15} className="text-slate-400" /> Array
+            </button>
+
+            {/* Array Size slider inside HUD */}
+            <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl px-2 py-1">
+              <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Size</span>
+              <input
+                type="range"
+                min="10"
+                max="50"
+                value={arraySize}
+                onChange={(e) => setArraySize(Number(e.target.value))}
+                disabled={isSearching}
+                className="w-14 accent-emerald-500"
+              />
+              <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 w-3 text-center">{arraySize}</span>
+            </div>
+
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
+
+            {/* Educational Tools */}
+            <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-0.5">
+              <button
+                onClick={() => setShowExplanation(!showExplanation)}
+                title="Algorithm Explanation"
+                className={`p-1.5 rounded-lg transition-all ${showExplanation ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
+                <BookOpen size={15} />
+              </button>
+              <button
+                onClick={() => setShowCodeViewer(!showCodeViewer)}
+                title="Source Code"
+                className={`p-1.5 rounded-lg transition-all ${showCodeViewer ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
+                <Code2 size={15} />
+              </button>
+              <button
+                onClick={() => setShowCustomTest(!showCustomTest)}
+                title="Custom Test Case"
+                className={`p-1.5 rounded-lg transition-all ${showCustomTest ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
+                <FileText size={15} />
+              </button>
+            </div>
+
           </div>
-
-          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
-
-          {/* Educational Tools */}
-          <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-0.5">
-            <button
-              onClick={() => setShowExplanation(!showExplanation)}
-              title="Algorithm Explanation"
-              className={`p-1.5 rounded-lg transition-all ${showExplanation ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-            >
-              <BookOpen size={15} />
-            </button>
-            <button
-              onClick={() => setShowCodeViewer(!showCodeViewer)}
-              title="Source Code"
-              className={`p-1.5 rounded-lg transition-all ${showCodeViewer ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-            >
-              <Code2 size={15} />
-            </button>
-            <button
-              onClick={() => setShowCustomTest(!showCustomTest)}
-              title="Custom Test Case"
-              className={`p-1.5 rounded-lg transition-all ${showCustomTest ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-            >
-              <FileText size={15} />
-            </button>
-          </div>
-
         </div>
+
       </div>
 
       {/* Educational Modals/Overlays */}

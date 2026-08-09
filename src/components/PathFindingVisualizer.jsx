@@ -489,10 +489,10 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
       </div>
 
       {/* Legend & HUD Floating Control Dock */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 w-[95%] max-w-fit pointer-events-none">
+      <div className="absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-20 flex flex-col items-center gap-2 w-full max-w-full px-2 pointer-events-none">
         
         {/* Compact Horizontal Legend Dock */}
-        <div className="pointer-events-auto flex items-center gap-3 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-4 py-1.5 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full">
+        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full scrollbar-hide">
           {[
             ['bg-emerald-500', 'Start'],
             ['bg-rose-500', 'End'],
@@ -507,95 +507,98 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
           ))}
         </div>
 
-        {/* Floating HUD Controls Pill */}
-        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 bg-white/85 dark:bg-slate-900/85 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 max-w-full overflow-x-auto scrollbar-hide">
-          
-          <button
-            onClick={visualize}
-            disabled={isVisualizing}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95 whitespace-nowrap"
-          >
-            <Play size={15} fill="currentColor" /> Visualize
-          </button>
-
-          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
-
-          {/* Generator Group */}
-          <div className="flex items-center bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200/50 dark:border-indigo-800/50 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-colors">
+        {/* Floating HUD Controls Pill Container */}
+        <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max mx-auto">
+            
             <button
-              onClick={() => handleGenerateMaze()}
+              onClick={visualize}
               disabled={isVisualizing}
-              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-[12px] font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 whitespace-nowrap"
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95 whitespace-nowrap"
             >
-              <Sparkles size={14} className="text-indigo-500" /> Generate Maze
+              <Play size={15} fill="currentColor" /> Visualize
             </button>
-            <div className="w-px h-4 bg-indigo-200 dark:bg-indigo-800"></div>
-            <select
-              value={selectedMazeType}
-              onChange={(e) => {
-                setSelectedMazeType(e.target.value);
-                handleGenerateMaze(e.target.value);
-              }}
-              disabled={isVisualizing}
-              className="bg-transparent text-[11px] font-bold text-indigo-600 dark:text-indigo-400 px-2 py-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
-            >
-              <option value="dfs" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">DFS</option>
-              <option value="recursive_division" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Div</option>
-              <option value="prims" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Prim</option>
-            </select>
-          </div>
 
-          <button
-            onClick={handleReset}
-            disabled={isVisualizing}
-            title="Reset Board"
-            className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
-          >
-            <RotateCcw size={16} />
-          </button>
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
 
-          <button
-            onClick={handleClearWalls}
-            disabled={isVisualizing}
-            title="Clear Walls"
-            className="p-2 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-all"
-          >
-            <Eraser size={16} />
-          </button>
-
-          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
-
-          <button
-            onClick={() => setIs3DMode(!is3DMode)}
-            title="Toggle 3D Mode"
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
-              is3DMode
-                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
-                : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
-          </button>
-
-          <SoundControls className="scale-85" />
-
-          {/* Speed Group */}
-          <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-0.5">
-            {[['1x', 100], ['2x', 30], ['MAX', 8]].map(([label, val]) => (
+            {/* Generator Group */}
+            <div className="flex items-center bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200/50 dark:border-indigo-800/50 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-colors">
               <button
-                key={label}
-                onClick={() => setSpeed(val)}
+                onClick={() => handleGenerateMaze()}
                 disabled={isVisualizing}
-                className={`px-2 py-1 rounded text-[10px] font-black tracking-wider transition-all ${
-                  speed === val ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
-                }`}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-[12px] font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 whitespace-nowrap"
               >
-                {label}
+                <Sparkles size={14} className="text-indigo-500" /> Generate Maze
               </button>
-            ))}
-          </div>
+              <div className="w-px h-4 bg-indigo-200 dark:bg-indigo-800"></div>
+              <select
+                value={selectedMazeType}
+                onChange={(e) => {
+                  setSelectedMazeType(e.target.value);
+                  handleGenerateMaze(e.target.value);
+                }}
+                disabled={isVisualizing}
+                className="bg-transparent text-[11px] font-bold text-indigo-600 dark:text-indigo-400 px-2 py-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
+              >
+                <option value="dfs" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">DFS</option>
+                <option value="recursive_division" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Div</option>
+                <option value="prims" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Prim</option>
+              </select>
+            </div>
 
+            <button
+              onClick={handleReset}
+              disabled={isVisualizing}
+              title="Reset Board"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
+            >
+              <RotateCcw size={16} />
+            </button>
+
+            <button
+              onClick={handleClearWalls}
+              disabled={isVisualizing}
+              title="Clear Walls"
+              className="p-2 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-all"
+            >
+              <Eraser size={16} />
+            </button>
+
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
+
+            <button
+              onClick={() => setIs3DMode(!is3DMode)}
+              title="Toggle 3D Mode"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
+                is3DMode
+                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
+                  : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
+            </button>
+
+            <SoundControls className="scale-85" />
+
+            {/* Speed Group */}
+            <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-0.5">
+              {[['1x', 100], ['2x', 30], ['MAX', 8]].map(([label, val]) => (
+                <button
+                  key={label}
+                  onClick={() => setSpeed(val)}
+                  disabled={isVisualizing}
+                  className={`px-2 py-1 rounded text-[10px] font-black tracking-wider transition-all ${
+                    speed === val ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+          </div>
         </div>
+
       </div>
       <style>{`
         @keyframes visitedPop {

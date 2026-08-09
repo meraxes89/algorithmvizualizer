@@ -317,10 +317,10 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
       )}
 
       {/* Legend & HUD Floating Control Dock */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 w-[95%] max-w-fit pointer-events-none">
+      <div className="absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-20 flex flex-col items-center gap-2 w-full max-w-full px-2 pointer-events-none">
         
         {/* Compact Horizontal Legend Dock */}
-        <div className="pointer-events-auto flex items-center gap-3 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-4 py-1.5 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full">
+        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/75 dark:bg-slate-900/75 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full scrollbar-hide">
           <div className="flex items-center gap-1.5 whitespace-nowrap">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.DEFAULT || '#a5b4fc' }}></div>
             <span className="uppercase tracking-wider">Unsorted</span>
@@ -339,81 +339,84 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
           </div>
         </div>
 
-        {/* Floating HUD Controls Pill */}
-        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 bg-white/85 dark:bg-slate-900/85 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 max-w-full overflow-x-auto scrollbar-hide">
-          
-          {steps.length === 0 && (
+        {/* Floating HUD Controls Pill Container */}
+        <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max mx-auto">
+            
+            {steps.length === 0 && (
+              <button
+                onClick={handleSort}
+                disabled={isSorting}
+                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95 mr-0.5 whitespace-nowrap"
+              >
+                <Play size={15} fill="currentColor" /> {isSorting ? 'Wait...' : 'Sort'}
+              </button>
+            )}
+
             <button
-              onClick={handleSort}
-              disabled={isSorting}
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95 mr-0.5 whitespace-nowrap"
+              onClick={() => resetArray()}
+              title="New Random Array"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all whitespace-nowrap"
             >
-              <Play size={15} fill="currentColor" /> {isSorting ? 'Wait...' : 'Sort'}
+              <Shuffle size={15} className="text-slate-400" /> Array
             </button>
-          )}
 
-          <button
-            onClick={() => resetArray()}
-            title="New Random Array"
-            className="flex items-center gap-1 px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all whitespace-nowrap"
-          >
-            <Shuffle size={15} className="text-slate-400" /> Array
-          </button>
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
 
-          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
-
-          <button
-            onClick={() => setIs3DMode(!is3DMode)}
-            title="Toggle 3D Mode"
-            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
-              is3DMode
-                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
-                : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
-            }`}
-          >
-            <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
-          </button>
-
-          <SoundControls className="scale-85" />
-
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            title="Settings"
-            className={`p-2 rounded-xl transition-all ${
-              showSettings ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
-            }`}
-          >
-            <Settings size={16} />
-          </button>
-
-          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
-
-          {/* Educational Tools */}
-          <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-0.5">
             <button
-              onClick={() => setShowExplanation(!showExplanation)}
-              title="Algorithm Explanation"
-              className={`p-1.5 rounded-lg transition-all ${showExplanation ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              onClick={() => setIs3DMode(!is3DMode)}
+              title="Toggle 3D Mode"
+              className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
+                is3DMode
+                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
+                  : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+              }`}
             >
-              <BookOpen size={15} />
+              <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
             </button>
+
+            <SoundControls className="scale-85" />
+
             <button
-              onClick={() => setShowCodeViewer(!showCodeViewer)}
-              title="Source Code"
-              className={`p-1.5 rounded-lg transition-all ${showCodeViewer ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              onClick={() => setShowSettings(!showSettings)}
+              title="Settings"
+              className={`p-2 rounded-xl transition-all ${
+                showSettings ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+              }`}
             >
-              <Code2 size={15} />
+              <Settings size={16} />
             </button>
-            <button
-              onClick={() => setShowCustomTest(!showCustomTest)}
-              title="Custom Test Case"
-              className={`p-1.5 rounded-lg transition-all ${showCustomTest ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
-            >
-              <FileText size={15} />
-            </button>
+
+            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
+
+            {/* Educational Tools */}
+            <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-0.5">
+              <button
+                onClick={() => setShowExplanation(!showExplanation)}
+                title="Algorithm Explanation"
+                className={`p-1.5 rounded-lg transition-all ${showExplanation ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
+                <BookOpen size={15} />
+              </button>
+              <button
+                onClick={() => setShowCodeViewer(!showCodeViewer)}
+                title="Source Code"
+                className={`p-1.5 rounded-lg transition-all ${showCodeViewer ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
+                <Code2 size={15} />
+              </button>
+              <button
+                onClick={() => setShowCustomTest(!showCustomTest)}
+                title="Custom Test Case"
+                className={`p-1.5 rounded-lg transition-all ${showCustomTest ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+              >
+                <FileText size={15} />
+              </button>
+            </div>
+
           </div>
-
         </div>
+
       </div>
 
       {/* Educational Modals/Overlays */}
