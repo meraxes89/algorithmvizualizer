@@ -11,10 +11,10 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
   const instancedMeshesRef = useRef([]);
-  const pathCoordsRef = useRef([]);
-  const fpvIndexRef = useRef(0);
+  const curveRef = useRef(null);
+  const fpvProgressRef = useRef(0);
 
-  // Collect path coordinates for FPV camera navigation
+  // Collect ordered path coordinates and construct 3D Catmull-Rom Spline Curve
   useEffect(() => {
     if (!grid || grid.length === 0) return;
     const numRows = grid.length;
@@ -23,21 +23,81 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     const startX = -((numCols * tileSize) / 2) + tileSize / 2;
     const startZ = -((numRows * tileSize) / 2) + tileSize / 2;
 
-    const pathNodes = [];
-    const visitedNodes = [];
-
+    // Find start node
+    let startNode = null;
     for (let r = 0; r < numRows; r++) {
       for (let c = 0; c < numCols; c++) {
-        const node = grid[r][c];
-        const posX = startX + c * tileSize;
-        const posZ = startZ + r * tileSize;
-        if (node.isPath) pathNodes.push({ posX, posZ });
-        else if (node.isVisited) visitedNodes.push({ posX, posZ });
+        if (grid[r][c].isStart) {
+          startNode = grid[r][c];
+          break;
+        }
+      }
+      if (startNode) break;
+    }
+
+    const orderedNodes = [];
+    const visitedSet = new Set();
+
+    if (startNode) {
+      let current = startNode;
+      orderedNodes.push(current);
+      visitedSet.add(`${current.row},${current.col}`);
+
+      let searching = true;
+      while (searching) {
+        const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+        let foundNext = false;
+
+        for (const [dr, dc] of dirs) {
+          const nr = current.row + dr;
+          const nc = current.col + dc;
+          const key = `${nr},${nc}`;
+          if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols && !visitedSet.has(key)) {
+            const nb = grid[nr][nc];
+            if (nb.isPath || nb.isEnd) {
+              visitedSet.add(key);
+              orderedNodes.push(nb);
+              current = nb;
+              foundNext = true;
+              if (nb.isEnd) searching = false;
+              break;
+            }
+          }
+        }
+        if (!foundNext) searching = false;
       }
     }
 
-    pathCoordsRef.current = pathNodes.length > 0 ? pathNodes : visitedNodes;
-    fpvIndexRef.current = 0;
+    // Fallback to visited nodes if no shortest path is visualized yet
+    if (orderedNodes.length < 2) {
+      for (let r = 0; r < numRows; r++) {
+        for (let c = 0; c < numCols; c++) {
+          const node = grid[r][c];
+          if (node.isVisited || node.isStart || node.isEnd) {
+            orderedNodes.push(node);
+          }
+        }
+      }
+    }
+
+    // Construct smooth 3D Catmull-Rom Spline Curve
+    if (orderedNodes.length >= 2) {
+      const vector3Points = orderedNodes.map(node => {
+        const posX = startX + node.col * tileSize;
+        const posZ = startZ + node.row * tileSize;
+        return new THREE.Vector3(posX, 1.9, posZ);
+      });
+      curveRef.current = new THREE.CatmullRomCurve3(vector3Points, false, 'catmullrom', 0.2);
+    } else {
+      // Perimeter orbit fallback curve
+      const p1 = new THREE.Vector3(startX, 2.2, startZ);
+      const p2 = new THREE.Vector3(-startX, 2.2, startZ);
+      const p3 = new THREE.Vector3(-startX, 2.2, -startZ);
+      const p4 = new THREE.Vector3(startX, 2.2, -startZ);
+      curveRef.current = new THREE.CatmullRomCurve3([p1, p2, p3, p4], true, 'catmullrom');
+    }
+
+    fpvProgressRef.current = 0;
   }, [grid]);
 
   useEffect(() => {
@@ -91,32 +151,43 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
     // 6. Camera Animation Loop (Orbit vs FPV Drone Fly-Through)
     let animationFrameId;
-    let fpvProgress = 0;
 
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
 
       if (cameraRef.current) {
-        if (isFPV && pathCoordsRef.current.length > 1) {
-          // FPV Drone Camera Fly-Through Mode along building corridors
-          fpvProgress += 0.015;
-          if (fpvProgress >= 1) {
-            fpvProgress = 0;
-            fpvIndexRef.current = (fpvIndexRef.current + 1) % (pathCoordsRef.current.length - 1);
+        if (isFPV && curveRef.current) {
+          // Cinematic FPV Drone Camera Fly-Through along Catmull-Rom Spline
+          fpvProgressRef.current += 0.0018; // Smooth flight speed
+          if (fpvProgressRef.current >= 1.0) {
+            fpvProgressRef.current = 0.0;
           }
 
-          const idx = fpvIndexRef.current;
-          const curr = pathCoordsRef.current[idx];
-          const next = pathCoordsRef.current[idx + 1] || curr;
+          const t = fpvProgressRef.current;
+          const curve = curveRef.current;
 
-          const camX = THREE.MathUtils.lerp(curr.posX, next.posX, fpvProgress);
-          const camZ = THREE.MathUtils.lerp(curr.posZ, next.posZ, fpvProgress);
+          // Position sample along smooth spline
+          const pos = curve.getPointAt(t);
 
-          // Fly low through skyscraper corridors (y = 1.3)
-          cameraRef.current.position.set(camX, 1.3, camZ);
-          cameraRef.current.lookAt(next.posX, 1.1, next.posZ);
+          // Look-ahead target point along spline
+          const lookT = Math.min(0.999, t + 0.05);
+          const lookPos = curve.getPointAt(lookT);
+
+          // Calculate turn curvature for dynamic drone roll bank angle
+          const tangent = curve.getTangentAt(t);
+          const nextTangent = curve.getTangentAt(Math.min(0.999, t + 0.02));
+          const turnCurvature = tangent.x * nextTangent.z - tangent.z * nextTangent.x;
+
+          // Camera positioning with drone flight dynamics
+          cameraRef.current.position.set(pos.x, pos.y, pos.z);
+          cameraRef.current.lookAt(lookPos.x, 1.4, lookPos.z);
+
+          // Apply subtle realistic FPV banking roll during turns
+          const targetRoll = -turnCurvature * 2.2;
+          cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, targetRoll, 0.1);
         } else {
           // Orbit Overview Camera Mode
+          if (cameraRef.current.rotation.z !== 0) cameraRef.current.rotation.z = 0;
           const time = Date.now() * 0.00007;
           const radius = 46;
           cameraRef.current.position.x = Math.sin(time) * radius;
