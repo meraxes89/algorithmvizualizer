@@ -70,11 +70,11 @@ const QUICK_SORT_FRAMES = [
 ];
 
 const TYPEWRITER_PHRASES = [
-  "Watching.",
-  "Step-by-Step Execution.",
-  "Interactive 3D Rendering.",
-  "Building Intuition.",
-  "Mastering Code Logic.",
+  { text: "Watching.", color: "text-indigo-600 dark:text-indigo-400" },
+  { text: "Step-by-Step Execution.", color: "text-blue-600 dark:text-blue-400" },
+  { text: "Interactive 3D Rendering.", color: "text-cyan-600 dark:text-cyan-400" },
+  { text: "Building Intuition.", color: "text-emerald-600 dark:text-emerald-400" },
+  { text: "Mastering Code Logic.", color: "text-amber-600 dark:text-amber-400" },
 ];
 
 const TypewriterText = () => {
@@ -83,7 +83,7 @@ const TypewriterText = () => {
   const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
-    const targetPhrase = TYPEWRITER_PHRASES[phraseIndex];
+    const targetPhrase = TYPEWRITER_PHRASES[phraseIndex].text;
     let typingSpeed = isDeleting ? 35 : 65;
 
     if (!isDeleting && currentText === targetPhrase) {
@@ -109,12 +109,14 @@ const TypewriterText = () => {
     return () => clearTimeout(timer);
   }, [currentText, isDeleting, phraseIndex]);
 
+  const currentPhrase = TYPEWRITER_PHRASES[phraseIndex];
+
   return (
-    <span className="inline-inline">
-      <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-purple-600 to-cyan-500 dark:from-indigo-400 dark:via-purple-400 dark:to-cyan-400 font-extrabold">
+    <span className="inline">
+      <span className={`${currentPhrase.color} font-extrabold transition-colors duration-300`}>
         {currentText}
       </span>
-      <span className="inline-block w-[3px] h-[0.8em] bg-indigo-600 dark:bg-cyan-400 ml-1 rounded-full animate-pulse align-middle" />
+      <span className="inline-block w-[3px] h-[0.8em] bg-current ml-1.5 rounded-full animate-pulse align-middle" />
     </span>
   );
 };
