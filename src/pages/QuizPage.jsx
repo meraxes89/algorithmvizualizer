@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { HelpCircle, CheckCircle2, XCircle, Award, RefreshCw, Flame, ArrowRight, Trophy } from 'lucide-react';
+import { HelpCircle, CheckCircle2, XCircle, Award, RefreshCw, Flame, ArrowRight, Trophy, Sparkles } from 'lucide-react';
 import confetti from 'canvas-confetti';
-import { useTheme } from '../context/ThemeContext';
 
 const QUIZ_QUESTIONS = [
   {
@@ -49,38 +48,34 @@ const QUIZ_QUESTIONS = [
       'A[i] >= A[2i+1] and A[i] >= A[2i+2]',
       'A[i] <= A[2i+1] and A[i] <= A[2i+2]',
       'A[i] == A[2i+1] + A[2i+2]',
-      'A[i] < A[2i+1]'
+      'A[i] is always prime'
     ],
     correct: 0,
-    explanation: 'In a Max Heap, every parent node must be greater than or equal to both of its children.'
+    explanation: 'Max Heap property mandates that every parent element must be greater than or equal to its child nodes.'
   }
 ];
 
 const QuizPage = () => {
-  const { isDark } = useTheme();
   const [currentIdx, setCurrentIdx] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [quizFinished, setQuizFinished] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+  const [answers, setAnswers] = useState({});
 
   const currentQ = QUIZ_QUESTIONS[currentIdx];
 
-  const handleSelectOption = (idx) => {
-    if (showResult) return;
-    setSelectedOption(idx);
-  };
+  const handleSelectOption = (index) => {
+    if (selectedOption !== null) return; // Prevent changing answer once picked
 
-  const handleSubmit = () => {
-    if (selectedOption === null) return;
+    setSelectedOption(index);
+    const isCorrect = index === currentQ.correct;
 
-    const isCorrect = selectedOption === currentQ.correct;
-    setShowResult(true);
+    setAnswers(prev => ({ ...prev, [currentIdx]: index }));
 
     if (isCorrect) {
-      setScore(prev => prev + 100 + streak * 20);
-      setStreak(prev => prev + 1);
+      setScore(s => s + 1);
+      setStreak(st => st + 1);
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
     } else {
       setStreak(0);
@@ -88,13 +83,12 @@ const QuizPage = () => {
   };
 
   const handleNext = () => {
-    if (currentIdx + 1 < QUIZ_QUESTIONS.length) {
-      setCurrentIdx(prev => prev + 1);
+    if (currentIdx < QUIZ_QUESTIONS.length - 1) {
+      setCurrentIdx(c => c + 1);
       setSelectedOption(null);
-      setShowResult(false);
     } else {
-      setQuizFinished(true);
-      confetti({ particleCount: 150, spread: 100, origin: { y: 0.5 } });
+      setIsFinished(true);
+      confetti({ particleCount: 120, spread: 100, origin: { y: 0.5 } });
     }
   };
 
@@ -103,130 +97,125 @@ const QuizPage = () => {
     setSelectedOption(null);
     setScore(0);
     setStreak(0);
-    setShowResult(false);
-    setQuizFinished(false);
+    setIsFinished(false);
+    setAnswers({});
   };
 
   return (
-    <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
+    <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-purple-500/30 flex flex-col">
+      {/* Aurora Mesh Background */}
+      <div className="bg-aurora">
+        <div className="bg-aurora-orb"></div>
+        <div className="bg-cyber-grid"></div>
+      </div>
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-800/60 p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 backdrop-blur-xl shadow-sm">
-          <div className="flex items-center gap-3">
-            <span className="p-2.5 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-600 dark:text-purple-400">
-              <Award className="w-5 h-5" />
-            </span>
-            <div>
-              <h1 className="text-2xl font-extrabold text-slate-900 dark:text-white">
-                Algorithm Quiz & Challenge
-              </h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400">Test your mastery of data structures and step predictions</p>
+      <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-12 relative z-10">
+        
+        {/* Top Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div>
+            <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 text-purple-400 px-3 py-1.5 rounded-full text-xs font-semibold mb-2">
+              <Trophy className="w-3.5 h-3.5" />
+              <span>CHALLENGE & QUIZ MODE</span>
             </div>
+            <h1 className="text-3xl font-extrabold tracking-tight">Algorithm Mastery Quiz</h1>
           </div>
 
-          <div className="flex items-center gap-4 bg-slate-100 dark:bg-slate-900/60 px-4 py-2 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <div className="flex items-center gap-1.5 text-amber-600 dark:text-amber-400 font-bold text-xs">
-              <Flame className="w-4 h-4 text-amber-500" /> {streak} Streak
-            </div>
-            <div className="w-px h-5 bg-slate-200 dark:bg-slate-800" />
-            <div className="text-purple-600 dark:text-purple-400 font-bold text-xs font-mono">
-              Score: {score}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm">
+              <Flame className="w-4 h-4 text-amber-400 animate-bounce" />
+              <span>Streak: {streak}</span>
             </div>
           </div>
         </div>
 
-        {/* Quiz Body */}
-        {!quizFinished ? (
-          <div className="flex flex-col bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-3xl p-6 sm:p-8 backdrop-blur-xl shadow-sm">
-            {/* Progress */}
-            <div className="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400 font-mono mb-4">
+        {/* Progress Bar */}
+        <div className="w-full bg-slate-800/60 border border-white/10 rounded-full h-2.5 mb-8 overflow-hidden">
+          <div
+            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-300"
+            style={{ width: `${((currentIdx + 1) / QUIZ_QUESTIONS.length) * 100}%` }}
+          />
+        </div>
+
+        {!isFinished ? (
+          <div className="glass-card border border-white/10 dark:border-purple-500/20 p-8 rounded-3xl shadow-2xl">
+            <div className="flex items-center justify-between text-xs text-slate-400 mb-4 font-mono font-bold">
               <span>Question {currentIdx + 1} of {QUIZ_QUESTIONS.length}</span>
-              <span className="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 font-bold">{currentQ.title}</span>
+              <span className="text-purple-400">{currentQ.title}</span>
             </div>
 
-            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-950 rounded-full overflow-hidden mb-6">
-              <div
-                className="h-full bg-indigo-600 transition-all duration-300"
-                style={{ width: `${((currentIdx + 1) / QUIZ_QUESTIONS.length) * 100}%` }}
-              />
-            </div>
-
-            {/* Question Text */}
-            <h2 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 leading-snug mb-6">
+            <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-6 leading-relaxed">
               {currentQ.question}
             </h2>
 
-            {/* Options */}
-            <div className="grid grid-cols-1 gap-3 mb-6">
+            {/* Options List */}
+            <div className="space-y-3 mb-8">
               {currentQ.options.map((opt, idx) => {
-                const isSelected = selectedOption === idx;
+                const isPicked = selectedOption === idx;
                 const isCorrect = idx === currentQ.correct;
+                let btnStyle = "glass-card text-slate-300 border-white/10 hover:border-purple-500/40";
 
-                let btnStyle = 'bg-slate-50 dark:bg-slate-900/60 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 hover:border-indigo-400';
-                if (showResult) {
-                  if (isCorrect) btnStyle = 'bg-emerald-500/10 border-emerald-500 text-emerald-700 dark:text-emerald-300 font-bold';
-                  else if (isSelected) btnStyle = 'bg-rose-500/10 border-rose-500 text-rose-700 dark:text-rose-300';
-                  else btnStyle = 'bg-slate-50 dark:bg-slate-900/30 border-slate-200 dark:border-slate-800 opacity-50';
-                } else if (isSelected) {
-                  btnStyle = 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-500 text-indigo-900 dark:text-indigo-200 ring-1 ring-indigo-500/30';
+                if (selectedOption !== null) {
+                  if (isCorrect) {
+                    btnStyle = "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-lg shadow-emerald-500/20";
+                  } else if (isPicked) {
+                    btnStyle = "bg-rose-500/20 border-rose-500 text-rose-300 shadow-lg shadow-rose-500/20";
+                  }
                 }
 
                 return (
                   <button
                     key={idx}
+                    disabled={selectedOption !== null}
                     onClick={() => handleSelectOption(idx)}
-                    className={`flex items-center justify-between p-4 rounded-2xl border text-left text-sm font-medium transition-all ${btnStyle}`}
+                    className={`w-full text-left p-4 rounded-2xl border text-sm font-semibold transition-all flex items-center justify-between ${btnStyle}`}
                   >
                     <span>{opt}</span>
-                    {showResult && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-500 shrink-0" />}
-                    {showResult && isSelected && !isCorrect && <XCircle className="w-5 h-5 text-rose-500 shrink-0" />}
+                    {selectedOption !== null && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-400" />}
+                    {selectedOption !== null && isPicked && !isCorrect && <XCircle className="w-5 h-5 text-rose-400" />}
                   </button>
                 );
               })}
             </div>
 
-            {/* Explanation box */}
-            {showResult && (
-              <div className="p-4 rounded-2xl bg-slate-100 dark:bg-slate-900/90 border border-slate-200 dark:border-slate-700 mb-6 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
-                <span className="font-bold text-purple-600 dark:text-purple-400 block mb-1">Explanation:</span>
+            {/* Explanation box when option selected */}
+            {selectedOption !== null && (
+              <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs text-slate-300 mb-6 leading-relaxed">
+                <strong className="text-purple-400 block mb-1">Explanation:</strong>
                 {currentQ.explanation}
               </div>
             )}
 
-            {/* Actions */}
-            <div className="flex justify-end">
-              {!showResult ? (
-                <button
-                  onClick={handleSubmit}
-                  disabled={selectedOption === null}
-                  className="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:opacity-40 text-white font-bold text-xs shadow-sm transition-all"
-                >
-                  Submit Answer
-                </button>
-              ) : (
+            {/* Next Button */}
+            {selectedOption !== null && (
+              <div className="flex justify-end">
                 <button
                   onClick={handleNext}
-                  className="flex items-center gap-2 px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition-all"
+                  className="cyber-btn cyber-btn-primary px-6 py-3 text-xs font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/30"
                 >
-                  <span>Next Question</span>
+                  <span>{currentIdx < QUIZ_QUESTIONS.length - 1 ? 'Next Question' : 'See Results'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center p-12 bg-white dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700/60 rounded-3xl text-center backdrop-blur-xl shadow-sm">
-            <div className="p-4 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 mb-4">
-              <Trophy className="w-10 h-10" />
+          <div className="glass-card border border-purple-500/30 p-10 rounded-3xl text-center shadow-2xl">
+            <div className="w-16 h-16 rounded-full bg-purple-500/20 text-purple-400 border border-purple-500/40 mx-auto flex items-center justify-center mb-6">
+              <Award className="w-8 h-8" />
             </div>
-            <h2 className="text-2xl font-extrabold text-slate-900 dark:text-slate-100 mb-2">Quiz Completed!</h2>
-            <p className="text-slate-500 dark:text-slate-400 text-sm mb-6">You scored <span className="text-indigo-600 dark:text-indigo-400 font-bold font-mono text-base">{score}</span> points!</p>
+
+            <h2 className="text-3xl font-extrabold mb-2">Quiz Completed!</h2>
+            <p className="text-sm text-slate-400 mb-6">
+              You scored <strong className="text-purple-400 text-xl">{score}</strong> out of <strong className="text-white text-xl">{QUIZ_QUESTIONS.length}</strong>!
+            </p>
+
             <button
               onClick={handleRestart}
-              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-sm transition-all"
+              className="cyber-btn cyber-btn-primary px-8 py-3 text-sm font-bold rounded-2xl inline-flex items-center gap-2 shadow-xl"
             >
-              <RefreshCw className="w-4 h-4" /> Play Again
+              <RefreshCw className="w-4 h-4" />
+              <span>Retry Quiz</span>
             </button>
           </div>
         )}

@@ -90,7 +90,7 @@ const Navbar = () => {
 
             {/* Theme Toggle Button */}
             <button
-              onClick={toggleTheme}
+              onClick={(e) => toggleTheme(e)}
               title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-zinc-900/60 rounded-lg transition-colors"
             >

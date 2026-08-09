@@ -356,13 +356,13 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
       <div className="absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-20 flex flex-col items-center gap-2 w-full max-w-full px-2 pointer-events-none">
         
         {/* Compact Horizontal Legend Dock */}
-        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/75 dark:bg-zinc-950/85 backdrop-blur-xl border border-slate-200/50 dark:border-zinc-800/80 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full scrollbar-hide">
+        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800/80 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-slate-300 overflow-x-auto max-w-full scrollbar-hide">
           <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.DEFAULT || '#a5b4fc' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.DEFAULT || '#94a3b8' }}></div>
             <span className="uppercase tracking-wider">Unsorted</span>
           </div>
           <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.COMPARING || '#f472b6' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.COMPARING || '#fbbf24' }}></div>
             <span className="uppercase tracking-wider">Comparing</span>
           </div>
           <div className="flex items-center gap-1.5 whitespace-nowrap">
@@ -370,7 +370,7 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
             <span className="uppercase tracking-wider">Swapping</span>
           </div>
           <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.SORTED || '#fb923c' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.SORTED || '#34d399' }}></div>
             <span className="uppercase tracking-wider">Sorted</span>
           </div>
         </div>

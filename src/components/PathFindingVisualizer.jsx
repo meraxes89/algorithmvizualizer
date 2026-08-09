@@ -147,7 +147,7 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   const [isVisualizing, setIsVisualizing] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(null); // 'start' | 'end' | null
-  const [is3DMode, setIs3DMode] = useState(false);
+  const [is3DMode, setIs3DMode] = useState(true);
   const [liveMode, setLiveMode] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
   const [selectedMazeType, setSelectedMazeType] = useState('dfs'); // 'dfs' | 'recursive_division' | 'prims'
@@ -166,8 +166,10 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   }, [startPos, endPos]);
 
   useEffect(() => {
-    const g = buildBaseGrid();
-    setGrid(g);
+    const baseGrid = buildBaseGrid();
+    // Default to a pre-generated maze for immediate visual appeal in 3D mode
+    const initialGrid = generateComplexMaze(baseGrid, startPos, endPos, 'recursive_division');
+    setGrid(initialGrid);
     setStats(null);
   }, []);
 
@@ -334,7 +336,9 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
         setGrid(prev => prev.map(row =>
           row.map(n => n.row === node.row && n.col === node.col ? { ...n, isPath: true } : n)
         ));
-        animationRef.current = setTimeout(step, speed * 2);
+        // Slow down yellow path specifically in 3D mode for better cinematic FPV turns
+        const pathSpeed = is3DMode ? speed * 10 : speed * 2;
+        animationRef.current = setTimeout(step, pathSpeed);
       };
       step();
     });

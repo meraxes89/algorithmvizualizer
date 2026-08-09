@@ -3,12 +3,14 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  // Initialize from localStorage, fallback to light by default
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('av-theme');
     if (saved) return saved === 'dark';
-    return false; // Default to light mode
+    return true;
   });
+
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animDirection, setAnimDirection] = useState('right');
 
   useEffect(() => {
     const root = document.documentElement;
@@ -21,11 +23,36 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isDark]);
 
-  const toggleTheme = () => setIsDark(prev => !prev);
+  const toggleTheme = () => {
+    if (isAnimating) return;
+    setIsAnimating(true);
+    setAnimDirection(prev => (prev === 'right' ? 'left' : 'right'));
+
+    // Switch theme halfway through curtain sweep (200ms)
+    setTimeout(() => {
+      setIsDark(prev => !prev);
+    }, 200);
+
+    // Complete transition (450ms)
+    setTimeout(() => {
+      setIsAnimating(false);
+    }, 450);
+  };
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
       {children}
+      {/* Hardware-Accelerated 60 FPS GPU Theme Wave Curtain Overlay */}
+      <div
+        className={`fixed inset-0 z-[9999] pointer-events-none transition-transform duration-450 ease-in-out ${
+          isDark ? 'bg-[#05070f]' : 'bg-[#f8fafc]'
+        } ${
+          isAnimating ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'
+        } ${
+          animDirection === 'right' ? 'origin-right' : 'origin-left'
+        }`}
+        style={{ willChange: 'transform' }}
+      />
     </ThemeContext.Provider>
   );
 };

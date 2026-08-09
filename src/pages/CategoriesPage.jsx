@@ -7,133 +7,136 @@ import {
   MapPin,
   Network,
   Boxes,
-  Trees
+  Trees,
+  Sparkles,
+  Zap
 } from 'lucide-react';
+import TiltCard from '../components/TiltCard';
 
 const CategoriesPage = () => {
   const categories = [
     {
       title: 'Sorting Algorithms',
-      description: 'Visualize popular sorting algorithms like Bubble Sort, Quick Sort, Merge Sort, and more.',
-      icon: <Layers className="w-8 h-8" />,
+      description: 'Visualize popular sorting algorithms like Quick Sort, Merge Sort, Heap Sort, and Bubble Sort.',
+      icon: <Layers className="w-6 h-6 text-indigo-400" />,
       path: '/sorting',
-      color: 'bg-indigo-100 text-indigo-600',
-      hoverColor: 'hover:border-indigo-200 hover:shadow-indigo-100',
-      algorithms: ['Bubble Sort', 'Selection Sort', 'Insertion Sort', 'Merge Sort', 'Quick Sort']
+      tag: 'SORTING',
+      accentColor: 'indigo',
+      algorithms: ['Quick Sort', 'Merge Sort', 'Heap Sort', 'Bubble Sort', 'Selection Sort']
     },
     {
       title: 'Searching Algorithms',
-      description: 'Explore linear and binary search algorithms with interactive visualizations.',
-      icon: <Search className="w-8 h-8" />,
+      description: 'Explore linear and binary search algorithms with range bounds tracking.',
+      icon: <Search className="w-6 h-6 text-emerald-400" />,
       path: '/searching',
-      color: 'bg-emerald-100 text-emerald-600',
-      hoverColor: 'hover:border-emerald-200 hover:shadow-emerald-100',
-      algorithms: ['Linear Search', 'Binary Search']
+      tag: 'SEARCHING',
+      accentColor: 'emerald',
+      algorithms: ['Linear Search', 'Binary Search', 'Jump Search']
     },
     {
-      title: 'Pathfinding Algorithms',
-      description: 'Watch pathfinding algorithms find the shortest path through obstacles.',
-      icon: <MapPin className="w-8 h-8" />,
+      title: 'Pathfinding & 3D Drone',
+      description: 'Watch pathfinding algorithms find shortest paths in 2D grids and 3D NYC skyscraper drone mode.',
+      icon: <MapPin className="w-6 h-6 text-cyan-400" />,
       path: '/pathfinding',
-      color: 'bg-blue-100 text-blue-600',
-      hoverColor: 'hover:border-blue-200 hover:shadow-blue-100',
-      algorithms: ["Dijkstra's Algorithm", 'BFS', 'DFS']
+      tag: 'PATHFINDING',
+      accentColor: 'cyan',
+      algorithms: ["Dijkstra's Algorithm", 'A* Search', 'BFS', 'DFS']
     },
     {
-      title: 'Graph Algorithms',
-      description: 'Understand graph algorithms including MST and topological sorting.',
-      icon: <Network className="w-8 h-8" />,
+      title: 'Graph Theory',
+      description: 'Explore minimum spanning trees and topological sorting on weighted graphs.',
+      icon: <Network className="w-6 h-6 text-purple-400" />,
       path: '/graph',
-      color: 'bg-purple-100 text-purple-600',
-      hoverColor: 'hover:border-purple-200 hover:shadow-purple-100',
+      tag: 'GRAPHS',
+      accentColor: 'purple',
       algorithms: ["Kruskal's MST", "Prim's MST", 'Topological Sort']
     },
     {
       title: 'Recursion & Backtracking',
-      description: 'Solve classic recursive problems like Tower of Hanoi and N-Queens.',
-      icon: <Boxes className="w-8 h-8" />,
+      description: 'Solve classic recursive problems like Tower of Hanoi and N-Queens with call stack inspector.',
+      icon: <Boxes className="w-6 h-6 text-rose-400" />,
       path: '/recursion',
-      color: 'bg-orange-100 text-orange-600',
-      hoverColor: 'hover:border-orange-200 hover:shadow-orange-100',
-      algorithms: ['Tower of Hanoi', 'N-Queens']
+      tag: 'RECURSION',
+      accentColor: 'rose',
+      algorithms: ['Tower of Hanoi', 'N-Queens Problem']
     },
     {
-      title: 'Tree Algorithms',
-      description: 'Explore binary trees, BSTs, AVL trees, heaps, tries, and segment trees with interactive visualizations.',
-      icon: <Trees className="w-8 h-8" />,
+      title: 'Tree Data Structures',
+      description: 'Explore BSTs, AVL Tree rotations, Max/Min Heaps, Tries, and Segment Trees.',
+      icon: <Trees className="w-6 h-6 text-amber-400" />,
       path: '/trees',
-      color: 'bg-teal-100 text-teal-600',
-      hoverColor: 'hover:border-teal-200 hover:shadow-teal-100',
-      algorithms: ['Binary Tree Traversals', 'BST Operations', 'AVL Rotations', 'Heap Operations', 'Trie Visualization', 'Segment Tree Queries']
+      tag: 'TREES',
+      accentColor: 'amber',
+      algorithms: ['Binary Search Tree', 'AVL Rotations', 'Heap Operations', 'Trie Visualizer', 'Segment Tree']
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-white font-sans selection:bg-blue-100">
-      
-      <main className="max-w-7xl mx-auto px-6 py-16">
-        <div className="mb-12">
-          <h1 className="text-4xl font-extrabold text-slate-900 dark:text-white mb-4 tracking-tight">Algorithm Categories</h1>
-          <p className="text-lg text-slate-500 dark:text-slate-400 max-w-2xl">
-            Choose a category below to dive into interactive visualizations and detailed explanations of each algorithm.
+    <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30 flex flex-col">
+      {/* Aurora Background */}
+      <div className="bg-aurora">
+        <div className="bg-aurora-orb"></div>
+        <div className="bg-cyber-grid"></div>
+      </div>
+
+      <main className="flex-1 max-w-7xl mx-auto px-6 py-12 relative z-10 w-full">
+        {/* Header */}
+        <div className="mb-12 text-center max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-full text-xs font-semibold mb-4 backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>ALGORITHM CATEGORIES</span>
+          </div>
+          <h1 className="text-4xl font-extrabold tracking-tight mb-4">Explore Domains</h1>
+          <p className="text-sm text-slate-400 leading-relaxed">
+            Select a category to launch interactive 2D/3D visualizations, audio sonification, and step-by-step code traceouts.
           </p>
         </div>
- 
+
+        {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {categories.map((category, index) => (
-            <Link 
-              key={index} 
-              to={category.path}
-              className={`bg-white dark:bg-zinc-950 border border-slate-200 dark:border-zinc-800/80 p-8 rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 group relative overflow-hidden ${category.hoverColor}`}
-            >
-              {/* Background Accent */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-slate-50 dark:bg-zinc-900/50 rounded-bl-[100px] -z-10 group-hover:scale-110 transition-transform duration-500"></div>
-              
-              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 shadow-sm ${category.color}`}>
-                {category.icon}
-              </div>
-              
-              <h2 className="text-2xl font-bold text-slate-900 dark:text-white mb-3">{category.title}</h2>
-              <p className="text-[14px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                {category.description}
-              </p>
-              
-              <div className="space-y-2 mb-8">
-                {category.algorithms.slice(0, 4).map((algo, i) => (
-                  <div key={i} className="flex items-center gap-2 text-[13px] text-slate-600 dark:text-slate-300 font-medium">
-                    <div className={`w-1.5 h-1.5 rounded-full ${category.color.split(' ')[0]}`}></div>
-                    {algo}
+            <TiltCard key={index} className="rounded-3xl h-full">
+              <Link
+                to={category.path}
+                className="glass-card p-8 h-full flex flex-col justify-between group border border-white/10 dark:border-indigo-500/20 hover:border-indigo-500/40 transition-all shadow-xl"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                      {category.icon}
+                    </div>
+                    <span className="bg-indigo-500/10 text-indigo-400 text-[10px] font-extrabold px-3 py-1 rounded-full border border-indigo-500/20">
+                      {category.tag}
+                    </span>
                   </div>
-                ))}
-                {category.algorithms.length > 4 && (
-                  <div className="text-[12px] text-slate-400 dark:text-slate-500 font-medium italic mt-2">
-                    + {category.algorithms.length - 4} more
+
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-indigo-400 transition-colors">
+                    {category.title}
+                  </h2>
+                  
+                  <p className="text-xs text-slate-400 leading-relaxed mb-6">
+                    {category.description}
+                  </p>
+
+                  <div className="space-y-2 mb-6 pt-4 border-t border-white/5">
+                    {category.algorithms.map((algo, i) => (
+                      <div key={i} className="flex items-center gap-2 text-xs text-slate-300 font-medium">
+                        <Zap className="w-3 h-3 text-indigo-400 shrink-0" />
+                        <span>{algo}</span>
+                      </div>
+                    ))}
                   </div>
-                )}
-              </div>
-              
-              <div className={`absolute bottom-8 right-8 w-10 h-10 rounded-full flex items-center justify-center border border-slate-200 dark:border-zinc-800 text-slate-400 group-hover:border-transparent group-hover:text-white group-hover:${category.color.split(' ')[0]} transition-all shadow-sm`}>
-                <ArrowRight className="w-5 h-5" />
-              </div>
-            </Link>
+                </div>
+
+                <div className="flex items-center justify-between text-xs font-bold text-indigo-400 pt-4 border-t border-white/5 group-hover:translate-x-1 transition-transform">
+                  <span>Launch Visualizer</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </Link>
+            </TiltCard>
           ))}
         </div>
       </main>
-      
-      {/* Footer */}
-      <footer className="border-t border-slate-100 dark:border-zinc-900 bg-white dark:bg-black px-8 py-12 mt-12">
-        <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-         <div className="flex items-center gap-2">
-           <img src="/logo-icon.svg" alt="Algo Visualizer" className="w-6 h-6 select-none" draggable="false" />
-             <span className="text-sm font-medium text-slate-600 dark:text-slate-400">© 2025 Algorithm Visualizer. All rights reserved.</span>
-          </div>
-          <div className="flex items-center gap-6 text-sm font-medium text-slate-500 dark:text-slate-400">
-             <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Privacy</a>
-             <a href="#" className="hover:text-slate-900 dark:hover:text-white transition-colors">Terms</a>
-             <a href="https://gitlab.com/sireenyadav/algorithmvizualizer" target="_blank" rel="noopener noreferrer" className="hover:text-slate-900 dark:hover:text-white transition-colors">GitLab</a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 };

@@ -5,7 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 
 const PathFinding3DVisualizer = ({ grid = [] }) => {
   const { isDark } = useTheme();
-  const [isFPV, setIsFPV] = useState(false);
+  const [isFPV, setIsFPV] = useState(true);
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -31,10 +31,19 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
   };
   const lookTargetRef = useRef(new THREE.Vector3());
 
-  // FPV State Tracking
   const fpvStateRef = useRef({
     headPos: new THREE.Vector3(),
+    forwardPos: new THREE.Vector3(),
+    isPathAnimating: false,
+    activePathNodes: [],
+    targetProgress: 0,
+    smoothProgress: 0,
+    isFullyDrawn: false,
+    startX: 0,
+    startZ: 0,
+    tileSize: 0.9,
   });
+  const wasPathFoundRef = useRef(false);
 
   // Persistent Mesh Refs
   const meshesRef = useRef({
@@ -44,7 +53,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     ground: null,
   });
 
-  // ── Cinematic Helicopter Tracking Logic
+  // ── Cinematic FPV Drone Flight Logic
   useEffect(() => {
     if (!grid || grid.length === 0) return;
     const numRows = grid.length;
@@ -56,40 +65,95 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     let startNode = null;
     let endNode = null;
     const visitedNodes = [];
+    const pathNodesRaw = [];
 
     for (let r = 0; r < numRows; r++) {
       for (let c = 0; c < numCols; c++) {
         const n = grid[r][c];
         if (n.isStart) startNode = n;
         if (n.isEnd) endNode = n;
-        if (n.isVisited || n.isPath) visitedNodes.push(n);
+        if (n.isPath) pathNodesRaw.push(n);
+        if (n.isVisited) visitedNodes.push(n);
       }
     }
 
     if (!startNode) return;
 
-    // Track the "Search Head" (Helicopter Mode only)
-    let head = startNode;
-    if (visitedNodes.length > 0) {
-      let minDist = Infinity;
-      for (const vn of visitedNodes) {
-        if (!endNode) break;
-        const d = Math.abs(vn.row - endNode.row) + Math.abs(vn.col - endNode.col);
-        if (d < minDist) {
-          minDist = d;
-          head = vn;
+    // Path Found Phase: Synchronize helicopter flight perfectly with the yellow path drawing
+    if (endNode && pathNodesRaw.length > 0) {
+      const orderedPath = [];
+      let curr = endNode;
+      const visitedSet = new Set();
+      
+      while (curr && !visitedSet.has(curr)) {
+        visitedSet.add(curr);
+        orderedPath.unshift(curr);
+        if (curr === startNode || curr.isStart) break;
+        curr = curr.previousNode;
+      }
+
+      const activePathNodes = orderedPath.length > 1 ? orderedPath : [startNode, ...pathNodesRaw, endNode];
+      fpvStateRef.current.activePathNodes = activePathNodes;
+      
+      const isFullyDrawn = orderedPath.length > 1 && pathNodesRaw.length >= orderedPath.length - 2;
+      fpvStateRef.current.isFullyDrawn = isFullyDrawn;
+
+      if (activePathNodes.length > 1) {
+        const points = activePathNodes.map(n => new THREE.Vector3(
+          startX + n.col * tileSize,
+          0,
+          startZ + n.row * tileSize
+        ));
+        const curve = new THREE.CatmullRomCurve3(points);
+        curve.curveType = 'centripetal'; 
+        curve.tension = 0.5; 
+        fpvStateRef.current.pathCurve = curve;
+      }
+
+      fpvStateRef.current.targetProgress = pathNodesRaw.length;
+      fpvStateRef.current.startX = startX;
+      fpvStateRef.current.startZ = startZ;
+      fpvStateRef.current.tileSize = tileSize;
+      fpvStateRef.current.isPathAnimating = true;
+
+      // Snap camera instantly to avoid glitch at start of path
+      if (!wasPathFoundRef.current) {
+        fpvStateRef.current.smoothProgress = 0;
+        if (cameraRef.current && activePathNodes.length > 0) {
+          cameraRef.current.position.set(
+            startX + activePathNodes[0].col * tileSize,
+            3.5, // Lower street-level height above the path
+            startZ + activePathNodes[0].row * tileSize
+          );
+        }
+        wasPathFoundRef.current = true;
+      }
+    } else {
+      // Searching Phase: Track active search frontier node
+      fpvStateRef.current.isPathAnimating = false;
+      wasPathFoundRef.current = false;
+
+      let head = startNode;
+      if (visitedNodes.length > 0 && endNode) {
+        let minDist = Infinity;
+        for (const vn of visitedNodes) {
+          const d = Math.abs(vn.row - endNode.row) + Math.abs(vn.col - endNode.col);
+          if (d < minDist) {
+            minDist = d;
+            head = vn;
+          }
         }
       }
+      fpvStateRef.current.headPos.set(
+        startX + head.col * tileSize,
+        0,
+        startZ + head.row * tileSize
+      );
+      fpvStateRef.current.forwardPos.copy(fpvStateRef.current.headPos);
     }
-    
-    fpvStateRef.current.headPos.set(
-      startX + head.col * tileSize,
-      0, 
-      startZ + head.row * tileSize
-    );
   }, [grid]);
 
-  // ── Scene, Renderer, Camera, Lights & Mesh Pre-allocation (Runs Once)
+  // ── Scene, Renderer, Camera, Lights & Mesh Pre-allocation
   useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
@@ -102,7 +166,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     if (isDark) scene.fog = new THREE.FogExp2(0x000000, 0.012);
     sceneRef.current = scene;
 
-    const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 500);
+    const camera = new THREE.PerspectiveCamera(65, width / height, 0.1, 500);
     camera.position.set(0, 32, 44);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
@@ -199,14 +263,14 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     [wallMesh, visitedMesh, pathMesh, groundMesh].forEach(m => {
       m.castShadow = true;
       m.receiveShadow = true;
-      m.frustumCulled = false; // CRITICAL FIX: prevents whole city from disappearing in FPV!
+      m.frustumCulled = false;
       m.count = 0; 
       scene.add(m);
     });
 
     meshesRef.current = { wall: wallMesh, visited: visitedMesh, path: pathMesh, ground: groundMesh };
 
-    // Animation Loop
+    // Animation Loop (FPV Drone Flying Overhead Above Yellow Path)
     let animationFrameId;
     const lookTarget = lookTargetRef.current;
 
@@ -216,27 +280,111 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
       if (isFPV) {
         const fpv = fpvStateRef.current;
-        
-        // Helicopter Mode (Hovering & Tracking active search wave)
-        const targetCamPos = new THREE.Vector3(
-          fpv.headPos.x,
-          20, // Hover height
-          fpv.headPos.z + 16 // Offset slightly back
-        );
-        cameraRef.current.position.lerp(targetCamPos, 0.03); // Smooth slow chase
-        
-        lookTarget.lerp(fpv.headPos, 0.05);
-        cameraRef.current.lookAt(lookTarget);
-        
-        // Reset roll
-        cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, 0, 0.1);
+
+        if (fpv.isPathAnimating && fpv.activePathNodes && fpv.activePathNodes.length > 0) {
+          const maxIdx = fpv.activePathNodes.length - 1;
+          
+          // Let the helicopter stay ~1.5 blocks behind the drawn tip so the user can clearly see the path being drawn!
+          // But if the path is completely finished, glide all the way to the red finish line!
+          let target = Math.max(0, fpv.targetProgress - 1.5);
+          if (fpv.isFullyDrawn) {
+            target = maxIdx;
+          }
+          
+          // Smoothly glide towards the trailing target
+          fpv.smoothProgress = THREE.MathUtils.lerp(fpv.smoothProgress, target, 0.02);
+
+          const isFinished = fpv.isFullyDrawn && fpv.smoothProgress >= maxIdx - 0.5;
+
+          let headX, headZ, forwardX, forwardZ;
+
+          if (fpv.pathCurve) {
+            // Spline path: Perfectly smooth curves through corners!
+            const curveT = THREE.MathUtils.clamp(fpv.smoothProgress / maxIdx, 0, 1);
+            const headPos = fpv.pathCurve.getPoint(curveT);
+            headX = headPos.x;
+            headZ = headPos.z;
+
+            // Look 3 blocks ahead smoothly
+            const lookProgress = Math.min(fpv.smoothProgress + 3.0, maxIdx);
+            const lookT = THREE.MathUtils.clamp(lookProgress / maxIdx, 0, 1);
+            const forwardPos = fpv.pathCurve.getPoint(lookT);
+            forwardX = forwardPos.x;
+            forwardZ = forwardPos.z;
+          } else {
+            // Fallback for very short paths
+            headX = fpv.startX + fpv.activePathNodes[0].col * fpv.tileSize;
+            headZ = fpv.startZ + fpv.activePathNodes[0].row * fpv.tileSize;
+            forwardX = headX;
+            forwardZ = headZ;
+          }
+
+          if (isFinished) {
+            // Auto zoom out to reset view once finished (Seamless cinematic drone liftoff!)
+            cameraRef.current.fov = THREE.MathUtils.lerp(cameraRef.current.fov, 65, 0.05);
+            cameraRef.current.updateProjectionMatrix();
+
+            const time = Date.now() * 0.00003;
+            const radius = 46;
+            const overviewX = Math.sin(time) * radius;
+            const overviewY = 30;
+            const overviewZ = Math.cos(time) * radius + 4;
+
+            const zoomOutPos = new THREE.Vector3(overviewX, overviewY, overviewZ);
+            cameraRef.current.position.lerp(zoomOutPos, 0.025); // Slow majestic zoom out
+
+            lookTarget.lerp(new THREE.Vector3(0, 0, 0), 0.04);
+            cameraRef.current.lookAt(lookTarget);
+            cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, 0, 0.05);
+          } else {
+            // Street-level "New York" perception
+            const height = 3.5; 
+            const targetCamPos = new THREE.Vector3(headX, height, headZ);
+            
+            // Motion blur simulation: widen FOV slightly based on movement speed
+            const speed = targetCamPos.distanceTo(cameraRef.current.position);
+            const targetFov = 65 + (speed * 40.0); // Widen FOV when moving fast
+            cameraRef.current.fov = THREE.MathUtils.lerp(cameraRef.current.fov, targetFov, 0.1);
+            cameraRef.current.updateProjectionMatrix();
+            
+            // Tightly bind camera to the heavily smoothed Spline path
+            cameraRef.current.position.lerp(targetCamPos, 0.8); 
+
+            // Look straight ahead into the distance (horizon), not at the ground!
+            const forwardTarget = new THREE.Vector3(forwardX, height, forwardZ);
+            
+            if (forwardTarget.distanceToSquared(targetCamPos) > 0.01) {
+              lookTarget.lerp(forwardTarget, 0.4);
+            }
+            cameraRef.current.lookAt(lookTarget);
+
+            // Corner banking tilt (subtle for first-person view, but enhanced for spline curves)
+            const headingDiff = forwardX - headX;
+            const targetBank = THREE.MathUtils.clamp(-headingDiff * 0.08, -0.15, 0.15);
+            cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, targetBank, 0.1);
+          }
+        } else {
+          // Search phase: Hovering overhead
+          cameraRef.current.fov = THREE.MathUtils.lerp(cameraRef.current.fov, 65, 0.1);
+          cameraRef.current.updateProjectionMatrix();
+
+          const targetCamPos = new THREE.Vector3(
+            fpv.headPos.x,
+            14,
+            fpv.headPos.z + 12
+          );
+          cameraRef.current.position.lerp(targetCamPos, 0.08);
+          lookTarget.lerp(fpv.headPos, 0.1);
+          cameraRef.current.lookAt(lookTarget);
+          cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, 0, 0.1);
+        }
       } else {
-        // Orbit Overview Camera
+        // Overview Camera
         if (cameraRef.current.rotation.z !== 0) {
           cameraRef.current.rotation.z *= 0.9;
           if (Math.abs(cameraRef.current.rotation.z) < 0.001) cameraRef.current.rotation.z = 0;
         }
-        const time = Date.now() * 0.00006;
+        const time = Date.now() * 0.00003;
         const radius = 46;
         cameraRef.current.position.x = Math.sin(time) * radius;
         cameraRef.current.position.y = 30;
@@ -274,7 +422,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     };
   }, [isDark, isFPV, grid.length]); 
 
-  // ── Fast Data Update: Update Matrices & Colors instead of re-creating meshes
+  // Fast Instanced Mesh Updates (Synchronized Yellow Path Reveal with Helicopter Progress)
   useEffect(() => {
     if (!grid || grid.length === 0 || !meshesRef.current.wall) return;
 

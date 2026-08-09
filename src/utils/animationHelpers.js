@@ -42,16 +42,16 @@ export const SPEED_PRESETS = {
 
 // Color schemes for visualizations
 export const COLORS = {
-  DEFAULT: '#60a5fa',      // blue-400
-  COMPARING: '#fbbf24',    // amber-400
-  SWAPPING: '#ef4444',     // red-500
-  SORTED: '#22c55e',       // green-500
-  PIVOT: '#a855f7',        // purple-500
-  VISITED: '#14b8a6',      // teal-500
-  PATH: '#facc15',         // yellow-400
-  WALL: '#1f2937',         // gray-800
-  START: '#10b981',        // emerald-500
-  END: '#f43f5e',          // rose-500
+  DEFAULT: '#94a3b8',      // Metallic Platinum Silver
+  COMPARING: '#fbbf24',    // Electric Sunburst Gold
+  SWAPPING: '#f43f5e',     // Laser Crimson Rose
+  SORTED: '#34d399',       // Mint Emerald Complete
+  PIVOT: '#a855f7',        // Plasma Purple
+  VISITED: '#38bdf8',      // Vibrant Sky Cyan
+  PATH: '#facc15',         // Gold Path
+  WALL: '#334155',         // Slate Gray
+  START: '#34d399',        // Emerald Start
+  END: '#f43f5e',          // Rose End
 };
 
 // Create initial grid for pathfinding
