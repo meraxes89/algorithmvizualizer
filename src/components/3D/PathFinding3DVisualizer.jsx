@@ -10,11 +10,17 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
-  const curveRef = useRef(null);
-  const fpvProgressRef = useRef(0);
   const lookTargetRef = useRef(new THREE.Vector3());
 
-  // Persistent Mesh Refs for high performance updates
+  // FPV State Tracking
+  const fpvStateRef = useRef({
+    curve: null,
+    progress: 0,
+    headPos: new THREE.Vector3(),
+    hasPath: false,
+  });
+
+  // Persistent Mesh Refs
   const meshesRef = useRef({
     wall: null,
     visited: null,
@@ -22,7 +28,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     ground: null,
   });
 
-  // ── Reconstruct ordered path via previousNode chain & build Catmull-Rom Spline
+  // ── 2-Phase Cinematic FPV Tracking Logic
   useEffect(() => {
     if (!grid || grid.length === 0) return;
     const numRows = grid.length;
@@ -31,93 +37,87 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     const startX = -((numCols * tileSize) / 2) + tileSize / 2;
     const startZ = -((numRows * tileSize) / 2) + tileSize / 2;
 
-    // Find start and end nodes
     let startNode = null;
     let endNode = null;
-    for (let r = 0; r < numRows && (!startNode || !endNode); r++) {
-      for (let c = 0; c < numCols && (!startNode || !endNode); c++) {
-        if (grid[r][c].isStart) startNode = grid[r][c];
-        if (grid[r][c].isEnd) endNode = grid[r][c];
+    const pathNodes = new Set();
+    const visitedNodes = [];
+
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
+        const n = grid[r][c];
+        if (n.isStart) startNode = n;
+        if (n.isEnd) endNode = n;
+        if (n.isPath) pathNodes.add(`${r},${c}`);
+        if (n.isVisited) visitedNodes.push(n);
       }
     }
 
-    // Trace backwards from end using previousNode pointers (set by pathfinding algos)
-    const orderedPath = [];
-    if (endNode && endNode.previousNode) {
-      let cur = endNode;
-      while (cur) {
-        orderedPath.unshift(cur);
-        cur = cur.previousNode;
-      }
-    }
+    if (!startNode) return;
 
-    // Fallback: walk path tiles from start if previousNode chain is broken
-    if (orderedPath.length < 2 && startNode) {
-      const visited = new Set();
-      const queue = [startNode];
-      visited.add(`${startNode.row},${startNode.col}`);
-      const parentMap = new Map();
-
-      while (queue.length > 0) {
-        const cur = queue.shift();
-        if (cur.isEnd) {
-          // Trace back
-          let n = cur;
-          while (n) {
-            orderedPath.unshift(n);
-            n = parentMap.get(`${n.row},${n.col}`) || null;
-          }
-          break;
+    // Phase 1: Track the "Search Head" (Helicopter Mode)
+    let head = startNode;
+    if (visitedNodes.length > 0) {
+      let minDist = Infinity;
+      for (const vn of visitedNodes) {
+        if (!endNode) break;
+        const d = Math.abs(vn.row - endNode.row) + Math.abs(vn.col - endNode.col);
+        if (d < minDist) {
+          minDist = d;
+          head = vn;
         }
+      }
+    }
+    
+    fpvStateRef.current.headPos.set(
+      startX + head.col * tileSize,
+      0, 
+      startZ + head.row * tileSize
+    );
+
+    // Phase 2: Trace actual path (Rollercoaster Mode)
+    const hasPath = pathNodes.size > 0;
+    if (hasPath && !fpvStateRef.current.hasPath) {
+      const orderedPath = [startNode];
+      let cur = startNode;
+      const localPathSet = new Set(pathNodes);
+      
+      let searching = true;
+      while (searching) {
+        let foundNext = false;
         for (const [dr, dc] of [[-1,0],[1,0],[0,-1],[0,1]]) {
           const nr = cur.row + dr;
           const nc = cur.col + dc;
           const key = `${nr},${nc}`;
-          if (nr >= 0 && nr < numRows && nc >= 0 && nc < numCols && !visited.has(key)) {
-            const nb = grid[nr][nc];
-            if (nb.isPath || nb.isEnd || nb.isStart) {
-              visited.add(key);
-              parentMap.set(key, cur);
-              queue.push(nb);
-            }
+          
+          if (localPathSet.has(key) || (endNode && nr === endNode.row && nc === endNode.col)) {
+            const nextNode = grid[nr][nc];
+            orderedPath.push(nextNode);
+            localPathSet.delete(key);
+            cur = nextNode;
+            foundNext = true;
+            if (nextNode === endNode) searching = false;
+            break; 
           }
         }
+        if (!foundNext) searching = false;
       }
-    }
 
-    // Final fallback: collect visited nodes in scan order for a flyover
-    if (orderedPath.length < 2) {
-      for (let r = 0; r < numRows; r++) {
-        for (let c = 0; c < numCols; c++) {
-          const node = grid[r][c];
-          if (node.isVisited || node.isPath || node.isStart || node.isEnd) {
-            orderedPath.push(node);
-          }
-        }
+      if (orderedPath.length >= 2) {
+        const pts = orderedPath.map(node => {
+          return new THREE.Vector3(
+            startX + node.col * tileSize,
+            2.1, // Perfect flight height amidst the glass buildings
+            startZ + node.row * tileSize
+          );
+        });
+        fpvStateRef.current.curve = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.15);
       }
+    } else if (!hasPath) {
+      fpvStateRef.current.curve = null;
+      fpvStateRef.current.progress = 0;
     }
-
-    // Build smooth 3D Catmull-Rom Spline Curve from ordered path
-    if (orderedPath.length >= 2) {
-      const pts = orderedPath.map(node => {
-        const posX = startX + node.col * tileSize;
-        const posZ = startZ + node.row * tileSize;
-        return new THREE.Vector3(posX, 2.5, posZ);
-      });
-      curveRef.current = new THREE.CatmullRomCurve3(pts, false, 'catmullrom', 0.15);
-    } else {
-      // Perimeter orbit fallback
-      const hw = (numCols * tileSize) / 2;
-      const hh = (numRows * tileSize) / 2;
-      curveRef.current = new THREE.CatmullRomCurve3([
-        new THREE.Vector3(-hw, 3, -hh),
-        new THREE.Vector3(hw, 3, -hh),
-        new THREE.Vector3(hw, 3, hh),
-        new THREE.Vector3(-hw, 3, hh),
-      ], true, 'catmullrom');
-    }
-
-    fpvProgressRef.current = 0;
+    
+    fpvStateRef.current.hasPath = hasPath;
   }, [grid]);
 
   // ── Scene, Renderer, Camera, Lights & Mesh Pre-allocation (Runs Once)
@@ -128,21 +128,16 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     const width = container.clientWidth || 800;
     const height = container.clientHeight || 480;
 
-    // 1. Scene
     const scene = new THREE.Scene();
     scene.background = new THREE.Color(isDark ? 0x0f172a : 0xf8fafc);
-    if (isDark) {
-      scene.fog = new THREE.FogExp2(0x0f172a, 0.012);
-    }
+    if (isDark) scene.fog = new THREE.FogExp2(0x0f172a, 0.012);
     sceneRef.current = scene;
 
-    // 2. Camera
     const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 500);
     camera.position.set(0, 32, 44);
     camera.lookAt(0, 0, 0);
     cameraRef.current = camera;
 
-    // 3. Renderer — PERFORMANCE OPTIMIZED
     const renderer = new THREE.WebGLRenderer({
       antialias: true,
       alpha: false,
@@ -150,10 +145,8 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       stencil: false,
     });
     renderer.setSize(width, height);
-    // OPTIMIZATION: Cap Pixel Ratio to 1.5 to save huge GPU overhead on mobile/retina displays
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.shadowMap.enabled = true;
-    // OPTIMIZATION: Harder shadows are cheaper to compute than PCFSoft
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -162,14 +155,12 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
     container.appendChild(renderer.domElement);
 
-    // 4. Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, isDark ? 1.0 : 1.2);
     scene.add(ambientLight);
 
     const dirLight = new THREE.DirectionalLight(0xffffff, isDark ? 1.6 : 1.3);
     dirLight.position.set(25, 50, 25);
     dirLight.castShadow = true;
-    // OPTIMIZATION: Lower shadow map resolution (was 2048)
     dirLight.shadow.mapSize.width = 1024;
     dirLight.shadow.mapSize.height = 1024;
     scene.add(dirLight);
@@ -181,7 +172,6 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     );
     scene.add(hemiLight);
 
-    // 5. Grid Helper
     const gridHelper = new THREE.GridHelper(
       60, 30,
       isDark ? 0x334155 : 0xcbd5e1,
@@ -190,23 +180,18 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     gridHelper.position.y = -0.01;
     scene.add(gridHelper);
 
-    // 6. Pre-allocate Instanced Meshes for MAX PERFORMANCE (No more garbage collection spikes)
-    // Allocate enough instances for any typical grid size (e.g., 20x50 = 1000, 30x70 = 2100)
     const maxInstances = grid.length > 0 && grid[0].length > 0 ? grid.length * grid[0].length + 100 : 3500;
     
     const tileSize = 0.9;
     const boxGeo = new THREE.BoxGeometry(tileSize * 0.88, 1, tileSize * 0.88);
 
-    // OPTIMIZED Materials
-    // Downgraded physical glass to standard transparent to avoid heavy transmission shading logic
     const glassMat = new THREE.MeshStandardMaterial({
       color: isDark ? 0x94a3b8 : 0xcbd5e1,
       transparent: true,
-      opacity: 0.35, // Still frosted glass look, but 10x cheaper to render
+      opacity: 0.35,
       roughness: 0.2,
       metalness: 0.1,
       depthWrite: false,
-      // Default side is FrontSide, halving triangle count compared to DoubleSide
     });
 
     const visitedMat = new THREE.MeshStandardMaterial({
@@ -230,7 +215,6 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       metalness: 0.2,
     });
 
-    // Create instanced meshes
     const wallMesh = new THREE.InstancedMesh(boxGeo, glassMat, maxInstances);
     wallMesh.renderOrder = 10;
     
@@ -246,13 +230,14 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     [wallMesh, visitedMesh, pathMesh, groundMesh].forEach(m => {
       m.castShadow = true;
       m.receiveShadow = true;
-      m.count = 0; // Initialize with 0 count so they don't render until updated
+      m.frustumCulled = false; // CRITICAL FIX: prevents whole city from disappearing in FPV!
+      m.count = 0; 
       scene.add(m);
     });
 
     meshesRef.current = { wall: wallMesh, visited: visitedMesh, path: pathMesh, ground: groundMesh };
 
-    // 7. Animation Loop
+    // Animation Loop
     let animationFrameId;
     const lookTarget = lookTargetRef.current;
 
@@ -260,32 +245,46 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       animationFrameId = requestAnimationFrame(animate);
       if (!cameraRef.current) return;
 
-      if (isFPV && curveRef.current) {
-        const curve = curveRef.current;
-        fpvProgressRef.current += 0.0012;
-        if (fpvProgressRef.current >= 1.0) fpvProgressRef.current = 0.0;
+      if (isFPV) {
+        const fpv = fpvStateRef.current;
+        
+        if (fpv.hasPath && fpv.curve) {
+          // Rollercoaster Mode (Fast drone flight along final path)
+          fpv.progress += 0.0015; // Flight speed
+          if (fpv.progress >= 1.0) fpv.progress = 0.0;
+          
+          const t = fpv.progress;
+          const pos = fpv.curve.getPointAt(t);
+          
+          const lookT = Math.min(0.999, t + 0.06);
+          const lookPos = fpv.curve.getPointAt(lookT);
+          
+          cameraRef.current.position.lerp(pos, 0.08);
+          lookTarget.lerp(new THREE.Vector3(lookPos.x, 1.8, lookPos.z), 0.1);
+          cameraRef.current.lookAt(lookTarget);
 
-        const t = fpvProgressRef.current;
-        const pos = curve.getPointAt(t);
+          // Bank roll on turns
+          const tangent = fpv.curve.getTangentAt(t);
+          const nextTangent = fpv.curve.getTangentAt(Math.min(0.999, t + 0.02));
+          const curvature = tangent.x * nextTangent.z - tangent.z * nextTangent.x;
+          const targetRoll = THREE.MathUtils.clamp(-curvature * 2.2, -0.4, 0.4);
+          cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, targetRoll, 0.05);
 
-        // Smooth look-ahead — 8% ahead on the spline
-        const lookT = Math.min(0.999, t + 0.08);
-        const lookPos = curve.getPointAt(lookT);
-
-        // Smooth dampened camera position
-        cameraRef.current.position.lerp(pos, 0.08);
-
-        // Smooth look target interpolation (no snapping)
-        lookTarget.lerp(new THREE.Vector3(lookPos.x, 1.6, lookPos.z), 0.06);
-        cameraRef.current.lookAt(lookTarget);
-
-        // Smooth drone banking roll
-        const tangent = curve.getTangentAt(t);
-        const nextTangent = curve.getTangentAt(Math.min(0.999, t + 0.015));
-        const curvature = tangent.x * nextTangent.z - tangent.z * nextTangent.x;
-        const targetRoll = THREE.MathUtils.clamp(-curvature * 1.8, -0.35, 0.35);
-        cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, targetRoll, 0.05);
-
+        } else {
+          // Helicopter Mode (Hovering & Tracking active search wave)
+          const targetCamPos = new THREE.Vector3(
+            fpv.headPos.x,
+            20, // Hover height
+            fpv.headPos.z + 16 // Offset slightly back
+          );
+          cameraRef.current.position.lerp(targetCamPos, 0.03); // Smooth slow chase
+          
+          lookTarget.lerp(fpv.headPos, 0.05);
+          cameraRef.current.lookAt(lookTarget);
+          
+          // Reset roll
+          cameraRef.current.rotation.z = THREE.MathUtils.lerp(cameraRef.current.rotation.z, 0, 0.1);
+        }
       } else {
         // Orbit Overview Camera
         if (cameraRef.current.rotation.z !== 0) {
@@ -322,7 +321,6 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       }
       renderer.dispose();
       
-      // Memory cleanup
       boxGeo.dispose();
       glassMat.dispose();
       visitedMat.dispose();
@@ -343,7 +341,6 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
     const { wall, visited, path, ground } = meshesRef.current;
     
-    // Reset instance counters for this frame update
     let wI = 0, vI = 0, pI = 0, gI = 0;
     
     const dummy = new THREE.Object3D();
@@ -408,7 +405,6 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       }
     }
 
-    // Update draw counts and flag for GPU upload
     wall.count = wI;
     visited.count = vI;
     path.count = pI;
