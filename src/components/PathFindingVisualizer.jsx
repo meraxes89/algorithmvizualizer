@@ -425,162 +425,179 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   };
 
   return (
-    <div className="w-full h-full flex flex-col bg-white rounded-3xl overflow-hidden border border-slate-200">
-      {/* Header */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-6 py-5">
-        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
-          {algorithmInfo?.name || 'Pathfinding Algorithm'}
-        </h2>
-        <div className="flex flex-wrap gap-3 text-xs mb-3">
-          <div className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-md font-medium border border-indigo-100 dark:border-indigo-800">
-            <span className="font-bold opacity-75 mr-1">Time:</span> {algorithmInfo?.timeComplexity || 'O(V + E)'}
+    <div className="w-full h-full relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
+      
+      {/* Main Render View (Background) */}
+      <div className="absolute inset-0 flex">
+        {is3DMode ? (
+          <div className="flex-1 w-full h-full p-2">
+            <PathFinding3DVisualizer grid={grid} startPos={startPos} endPos={endPos} />
           </div>
-          <div className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-2.5 py-1 rounded-md font-medium border border-indigo-100 dark:border-indigo-800">
-            <span className="font-bold opacity-75 mr-1">Space:</span> {algorithmInfo?.spaceComplexity || 'O(V)'}
+        ) : (
+          <div
+            className="flex-1 w-full h-full flex items-center justify-center overflow-auto select-none p-6"
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+          >
+            <div className="inline-block rounded-xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 shadow-2xl shadow-indigo-500/5 bg-white dark:bg-slate-900 p-1">
+              {grid.map((row, rIdx) => (
+                <div key={rIdx} className="flex">
+                  {row.map((node, cIdx) => (
+                    <div
+                      key={cIdx}
+                      className={`w-5 h-5 border-r border-b border-slate-100/50 dark:border-slate-800/50 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
+                      onMouseDown={() => handleMouseDown(node.row, node.col)}
+                      onMouseEnter={() => handleMouseEnter(node.row, node.col)}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           </div>
-          {stats && (
-            <>
-              <div className="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-md font-medium border border-slate-200 dark:border-slate-700">
-                <span className="font-bold opacity-75 mr-1">Visited:</span> {stats.visited} nodes
-              </div>
-              <div className="bg-amber-50 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300 px-2.5 py-1 rounded-md font-medium border border-amber-200 dark:border-amber-800">
-                <span className="font-bold opacity-75 mr-1">Path:</span> {stats.path} steps
-              </div>
-            </>
-          )}
-        </div>
-        <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-4xl">
-          {algorithmInfo?.description || ''}
-        </p>
+        )}
       </div>
 
-      {/* Controls */}
-      <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center gap-3">
-        <button
-          onClick={visualize}
-          disabled={isVisualizing}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm shadow-indigo-600/20"
-        >
-          <Play size={16} /> Visualize
-        </button>
-
-        {/* Maze Generator Group */}
-        <div className="flex items-center gap-1 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg p-1 shadow-sm">
-          <button
-            onClick={() => handleGenerateMaze()}
-            disabled={isVisualizing}
-            className="flex items-center gap-2 bg-indigo-50 dark:bg-indigo-900/40 hover:bg-indigo-100 dark:hover:bg-indigo-900/60 text-indigo-700 dark:text-indigo-300 px-3.5 py-1.5 rounded-md text-sm font-semibold transition-colors disabled:opacity-50"
-          >
-            <Sparkles size={16} className="text-indigo-500" /> Generate Maze
-          </button>
+      {/* Floating Telemetry & Info Header (Top Left) */}
+      <div className="absolute top-4 left-4 z-10 pointer-events-none">
+        <div className="pointer-events-auto bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 px-5 py-4 rounded-2xl shadow-xl shadow-indigo-500/5 max-w-sm">
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 flex items-center gap-2">
+            <Activity className="w-5 h-5 text-indigo-500" />
+            {algorithmInfo?.name || 'Pathfinding Algorithm'}
+          </h2>
           
-          <select
-            value={selectedMazeType}
-            onChange={(e) => {
-              setSelectedMazeType(e.target.value);
-              handleGenerateMaze(e.target.value);
-            }}
-            disabled={isVisualizing}
-            className="bg-transparent text-xs font-bold text-slate-700 dark:text-slate-200 px-2 py-1.5 focus:outline-none cursor-pointer disabled:opacity-50 border-l border-slate-200 dark:border-slate-700"
-          >
-            <option value="dfs" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">DFS Corridors</option>
-            <option value="recursive_division" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">Recursive Division</option>
-            <option value="prims" className="bg-white dark:bg-slate-800 text-slate-800 dark:text-white">Prim's Labyrinth</option>
-          </select>
+          <div className="flex flex-wrap gap-2 text-xs mb-3">
+            <div className="bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-2 py-1 rounded border border-slate-200/50 dark:border-slate-700/50">
+              <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo?.timeComplexity || 'O(V+E)'}</span>
+            </div>
+            <div className="bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-2 py-1 rounded border border-slate-200/50 dark:border-slate-700/50">
+              <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo?.spaceComplexity || 'O(V)'}</span>
+            </div>
+            {stats && (
+              <>
+                <div className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded border border-indigo-500/20">
+                  <span className="opacity-70 mr-1">Visited:</span> <span className="font-mono font-bold">{stats.visited}</span>
+                </div>
+                <div className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded border border-emerald-500/20">
+                  <span className="opacity-70 mr-1">Path:</span> <span className="font-mono font-bold">{stats.path}</span>
+                </div>
+              </>
+            )}
+          </div>
+          
+          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+            {algorithmInfo?.description || 'Finds the shortest path between the start and end nodes.'}
+          </p>
         </div>
+      </div>
 
-        <button
-          onClick={handleReset}
-          disabled={isVisualizing}
-          className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
-        >
-          <RotateCcw size={16} className="text-slate-500" /> Reset
-        </button>
+      {/* Floating HUD Controls (Bottom Center) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
+        <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-indigo-500/10">
+          
+          <button
+            onClick={visualize}
+            disabled={isVisualizing}
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95"
+          >
+            <Play size={16} fill="currentColor" /> Visualize
+          </button>
 
-        <button
-          onClick={handleClearWalls}
-          disabled={isVisualizing}
-          className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:text-rose-600 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
-        >
-          <Eraser size={16} className={isVisualizing ? "text-slate-500" : "text-rose-500"} /> Clear Walls
-        </button>
+          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
 
-        <button
-          onClick={() => setIs3DMode(!is3DMode)}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all shadow-sm border ${
-            is3DMode
-              ? 'bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white shadow-cyan-500/20'
-              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
-          }`}
-        >
-          <Box className="w-4 h-4 text-cyan-500" />
-          <span>{is3DMode ? '3D Render ON' : '3D Mode'}</span>
-        </button>
+          {/* Generator Group */}
+          <div className="flex items-center bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl overflow-hidden hover:border-indigo-500/30 transition-colors">
+            <button
+              onClick={() => handleGenerateMaze()}
+              disabled={isVisualizing}
+              className="flex items-center gap-1.5 px-3 py-2 text-[12px] font-bold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+            >
+              <Sparkles size={14} className="text-indigo-500" /> Maze
+            </button>
+            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700"></div>
+            <select
+              value={selectedMazeType}
+              onChange={(e) => {
+                setSelectedMazeType(e.target.value);
+                handleGenerateMaze(e.target.value);
+              }}
+              disabled={isVisualizing}
+              className="bg-transparent text-[11px] font-semibold text-slate-500 dark:text-slate-400 px-2 py-2 focus:outline-none cursor-pointer disabled:opacity-50 appearance-none"
+            >
+              <option value="dfs">DFS</option>
+              <option value="recursive_division">Div</option>
+              <option value="prims">Prim</option>
+            </select>
+          </div>
 
-        <SoundControls />
+          <button
+            onClick={handleReset}
+            disabled={isVisualizing}
+            title="Reset Board"
+            className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
+          >
+            <RotateCcw size={18} />
+          </button>
 
-        {/* Speed */}
-        <div className="flex items-center gap-2 ml-auto">
-          <span className="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">SPEED</span>
-          <div className="flex bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg p-1 shadow-sm">
-            {[['Slow', 100], ['Med', 30], ['Fast', 8]].map(([label, val]) => (
+          <button
+            onClick={handleClearWalls}
+            disabled={isVisualizing}
+            title="Clear Walls"
+            className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-all"
+          >
+            <Eraser size={18} />
+          </button>
+
+          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
+
+          <button
+            onClick={() => setIs3DMode(!is3DMode)}
+            title="Toggle 3D Mode"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold transition-all border ${
+              is3DMode
+                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
+                : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Box size={16} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
+          </button>
+
+          <SoundControls className="scale-90" />
+
+          {/* Speed Group */}
+          <div className="flex bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-1 ml-1">
+            {[['1x', 100], ['2x', 30], ['MAX', 8]].map(([label, val]) => (
               <button
                 key={label}
                 onClick={() => setSpeed(val)}
                 disabled={isVisualizing}
-                className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all ${
-                  speed === val ? 'bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-300 shadow-sm' : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700'
+                className={`px-2 py-1 rounded text-[10px] font-black tracking-wider transition-all ${
+                  speed === val ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                 }`}
               >
                 {label}
               </button>
             ))}
           </div>
+
         </div>
       </div>
 
-      {/* Main Grid View / 3D Render View */}
-      {is3DMode ? (
-        <div className="p-6 bg-slate-50 dark:bg-slate-900">
-          <PathFinding3DVisualizer grid={grid} startPos={startPos} endPos={endPos} />
+      {/* Floating Legend (Bottom Right) */}
+      <div className="absolute bottom-6 right-6 z-10 pointer-events-none hidden lg:block">
+        <div className="flex flex-col gap-2.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 p-4 rounded-2xl shadow-lg shadow-indigo-500/5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+          {[
+            ['bg-emerald-500', 'Start Node'],
+            ['bg-rose-500', 'Target Node'],
+            ['bg-slate-700', 'Wall / Obstacle'],
+            ['bg-blue-400', 'Explored / Visited'],
+            ['bg-yellow-400', 'Shortest Path'],
+          ].map(([cls, label]) => (
+            <div key={label} className="flex items-center gap-3">
+              <div className={`w-3 h-3 rounded-full shadow-sm ${cls}`} />
+              <span className="uppercase tracking-widest">{label}</span>
+            </div>
+          ))}
         </div>
-      ) : (
-        <div
-          className="flex-1 bg-slate-50 dark:bg-slate-900 flex items-center justify-center overflow-auto select-none p-6"
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-        >
-          <div className="inline-block rounded-xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900 p-1">
-            {grid.map((row, rIdx) => (
-              <div key={rIdx} className="flex">
-                {row.map((node, cIdx) => (
-                  <div
-                    key={cIdx}
-                    className={`w-5 h-5 border-r border-b border-slate-100 dark:border-slate-800 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
-                    onMouseDown={() => handleMouseDown(node.row, node.col)}
-                    onMouseEnter={() => handleMouseEnter(node.row, node.col)}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Legend */}
-      <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-wrap gap-6 justify-center text-[12px] font-medium text-slate-600">
-        {[
-          ['bg-emerald-500', 'Start'],
-          ['bg-rose-500', 'End'],
-          ['bg-slate-700', 'Wall'],
-          ['bg-blue-400', 'Visited'],
-          ['bg-yellow-400', 'Shortest Path'],
-        ].map(([cls, label]) => (
-          <div key={label} className="flex items-center gap-2">
-            <div className={`w-3.5 h-3.5 rounded-sm shadow-sm ${cls}`} />
-            <span>{label}</span>
-          </div>
-        ))}
       </div>
 
       <style>{`
