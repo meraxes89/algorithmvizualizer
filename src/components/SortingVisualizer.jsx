@@ -317,8 +317,8 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
       )}
 
       {/* Floating HUD Controls (Bottom Center) */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
-        <div className="flex items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-indigo-500/10">
+      <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 w-[95%] sm:w-auto overflow-x-auto scrollbar-hide rounded-2xl">
+        <div className="flex items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max">
           
           {steps.length === 0 && (
             <button
@@ -394,8 +394,8 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
         </div>
       </div>
 
-      {/* Floating Legend (Bottom Right) */}
-      <div className="absolute bottom-6 right-6 z-10 pointer-events-none hidden lg:block">
+      {/* Floating Legend (Top Right on Mobile, Bottom Right on Desktop) */}
+      <div className="absolute top-4 right-4 sm:top-auto sm:bottom-6 sm:right-6 z-10 pointer-events-none scale-75 sm:scale-100 origin-top-right sm:origin-bottom-right">
         <div className="flex flex-col gap-2.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 p-4 rounded-2xl shadow-lg shadow-indigo-500/5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS.DEFAULT || '#a5b4fc' }}></div>
