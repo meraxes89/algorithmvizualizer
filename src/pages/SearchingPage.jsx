@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import Navbar from '../components/Navbar';
 import SearchingVisualizer from '../components/SearchingVisualizer';
 import { linearSearch, linearSearchInfo } from '../algorithms/searching/linearSearch';
 import { binarySearch, binarySearchInfo } from '../algorithms/searching/binarySearch';
@@ -16,7 +15,6 @@ const SearchingPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-sans flex flex-col">
-      <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col">
         {/* Header */}

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Swords, Trophy, CheckCircle2, Search as SearchIcon, Network, BarChart2 } from 'lucide-react';
-import Navbar from '../components/Navbar';
 import SoundControls from '../components/SoundControls';
 import soundEngine from '../utils/soundEngine';
 import { useTheme } from '../context/ThemeContext';
@@ -535,7 +534,6 @@ const ArenaPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-      <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
         {/* Header */}

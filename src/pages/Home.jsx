@@ -21,7 +21,6 @@ import {
   BookOpen as BookOpenIcon,
   Notebook as NotebookIcon
 } from 'lucide-react';
-import Navbar from '../components/Navbar';
 import GitLabIcon from '../components/GitLabIcon';
 import Logo from '../components/Logo';
 
@@ -90,7 +89,6 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white font-sans selection:bg-blue-100 transition-colors duration-200">
-      <Navbar />
 
       <main className="max-w-7xl mx-auto px-6 pt-20 pb-24">
         {/* Hero Section */}

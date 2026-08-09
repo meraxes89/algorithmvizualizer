@@ -2,7 +2,6 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Play, RotateCcw, Trash2, ArrowLeft, Terminal, Keyboard, Cpu, CheckCircle2, AlertCircle, Settings, X, Globe, Server, Cloud, FileCode, Plus, Upload, Code, Folder, File, ChevronRight, ChevronDown, Trash, Edit2, FolderPlus, FilePlus, ChevronsLeft, MoreVertical } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
-import Navbar from '../components/Navbar';
 import { useTheme } from '../context/ThemeContext';
 
 const LANGUAGE_ICONS = {
@@ -615,7 +614,6 @@ builtins.input = _mock_input
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-sans flex flex-col transition-colors duration-200">
-      <Navbar />
 
       <main className="flex-1 flex flex-col p-4 md:p-6 max-w-[1600px] w-full mx-auto gap-4">
         {/* Navigation & Header Toolbar */}

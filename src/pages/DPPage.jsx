@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
-import Navbar from '../components/Navbar';
 import DPVisualizer from '../components/DPVisualizer';
 
 const DPPage = () => {
@@ -9,7 +8,6 @@ const DPPage = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white font-sans flex flex-col">
-      <Navbar />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col">
         <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
