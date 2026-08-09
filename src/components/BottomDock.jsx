@@ -40,7 +40,7 @@ const BottomDock = () => {
 
   return (
     <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-auto transition-all duration-300">
-      <div className="flex items-center gap-1 sm:gap-1.5 px-3 py-2 rounded-full border border-stone-200/80 dark:border-zinc-800/80 bg-[#fbf9f5]/85 dark:bg-black/85 backdrop-blur-xl shadow-2xl shadow-stone-900/10 dark:shadow-black/70 ring-1 ring-white/30 dark:ring-white/10">
+      <div className="flex items-center gap-1 sm:gap-1.5 px-3 py-2 rounded-full border border-white/60 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/10 bg-[#fbf9f5]/55 dark:bg-black/50 backdrop-blur-2xl backdrop-saturate-200 shadow-[0_8px_32px_0_rgba(0,0,0,0.12)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.8)]">
         {dockItems.map((item) => {
           const Icon = item.icon;
           const isActive = !item.isExternal && (

@@ -64,6 +64,22 @@ code, kbd, samp, pre, .font-mono {
   font-variant-numeric: tabular-nums;
 }
 
+.font-cursive {
+  font-family: 'Caveat', cursive, sans-serif;
+}
+
+.font-pixel {
+  font-family: 'Silkscreen', monospace;
+}
+
+.font-orbitron {
+  font-family: 'Orbitron', sans-serif;
+}
+
+.font-serif-italic {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
 /* ============================================
    AURORA ANIMATED BACKGROUND
    ============================================ */

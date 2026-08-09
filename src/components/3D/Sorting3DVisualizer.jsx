@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import * as THREE from 'three';
-import { Box } from 'lucide-react';
+import { Box, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 
 const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot = null }) => {
@@ -9,6 +9,28 @@ const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot =
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
   const rendererRef = useRef(null);
+
+  const handleZoomIn = () => {
+    if (cameraRef.current) {
+      cameraRef.current.position.multiplyScalar(0.85);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (cameraRef.current) {
+      cameraRef.current.position.multiplyScalar(1.15);
+    }
+  };
+
+  const handleResetCamera = () => {
+    if (cameraRef.current) {
+      const maxVal = Math.max(...array, 1);
+      const totalWidth = array.length * 1.5;
+      const targetDist = Math.max(50, totalWidth * 1.2);
+      cameraRef.current.position.set(0, Math.max(24, maxVal * 1.2), targetDist);
+      cameraRef.current.lookAt(0, maxVal * 0.45, 0);
+    }
+  };
   const gridRef = useRef(null);
   const barsRef = useRef([]);
 
@@ -157,10 +179,35 @@ const Sorting3DVisualizer = ({ array = [], comparing = [], swapped = [], pivot =
 
   return (
     <div className="relative w-full h-[450px] rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800/80 bg-slate-50 dark:bg-black shadow-sm transition-colors duration-200">
-      <div className="absolute top-3 left-3 z-10 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border border-slate-200 dark:border-zinc-800/80 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shadow-sm">
-        <Box className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400" />
-        <span>3D WebGL Render</span>
+      <div className="absolute top-3 left-3 z-10 max-w-[calc(100%-110px)] bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border border-slate-200 dark:border-zinc-800/80 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shadow-sm truncate">
+        <Box className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400 shrink-0" />
+        <span className="truncate">3D WebGL Render</span>
       </div>
+      {/* Floating 3D Zoom Controls Widget */}
+      <div className="absolute top-3 right-3 z-10 flex items-center gap-1 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border border-slate-200 dark:border-zinc-800/80 p-1 rounded-xl shadow-md">
+        <button
+          onClick={handleZoomIn}
+          className="p-1.5 hover:bg-stone-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+          title="3D Zoom In (+)"
+        >
+          <ZoomIn className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={handleZoomOut}
+          className="p-1.5 hover:bg-stone-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+          title="3D Zoom Out (-)"
+        >
+          <ZoomOut className="w-3.5 h-3.5" />
+        </button>
+        <button
+          onClick={handleResetCamera}
+          className="p-1.5 hover:bg-stone-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+          title="Reset 3D Camera View"
+        >
+          <RotateCcw className="w-3.5 h-3.5" />
+        </button>
+      </div>
+
       <div ref={mountRef} className="w-full h-full" />
     </div>
   );

@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import GitLabIcon from '../components/GitLabIcon';
 import Logo from '../components/Logo';
+import TiltCard from '../components/TiltCard';
 
 const QUICK_SORT_FRAMES = [
   // 0: Initial
@@ -73,27 +74,27 @@ const TYPEWRITER_PHRASES = [
   { 
     text: "Watching.", 
     color: "text-indigo-600 dark:text-indigo-400", 
-    font: "font-heading font-extrabold tracking-tight" 
+    font: "font-cursive font-bold text-4xl sm:text-5xl lg:text-[3.8rem]" 
   },
   { 
     text: "Step-by-Step Execution.", 
-    color: "text-blue-600 dark:text-blue-400", 
-    font: "font-mono font-semibold tracking-tighter" 
+    color: "text-emerald-600 dark:text-emerald-400", 
+    font: "font-pixel tracking-wider text-xl sm:text-2xl lg:text-[2.2rem]" 
   },
   { 
     text: "Interactive 3D Rendering.", 
-    color: "text-cyan-600 dark:text-cyan-400", 
-    font: "font-grotesk font-bold tracking-wide" 
+    color: "text-cyan-500 dark:text-cyan-400", 
+    font: "font-orbitron font-extrabold tracking-widest text-2xl sm:text-3xl lg:text-[2.6rem]" 
   },
   { 
     text: "Building Intuition.", 
-    color: "text-emerald-600 dark:text-emerald-400", 
-    font: "font-serif italic font-medium" 
+    color: "text-rose-600 dark:text-rose-400", 
+    font: "font-serif-italic italic font-bold text-3xl sm:text-4xl lg:text-[3.2rem]" 
   },
   { 
     text: "Mastering Code Logic.", 
     color: "text-amber-600 dark:text-amber-400", 
-    font: "font-sans font-bold uppercase tracking-wider" 
+    font: "font-mono font-bold tracking-tight text-2xl sm:text-3xl lg:text-[2.8rem]" 
   },
 ];
 
@@ -281,76 +282,84 @@ const Home = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {/* Quick Sort */}
-            <Link to="/sorting" className="bg-[#faf7f2] dark:bg-zinc-950 border border-[#e7e1d7] dark:border-zinc-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-indigo-500/30 transition-all group relative">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-10 h-10 rounded-full bg-indigo-100/80 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center">
-                  <List className="w-5 h-5" />
+            <TiltCard className="rounded-2xl">
+              <Link to="/sorting" className="block bg-[#faf7f2] dark:bg-zinc-950 border border-[#e7e1d7] dark:border-zinc-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-indigo-500/30 transition-all group relative h-full">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-full bg-indigo-100/80 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 flex items-center justify-center">
+                    <List className="w-5 h-5" />
+                  </div>
+                  <span className="bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-500/20">Sorting</span>
                 </div>
-                <span className="bg-indigo-50 text-indigo-600 dark:bg-indigo-500/10 dark:text-indigo-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-indigo-100 dark:border-indigo-500/20">Sorting</span>
-              </div>
-              <h3 className="font-bold text-slate-900 dark:text-white mb-2">Quick Sort</h3>
-              <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                Efficient sorting using divide and conquer
-              </p>
-              <div className="flex items-center justify-between text-slate-400 group-hover:text-indigo-600 transition-colors">
-                <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">Avg. O(n log n)</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
+                <h3 className="font-bold text-slate-900 dark:text-white mb-2">Quick Sort</h3>
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                  Efficient sorting using divide and conquer
+                </p>
+                <div className="flex items-center justify-between text-slate-400 group-hover:text-indigo-600 transition-colors">
+                  <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">Avg. O(n log n)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </Link>
+            </TiltCard>
 
             {/* Merge Sort */}
-            <Link to="/sorting" className="bg-[#faf7f2] dark:bg-zinc-950 border border-[#e7e1d7] dark:border-zinc-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-orange-500/30 transition-all group relative">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-10 h-10 rounded-full bg-orange-100/80 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 flex items-center justify-center">
-                  <Share2 className="w-5 h-5" />
+            <TiltCard className="rounded-2xl">
+              <Link to="/sorting" className="block bg-[#faf7f2] dark:bg-zinc-950 border border-[#e7e1d7] dark:border-zinc-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-orange-500/30 transition-all group relative h-full">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-full bg-orange-100/80 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 flex items-center justify-center">
+                    <Share2 className="w-5 h-5" />
+                  </div>
+                  <span className="bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-orange-100 dark:border-orange-500/20">Sorting</span>
                 </div>
-                <span className="bg-orange-50 text-orange-600 dark:bg-orange-500/10 dark:text-orange-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-orange-100 dark:border-orange-500/20">Sorting</span>
-              </div>
-              <h3 className="font-bold text-slate-900 dark:text-white mb-2">Merge Sort</h3>
-              <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                Stable sorting using divide and conquer
-              </p>
-              <div className="flex items-center justify-between text-slate-400 group-hover:text-orange-500 transition-colors">
-                <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">Avg. O(n log n)</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
+                <h3 className="font-bold text-slate-900 dark:text-white mb-2">Merge Sort</h3>
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                  Stable sorting using divide and conquer
+                </p>
+                <div className="flex items-center justify-between text-slate-400 group-hover:text-orange-500 transition-colors">
+                  <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">Avg. O(n log n)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </Link>
+            </TiltCard>
 
             {/* Binary Search */}
-            <Link to="/searching" className="bg-[#faf7f2] dark:bg-zinc-950 border border-[#e7e1d7] dark:border-zinc-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all group relative">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-10 h-10 rounded-full bg-emerald-100/80 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center justify-center">
-                  <Search className="w-5 h-5" />
+            <TiltCard className="rounded-2xl">
+              <Link to="/searching" className="block bg-[#faf7f2] dark:bg-zinc-950 border border-[#e7e1d7] dark:border-zinc-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-emerald-500/30 transition-all group relative h-full">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100/80 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 flex items-center justify-center">
+                    <Search className="w-5 h-5" />
+                  </div>
+                  <span className="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-100 dark:border-emerald-500/20">Searching</span>
                 </div>
-                <span className="bg-emerald-50 text-emerald-600 dark:bg-emerald-500/10 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-emerald-100 dark:border-emerald-500/20">Searching</span>
-              </div>
-              <h3 className="font-bold text-slate-900 dark:text-white mb-2">Binary Search</h3>
-              <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                Efficient search in sorted arrays
-              </p>
-              <div className="flex items-center justify-between text-slate-400 group-hover:text-emerald-600 transition-colors">
-                <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">O(log n)</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
+                <h3 className="font-bold text-slate-900 dark:text-white mb-2">Binary Search</h3>
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                  Efficient search in sorted arrays
+                </p>
+                <div className="flex items-center justify-between text-slate-400 group-hover:text-emerald-600 transition-colors">
+                  <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">O(log n)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </Link>
+            </TiltCard>
 
             {/* Dijkstra's */}
-            <Link to="/pathfinding" className="bg-[#faf7f2] dark:bg-zinc-950 border border-[#e7e1d7] dark:border-zinc-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all group relative">
-              <div className="flex justify-between items-start mb-4">
-                <div className="w-10 h-10 rounded-full bg-blue-100/80 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 flex items-center justify-center">
-                  <Network className="w-5 h-5" />
+            <TiltCard className="rounded-2xl">
+              <Link to="/pathfinding" className="block bg-[#faf7f2] dark:bg-zinc-950 border border-[#e7e1d7] dark:border-zinc-800/80 p-6 rounded-2xl shadow-sm hover:shadow-md hover:border-blue-500/30 transition-all group relative h-full">
+                <div className="flex justify-between items-start mb-4">
+                  <div className="w-10 h-10 rounded-full bg-blue-100/80 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 flex items-center justify-center">
+                    <Network className="w-5 h-5" />
+                  </div>
+                  <span className="bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-500/20">Graphs</span>
                 </div>
-                <span className="bg-blue-50 text-blue-600 dark:bg-blue-500/10 dark:text-blue-400 text-[10px] font-bold px-2.5 py-1 rounded-full border border-blue-100 dark:border-blue-500/20">Graphs</span>
-              </div>
-              <h3 className="font-bold text-slate-900 dark:text-white mb-2">Dijkstra's</h3>
-              <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                Shortest path in weighted graphs
-              </p>
-              <div className="flex items-center justify-between text-slate-400 group-hover:text-blue-600 transition-colors">
-                <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">O((V + E) log V)</span>
-                <ArrowRight className="w-4 h-4" />
-              </div>
-            </Link>
+                <h3 className="font-bold text-slate-900 dark:text-white mb-2">Dijkstra's</h3>
+                <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+                  Shortest path in weighted graphs
+                </p>
+                <div className="flex items-center justify-between text-slate-400 group-hover:text-blue-600 transition-colors">
+                  <span className="text-[12px] font-medium text-slate-500 dark:text-slate-400">O((V + E) log V)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </div>
+              </Link>
+            </TiltCard>
           </div>
           
           <div className="flex justify-center mt-8 gap-2">

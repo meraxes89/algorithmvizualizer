@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward, Box, Layers } from 'lucide-react';
+import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward, Box, Layers, ZoomIn, ZoomOut } from 'lucide-react';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { generateRandomArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import StepControls from './educational/StepControls';
 import ExplanationPanel from './educational/ExplanationPanel';
 import CodeViewer from './educational/CodeViewer';
 import CustomTestCases from './educational/CustomTestCases';
 import { algorithmDatabase } from '../data/algorithmData';
-import soundEngine from '../utils/soundEngine';
+import { soundEngine } from '../utils/soundEngine';
+import { triggerVictoryConfetti } from '../utils/confettiHelper';
 import SoundControls from './SoundControls';
 import Sorting3DVisualizer from './3D/Sorting3DVisualizer';
 import MemoryStackInspector from './MemoryStackInspector';
@@ -134,6 +136,7 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
     } else if (isPlaying && currentStepIndex >= steps.length - 1 && steps.length > 0) {
       setIsPlaying(false);
       setIsPaused(false);
+      triggerVictoryConfetti();
     }
     return () => clearTimeout(timeoutId);
   }, [isPlaying, isPaused, currentStepIndex, steps, speed]);
@@ -258,21 +261,54 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
             />
           </div>
         ) : (
-          <div className="w-full h-full flex items-end justify-center gap-[2px]">
-            {array.map((value, idx) => (
-              <div
-                key={idx}
-                className="transition-all duration-75 rounded-t-sm shadow-sm"
-                style={{
-                  height: `${(value / maxValue) * 85}%`,
-                  width: `${100 / array.length}%`,
-                  backgroundColor: getBarColor(idx),
-                  minWidth: '2px',
-                }}
-                title={`Value: ${value}, Index: ${idx}`}
-              />
-            ))}
-          </div>
+          <TransformWrapper initialScale={1} minScale={0.5} maxScale={3} centerOnInit={true}>
+            {({ zoomIn, zoomOut, resetTransform }) => (
+              <>
+                {/* Floating 2D Zoom Widget */}
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border border-slate-200 dark:border-zinc-800/80 p-1 rounded-xl shadow-md">
+                  <button
+                    onClick={() => zoomIn()}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Zoom In (+)"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => zoomOut()}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Zoom Out (-)"
+                  >
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => resetTransform()}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Reset Zoom"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <TransformComponent wrapperClassName="w-full h-full" contentClassName="w-full h-full flex items-end justify-center">
+                  <div className="w-full h-full flex items-end justify-center gap-[2px]">
+                    {array.map((value, idx) => (
+                      <div
+                        key={idx}
+                        className="transition-all duration-75 rounded-t-sm shadow-sm"
+                        style={{
+                          height: `${(value / maxValue) * 85}%`,
+                          width: `${100 / array.length}%`,
+                          backgroundColor: getBarColor(idx),
+                          minWidth: '2px',
+                        }}
+                        title={`Value: ${value}, Index: ${idx}`}
+                      />
+                    ))}
+                  </div>
+                </TransformComponent>
+              </>
+            )}
+          </TransformWrapper>
         )}
       </div>
 

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Swords, Trophy, CheckCircle2, Search as SearchIcon, Network, BarChart2 } from 'lucide-react';
 import SoundControls from '../components/SoundControls';
 import soundEngine from '../utils/soundEngine';
+import { triggerVictoryConfetti } from '../utils/confettiHelper';
 import { useTheme } from '../context/ThemeContext';
 
 // ----------------------------------------------------
@@ -497,7 +498,7 @@ const ArenaPage = () => {
           if (newlyFinished.length > 0) {
             setWinner(prevWinner => {
               if (!prevWinner) {
-                soundEngine.playSuccess();
+                triggerVictoryConfetti();
                 let name = '';
                 if (activeCategory === 'sorting') name = SORTING_ALGORITHMS[newlyFinished[0]]?.name;
                 else if (activeCategory === 'searching') name = SEARCHING_ALGORITHMS[newlyFinished[0]]?.name;

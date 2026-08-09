@@ -3,37 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ChevronDown, Search, Moon, Sun, Menu, X, Swords, Trophy } from 'lucide-react';
 import GitLabIcon from './GitLabIcon';
 import { useTheme } from '../context/ThemeContext';
-
+import CommandPalette from './CommandPalette';
 import Logo from './Logo';
-
-const SEARCH_ITEMS = [
-  { name: 'Bubble Sort', path: '/sorting', category: 'Sorting' },
-  { name: 'Selection Sort', path: '/sorting', category: 'Sorting' },
-  { name: 'Insertion Sort', path: '/sorting', category: 'Sorting' },
-  { name: 'Merge Sort', path: '/sorting', category: 'Sorting' },
-  { name: 'Quick Sort', path: '/sorting', category: 'Sorting' },
-  { name: 'Linear Search', path: '/searching', category: 'Searching' },
-  { name: 'Binary Search', path: '/searching', category: 'Searching' },
-  { name: "Dijkstra's Algorithm", path: '/pathfinding', category: 'Pathfinding' },
-  { name: 'A* Search', path: '/pathfinding', category: 'Pathfinding' },
-  { name: 'BFS (Breadth-First Search)', path: '/graph', category: 'Graph' },
-  { name: 'DFS (Depth-First Search)', path: '/graph', category: 'Graph' },
-  { name: 'Factorial', path: '/recursion', category: 'Recursion' },
-  { name: 'Fibonacci', path: '/recursion', category: 'Recursion' },
-  { name: 'Binary Search Tree', path: '/trees', category: 'Trees' },
-  { name: '0/1 Knapsack', path: '/dp', category: 'Dynamic Programming' },
-  { name: 'Longest Common Subsequence (LCS)', path: '/dp', category: 'Dynamic Programming' },
-];
 
 const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isSearchFocused, setIsSearchFocused] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
   const { isDark, toggleTheme } = useTheme();
 
-  const searchInputRef = useRef(null);
-  const searchContainerRef = useRef(null);
   const navigate = useNavigate();
 
   // Handle Cmd/Ctrl + K shortcut
@@ -41,40 +19,16 @@ const Navbar = () => {
     const handleKeyDown = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        searchInputRef.current?.focus();
+        setIsCmdPaletteOpen((prev) => !prev);
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
-  // Handle clicking outside to close search dropdown
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target)) {
-        setIsSearchFocused(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const filteredItems = SEARCH_ITEMS.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    item.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const handleSelectResult = (item) => {
-    navigate(item.path);
-    setSearchQuery('');
-    setIsSearchFocused(false);
-    setIsMobileMenuOpen(false);
-    searchInputRef.current?.blur();
-  };
-
   return (
     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none px-4 transition-all duration-300">
-      <nav className="pointer-events-auto w-full max-w-5xl border border-stone-200/80 dark:border-zinc-800/80 bg-[#fbf9f5]/80 dark:bg-black/80 backdrop-blur-xl shadow-2xl shadow-indigo-500/5 dark:shadow-indigo-500/10 rounded-2xl relative transition-colors duration-300">
+      <nav className="pointer-events-auto w-full max-w-5xl border border-white/60 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/10 bg-[#fbf9f5]/55 dark:bg-black/50 backdrop-blur-2xl backdrop-saturate-200 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.7)] rounded-2xl relative transition-all duration-300">
         <div className="px-5 md:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-8">
             {/* Logo */}
@@ -93,7 +47,7 @@ const Navbar = () => {
 
                 {/* Dropdown Menu */}
                 {showDropdown && (
-                  <div className="absolute top-[90%] left-0 w-64 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-xl py-2 z-50 transform origin-top-left transition-all">
+                  <div className="absolute top-[90%] left-0 w-64 bg-[#fbf9f5]/85 dark:bg-zinc-950/85 backdrop-blur-2xl border border-white/60 dark:border-zinc-800/80 shadow-2xl rounded-xl py-2 z-50 transform origin-top-left transition-all">
                     <Link to="/algorithms" className="block px-4 py-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
                       Categories &rarr;
                     </Link>
@@ -122,51 +76,17 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Search */}
-            <div ref={searchContainerRef} className="relative hidden lg:block">
-              <div className={`flex items-center bg-white/50 dark:bg-zinc-900/60 border rounded-lg px-3 py-1.5 w-56 transition-all ${
-                isSearchFocused ? 'ring-2 ring-indigo-500/20 border-indigo-400 bg-white dark:bg-zinc-900' : 'border-slate-200/80 dark:border-zinc-800/80'
-              }`}>
-                <Search className="w-3.5 h-3.5 text-slate-400 mr-2" />
-                <input
-                  ref={searchInputRef}
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  onFocus={() => setIsSearchFocused(true)}
-                  placeholder="Quick search..."
-                  className="bg-transparent text-[12px] font-medium outline-none w-full placeholder:text-slate-400/80 text-slate-900 dark:text-white"
-                />
-                <div className="flex items-center gap-1 text-[9px] font-bold text-slate-400 bg-slate-100 dark:bg-zinc-800/80 border border-slate-200 dark:border-zinc-700 px-1.5 py-0.5 rounded ml-2 shadow-sm whitespace-nowrap">
-                  <span className="font-sans">⌘</span> K
-                </div>
-              </div>
-
-              {/* Search Dropdown Results */}
-              {isSearchFocused && (
-                <div className="absolute top-[120%] left-0 w-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-2xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-xl py-2 z-50 max-h-80 overflow-y-auto">
-                  {filteredItems.length > 0 ? (
-                    filteredItems.map((item, idx) => (
-                      <div
-                        key={idx}
-                        onMouseDown={(e) => {
-                          e.preventDefault();
-                          handleSelectResult(item);
-                        }}
-                        className="px-4 py-2 hover:bg-slate-50/80 dark:hover:bg-zinc-900/80 cursor-pointer flex flex-col transition-colors border-b border-slate-100 dark:border-zinc-800/50 last:border-0"
-                      >
-                        <span className="text-[12px] font-bold text-slate-700 dark:text-slate-200">{item.name}</span>
-                        <span className="text-[10px] text-slate-400 dark:text-slate-500">{item.category}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="px-4 py-3 text-[12px] font-medium text-slate-500 dark:text-slate-400 text-center">
-                      No algorithms found
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
+            {/* Spotlight Search Trigger Button */}
+            <button
+              onClick={() => setIsCmdPaletteOpen(true)}
+              className="hidden lg:flex items-center gap-3 bg-[#faf7f2]/80 dark:bg-zinc-900/80 border border-stone-200/80 dark:border-zinc-800/80 hover:border-indigo-400 dark:hover:border-indigo-500 text-stone-500 dark:text-stone-400 text-xs font-medium px-3 py-1.5 rounded-xl shadow-sm hover:shadow transition-all group"
+            >
+              <Search className="w-3.5 h-3.5 text-stone-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+              <span>Search algorithms...</span>
+              <kbd className="flex items-center gap-0.5 text-[10px] font-mono font-bold text-stone-400 dark:text-stone-500 bg-stone-200/60 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-stone-300/40 dark:border-zinc-700 ml-2">
+                <span className="text-[11px]">⌘</span>K
+              </kbd>
+            </button>
 
             {/* Theme Toggle Button */}
             <button
@@ -213,6 +133,9 @@ const Navbar = () => {
           </div>
         )}
       </nav>
+
+      {/* Spotlight Command Palette Modal */}
+      <CommandPalette isOpen={isCmdPaletteOpen} onClose={() => setIsCmdPaletteOpen(false)} />
     </div>
   );
 };

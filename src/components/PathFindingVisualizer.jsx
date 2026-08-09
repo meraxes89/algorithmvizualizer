@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, RotateCcw, Eraser, Zap, Box, Grid, Sparkles, ChevronDown, Activity } from 'lucide-react';
+import { Play, RotateCcw, Eraser, Zap, Box, Grid, Sparkles, ChevronDown, Activity, ZoomIn, ZoomOut } from 'lucide-react';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { createInitialGrid, resetGrid, SPEED_PRESETS } from '../utils/animationHelpers';
 import { getNodesInShortestPathOrder } from '../algorithms/pathfinding/dijkstra';
 import { generateComplexMaze } from '../algorithms/pathfinding/mazeGenerator';
 import PathFinding3DVisualizer from './3D/PathFinding3DVisualizer';
 import SoundControls from './SoundControls';
 import soundEngine from '../utils/soundEngine';
+import OdometerCounter from './OdometerCounter';
 
 // ─── Synchronous algorithm runners (no delays) ────────────────────────────────
 
@@ -449,11 +451,11 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
           </div>
           {stats && (
             <>
-              <div className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2.5 py-1 rounded-lg border border-indigo-500/20 shadow-sm">
-                <span className="opacity-70 mr-1">Visited:</span> <span className="font-mono font-bold">{stats.visited}</span>
+              <div className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2.5 py-1 rounded-lg border border-indigo-500/20 shadow-sm flex items-center gap-1">
+                <span className="opacity-70">Visited:</span> <OdometerCounter value={stats.visited} />
               </div>
-              <div className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20 shadow-sm">
-                <span className="opacity-70 mr-1">Path:</span> <span className="font-mono font-bold">{stats.path}</span>
+              <div className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20 shadow-sm flex items-center gap-1">
+                <span className="opacity-70">Path:</span> <OdometerCounter value={stats.path} />
               </div>
             </>
           )}
@@ -461,30 +463,63 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
       </div>
 
       {/* Main Grid View / 3D Canvas Viewport */}
-      <div className="flex-1 w-full relative flex items-center justify-center overflow-auto p-4 pb-32 select-none">
+      <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden p-4 pb-32 select-none">
         {is3DMode ? (
           <div className="w-full h-full min-h-[450px]">
             <PathFinding3DVisualizer grid={grid} startPos={startPos} endPos={endPos} />
           </div>
         ) : (
-          <div
-            className="inline-block rounded-2xl overflow-hidden border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl shadow-indigo-500/5 bg-white dark:bg-zinc-950 p-1 max-w-full"
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-          >
-            {grid.map((row, rIdx) => (
-              <div key={rIdx} className="flex">
-                {row.map((node, cIdx) => (
+          <TransformWrapper initialScale={1} minScale={0.5} maxScale={3} centerOnInit={true}>
+            {({ zoomIn, zoomOut, resetTransform }) => (
+              <>
+                {/* Floating 2D Grid Zoom Widget */}
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border border-slate-200 dark:border-zinc-800/80 p-1 rounded-xl shadow-md">
+                  <button
+                    onClick={() => zoomIn()}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Zoom In (+)"
+                  >
+                    <ZoomIn className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => zoomOut()}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Zoom Out (-)"
+                  >
+                    <ZoomOut className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => resetTransform()}
+                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    title="Reset Zoom"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <TransformComponent wrapperClassName="w-full h-full" contentClassName="w-full h-full flex items-center justify-center">
                   <div
-                    key={cIdx}
-                    className={`w-4 h-4 sm:w-5 sm:h-5 border-r border-b border-slate-100/50 dark:border-zinc-900/60 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
-                    onMouseDown={() => handleMouseDown(node.row, node.col)}
-                    onMouseEnter={() => handleMouseEnter(node.row, node.col)}
-                  />
-                ))}
-              </div>
-            ))}
-          </div>
+                    className="inline-block rounded-2xl overflow-hidden border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl shadow-indigo-500/5 bg-white dark:bg-zinc-950 p-1 max-w-full"
+                    onMouseUp={handleMouseUp}
+                    onMouseLeave={handleMouseUp}
+                  >
+                    {grid.map((row, rIdx) => (
+                      <div key={rIdx} className="flex">
+                        {row.map((node, cIdx) => (
+                          <div
+                            key={cIdx}
+                            className={`w-4 h-4 sm:w-5 sm:h-5 border-r border-b border-slate-100/50 dark:border-zinc-900/60 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
+                            onMouseDown={() => handleMouseDown(node.row, node.col)}
+                            onMouseEnter={() => handleMouseEnter(node.row, node.col)}
+                          />
+                        ))}
+                      </div>
+                    ))}
+                  </div>
+                </TransformComponent>
+              </>
+            )}
+          </TransformWrapper>
         )}
       </div>
 

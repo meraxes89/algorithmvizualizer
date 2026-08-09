@@ -3,6 +3,7 @@ import { Play, Pause, RotateCcw, ArrowRight, Plus, Trash2, HelpCircle, Shuffle, 
 import { COLORS } from '../utils/animationHelpers';
 import * as GraphAlgos from '../utils/GraphAlgorithms';
 import InteractiveGraphBuilder from './educational/InteractiveGraphBuilder';
+import { triggerVictoryConfetti } from '../utils/confettiHelper';
 
 // Algorithm details including description, complexity, etc.
 const ALGORITHM_DETAILS = {
@@ -346,6 +347,7 @@ const GraphVisualizer = ({ algorithm: legacyAlgo, algorithmInfo }) => {
       setCurrentStepIndex(prev => prev + 1);
     } else {
       setIsPlaying(false);
+      triggerVictoryConfetti();
     }
   };
 

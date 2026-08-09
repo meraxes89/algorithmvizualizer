@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Shuffle, BookOpen, Code2 } from 'lucide-react';
 import ExplanationPanel from './educational/ExplanationPanel';
 import CodeViewer from './educational/CodeViewer';
+import { triggerVictoryConfetti } from '../utils/confettiHelper';
 
 const DP_INFO = {
   knapsack: {
@@ -229,8 +230,9 @@ const DPVisualizer = ({ algorithmType = 'knapsack' }) => {
       timer = setTimeout(() => {
         setCurrentStep(prev => prev + 1);
       }, 250);
-    } else if (currentStep >= steps.length - 1) {
+    } else if (isPlaying && currentStep >= steps.length - 1 && steps.length > 0) {
       setIsPlaying(false);
+      triggerVictoryConfetti();
     }
     return () => clearTimeout(timer);
   }, [isPlaying, currentStep, steps]);
