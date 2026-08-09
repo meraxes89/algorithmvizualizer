@@ -615,7 +615,7 @@ builtins.input = _mock_input
   return (
     <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-white font-sans flex flex-col transition-colors duration-200">
 
-      <main className="flex-1 flex flex-col p-4 md:p-6 max-w-[1600px] w-full mx-auto gap-4">
+      <main className="flex-1 flex flex-col p-4 md:p-6 max-w-[1600px] w-full mx-auto gap-4 pb-24">
         {/* Navigation & Header Toolbar */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
           <div className="flex items-center gap-4">

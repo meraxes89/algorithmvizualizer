@@ -4,6 +4,7 @@ import { ThemeProvider } from './context/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
 
 import Navbar from './components/Navbar';
+import BottomDock from './components/BottomDock';
 import Home from './pages/Home';
 import CategoriesPage from './pages/CategoriesPage';
 import SortingPage from './pages/SortingPage';
@@ -64,9 +65,10 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300">
+        <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300 pb-20">
           <Navbar />
           <AnimatedRoutes />
+          <BottomDock />
         </div>
       </Router>
     </ThemeProvider>
