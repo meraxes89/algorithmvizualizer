@@ -427,93 +427,109 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
   return (
     <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
       
-      {/* Main Render View (Background) */}
-      <div className="absolute inset-0 flex">
+      {/* Top Header & Telemetry Bar */}
+      <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl border-b border-slate-200/50 dark:border-slate-800/50">
+        <div>
+          <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
+            <Activity className="w-5 h-5 text-indigo-500" />
+            {algorithmInfo?.name || 'Pathfinding Algorithm'}
+          </h2>
+          <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5 max-w-xl">
+            {algorithmInfo?.description || 'Finds the shortest path between the start and end nodes.'}
+          </p>
+        </div>
+
+        {/* Telemetry & Info Badges */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <div className="bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+            <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo?.timeComplexity || 'O(V+E)'}</span>
+          </div>
+          <div className="bg-white/80 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-slate-700/50 shadow-sm">
+            <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo?.spaceComplexity || 'O(V)'}</span>
+          </div>
+          {stats && (
+            <>
+              <div className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2.5 py-1 rounded-lg border border-indigo-500/20 shadow-sm">
+                <span className="opacity-70 mr-1">Visited:</span> <span className="font-mono font-bold">{stats.visited}</span>
+              </div>
+              <div className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20 shadow-sm">
+                <span className="opacity-70 mr-1">Path:</span> <span className="font-mono font-bold">{stats.path}</span>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Main Grid View / 3D Canvas Viewport */}
+      <div className="flex-1 w-full relative flex items-center justify-center overflow-auto p-4 pb-32 select-none">
         {is3DMode ? (
-          <div className="flex-1 w-full h-full p-2">
+          <div className="w-full h-full min-h-[450px]">
             <PathFinding3DVisualizer grid={grid} startPos={startPos} endPos={endPos} />
           </div>
         ) : (
           <div
-            className="flex-1 w-full h-full flex items-center justify-center overflow-auto select-none p-6"
+            className="inline-block rounded-2xl overflow-hidden border border-slate-200/60 dark:border-slate-800/60 shadow-2xl shadow-indigo-500/5 bg-white dark:bg-slate-900 p-1 max-w-full"
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
           >
-            <div className="inline-block rounded-xl overflow-hidden border border-slate-200/50 dark:border-slate-800/50 shadow-2xl shadow-indigo-500/5 bg-white dark:bg-slate-900 p-1">
-              {grid.map((row, rIdx) => (
-                <div key={rIdx} className="flex">
-                  {row.map((node, cIdx) => (
-                    <div
-                      key={cIdx}
-                      className={`w-5 h-5 border-r border-b border-slate-100/50 dark:border-slate-800/50 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
-                      onMouseDown={() => handleMouseDown(node.row, node.col)}
-                      onMouseEnter={() => handleMouseEnter(node.row, node.col)}
-                    />
-                  ))}
-                </div>
-              ))}
-            </div>
+            {grid.map((row, rIdx) => (
+              <div key={rIdx} className="flex">
+                {row.map((node, cIdx) => (
+                  <div
+                    key={cIdx}
+                    className={`w-4 h-4 sm:w-5 sm:h-5 border-r border-b border-slate-100/50 dark:border-slate-800/50 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
+                    onMouseDown={() => handleMouseDown(node.row, node.col)}
+                    onMouseEnter={() => handleMouseEnter(node.row, node.col)}
+                  />
+                ))}
+              </div>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Floating Telemetry & Info Header (Top Left) */}
-      <div className="absolute top-4 left-4 z-10 pointer-events-none">
-        <div className="pointer-events-auto bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 px-5 py-4 rounded-2xl shadow-xl shadow-indigo-500/5 max-w-sm">
-          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 flex items-center gap-2">
-            <Activity className="w-5 h-5 text-indigo-500" />
-            {algorithmInfo?.name || 'Pathfinding Algorithm'}
-          </h2>
-          
-          <div className="flex flex-wrap gap-2 text-xs mb-3">
-            <div className="bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-2 py-1 rounded border border-slate-200/50 dark:border-slate-700/50">
-              <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo?.timeComplexity || 'O(V+E)'}</span>
+      {/* Legend & HUD Floating Control Dock */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 w-[95%] max-w-fit pointer-events-none">
+        
+        {/* Compact Horizontal Legend Dock */}
+        <div className="pointer-events-auto flex items-center gap-3 bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-800/50 px-4 py-1.5 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-600 dark:text-slate-400 overflow-x-auto max-w-full">
+          {[
+            ['bg-emerald-500', 'Start'],
+            ['bg-rose-500', 'End'],
+            ['bg-slate-700', 'Wall'],
+            ['bg-blue-400', 'Visited'],
+            ['bg-yellow-400', 'Path'],
+          ].map(([cls, label]) => (
+            <div key={label} className="flex items-center gap-1.5 whitespace-nowrap">
+              <div className={`w-2.5 h-2.5 rounded-full ${cls}`} />
+              <span className="uppercase tracking-wider">{label}</span>
             </div>
-            <div className="bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-2 py-1 rounded border border-slate-200/50 dark:border-slate-700/50">
-              <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo?.spaceComplexity || 'O(V)'}</span>
-            </div>
-            {stats && (
-              <>
-                <div className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2 py-1 rounded border border-indigo-500/20">
-                  <span className="opacity-70 mr-1">Visited:</span> <span className="font-mono font-bold">{stats.visited}</span>
-                </div>
-                <div className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2 py-1 rounded border border-emerald-500/20">
-                  <span className="opacity-70 mr-1">Path:</span> <span className="font-mono font-bold">{stats.path}</span>
-                </div>
-              </>
-            )}
-          </div>
-          
-          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
-            {algorithmInfo?.description || 'Finds the shortest path between the start and end nodes.'}
-          </p>
+          ))}
         </div>
-      </div>
 
-      {/* Floating HUD Controls (Bottom Center) */}
-      <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 z-20 w-[95%] sm:w-auto overflow-x-auto scrollbar-hide rounded-2xl">
-        <div className="flex items-center gap-2 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max">
+        {/* Floating HUD Controls Pill */}
+        <div className="pointer-events-auto flex items-center gap-1.5 sm:gap-2 bg-white/85 dark:bg-slate-900/85 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 max-w-full overflow-x-auto scrollbar-hide">
           
           <button
             onClick={visualize}
             disabled={isVisualizing}
-            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95"
+            className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-4 sm:px-5 py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95 whitespace-nowrap"
           >
-            <Play size={16} fill="currentColor" /> Visualize
+            <Play size={15} fill="currentColor" /> Visualize
           </button>
 
-          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
+          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
 
           {/* Generator Group */}
-          <div className="flex items-center bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl overflow-hidden hover:border-indigo-500/30 transition-colors">
+          <div className="flex items-center bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200/50 dark:border-indigo-800/50 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-colors">
             <button
               onClick={() => handleGenerateMaze()}
               disabled={isVisualizing}
-              className="flex items-center gap-1.5 px-3 py-2 text-[12px] font-bold text-slate-700 dark:text-slate-200 hover:bg-white dark:hover:bg-slate-800 transition-colors disabled:opacity-50"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-[12px] font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 whitespace-nowrap"
             >
-              <Sparkles size={14} className="text-indigo-500" /> Maze
+              <Sparkles size={14} className="text-indigo-500" /> Generate Maze
             </button>
-            <div className="w-px h-4 bg-slate-200 dark:bg-slate-700"></div>
+            <div className="w-px h-4 bg-indigo-200 dark:bg-indigo-800"></div>
             <select
               value={selectedMazeType}
               onChange={(e) => {
@@ -521,11 +537,11 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
                 handleGenerateMaze(e.target.value);
               }}
               disabled={isVisualizing}
-              className="bg-transparent text-[11px] font-semibold text-slate-500 dark:text-slate-400 px-2 py-2 focus:outline-none cursor-pointer disabled:opacity-50 appearance-none"
+              className="bg-transparent text-[11px] font-bold text-indigo-600 dark:text-indigo-400 px-2 py-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
             >
-              <option value="dfs">DFS</option>
-              <option value="recursive_division">Div</option>
-              <option value="prims">Prim</option>
+              <option value="dfs" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">DFS</option>
+              <option value="recursive_division" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Div</option>
+              <option value="prims" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Prim</option>
             </select>
           </div>
 
@@ -533,38 +549,38 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
             onClick={handleReset}
             disabled={isVisualizing}
             title="Reset Board"
-            className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
           >
-            <RotateCcw size={18} />
+            <RotateCcw size={16} />
           </button>
 
           <button
             onClick={handleClearWalls}
             disabled={isVisualizing}
             title="Clear Walls"
-            className="p-2.5 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-all"
+            className="p-2 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-all"
           >
-            <Eraser size={18} />
+            <Eraser size={16} />
           </button>
 
-          <div className="w-px h-8 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
+          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
 
           <button
             onClick={() => setIs3DMode(!is3DMode)}
             title="Toggle 3D Mode"
-            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold transition-all border ${
+            className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
               is3DMode
                 ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
                 : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
             }`}
           >
-            <Box size={16} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
+            <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
           </button>
 
-          <SoundControls className="scale-90" />
+          <SoundControls className="scale-85" />
 
           {/* Speed Group */}
-          <div className="flex bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-1 ml-1">
+          <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-0.5">
             {[['1x', 100], ['2x', 30], ['MAX', 8]].map(([label, val]) => (
               <button
                 key={label}
@@ -581,25 +597,6 @@ const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
 
         </div>
       </div>
-
-      {/* Floating Legend (Top Right on Mobile, Bottom Right on Desktop) */}
-      <div className="absolute top-4 right-4 sm:top-auto sm:bottom-6 sm:right-6 z-10 pointer-events-none scale-75 sm:scale-100 origin-top-right sm:origin-bottom-right">
-        <div className="flex flex-col gap-2.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 p-4 rounded-2xl shadow-lg shadow-indigo-500/5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
-          {[
-            ['bg-emerald-500', 'Start Node'],
-            ['bg-rose-500', 'Target Node'],
-            ['bg-slate-700', 'Wall / Obstacle'],
-            ['bg-blue-400', 'Explored / Visited'],
-            ['bg-yellow-400', 'Shortest Path'],
-          ].map(([cls, label]) => (
-            <div key={label} className="flex items-center gap-3">
-              <div className={`w-3 h-3 rounded-full shadow-sm ${cls}`} />
-              <span className="uppercase tracking-widest">{label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <style>{`
         @keyframes visitedPop {
           0%   { transform: scale(0.3); opacity: 0; background-color: #3b82f6; }
