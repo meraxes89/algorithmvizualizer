@@ -78,92 +78,101 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
   const maxValue = Math.max(...array);
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 rounded-3xl overflow-hidden">
-      {/* Algorithm Info Header */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-6 py-5">
-        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
-          {algorithmInfo.name}
-        </h2>
-        <div className="flex flex-wrap gap-3 text-xs mb-3">
-          <div className="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md font-medium border border-emerald-100">
-            <span className="font-bold opacity-75 mr-1">Time:</span> {algorithmInfo.timeComplexity}
-          </div>
-          <div className="bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-md font-medium border border-emerald-100">
-            <span className="font-bold opacity-75 mr-1">Space:</span> {algorithmInfo.spaceComplexity}
-          </div>
+    <div className="w-full h-full relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
+      
+      {/* Visualization Area */}
+      <div className="absolute inset-0 flex">
+        <div className="flex-1 w-full h-full flex items-end justify-center gap-[4px] p-6 pb-24 overflow-hidden">
+          {array.map((value, idx) => (
+            <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end">
+              <div
+                className="rounded-t-md transition-all duration-150 border border-black/5 shadow-sm"
+                style={{
+                  height: `${(value / maxValue) * 80}%`,
+                  width: `${Math.max(800 / array.length, 16)}px`,
+                  backgroundColor: getBarColor(idx),
+                  minHeight: '24px',
+                }}
+              />
+              <span className="text-slate-600 dark:text-slate-400 text-[11px] font-bold">{value}</span>
+            </div>
+          ))}
         </div>
-        <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-4xl">
-          {algorithmInfo.description}
-        </p>
       </div>
 
-      {/* Action Controls Bar */}
-      <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center gap-3">
-        <div className="flex items-center gap-2">
-          <label className="text-slate-700 dark:text-slate-200 text-sm font-semibold">Target:</label>
-          <input
-            type="number"
-            value={target}
-            onChange={(e) => setTarget(Number(e.target.value))}
-            disabled={isSearching}
-            className="w-20 px-2.5 py-2 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-600 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none text-sm font-medium shadow-sm transition-all"
-          />
+      {/* Floating Telemetry & Info Header (Top Left) */}
+      <div className="absolute top-4 left-4 z-10 pointer-events-none">
+        <div className="pointer-events-auto bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 px-5 py-4 rounded-2xl shadow-xl shadow-emerald-500/5 max-w-sm">
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 flex items-center gap-2">
+            <Search className="w-5 h-5 text-emerald-500" />
+            {algorithmInfo.name}
+          </h2>
+          
+          <div className="flex flex-wrap gap-2 text-xs mb-3">
+            <div className="bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-2 py-1 rounded border border-slate-200/50 dark:border-slate-700/50">
+              <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo.timeComplexity}</span>
+            </div>
+            <div className="bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-2 py-1 rounded border border-slate-200/50 dark:border-slate-700/50">
+              <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo.spaceComplexity}</span>
+            </div>
+          </div>
+          
+          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+            {algorithmInfo.description}
+          </p>
+
+          {/* Search Result Float */}
+          {searchResult && (
+            <div className={`mt-3 px-3 py-2 text-[12px] font-bold rounded-lg border shadow-sm ${
+              searchResult.found 
+                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' 
+                : 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/30'
+            }`}>
+              {searchResult.found
+                ? `Found at index ${searchResult.index} in ${searchResult.time}ms`
+                : `Element ${target} not found in ${searchResult.time}ms`}
+            </div>
+          )}
         </div>
+      </div>
 
-        <button
-          onClick={handleSearch}
-          disabled={isSearching}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-slate-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm shadow-emerald-600/20 ml-2"
-        >
-          <Search className="w-4 h-4 ml-0.5" />
-          {isSearching ? 'Searching...' : 'Search'}
-        </button>
+      {/* Floating HUD Controls (Bottom Center) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
+        <div className="flex items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-emerald-500/10">
+          
+          <div className="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl px-2 py-1 focus-within:border-emerald-500/50 transition-colors mr-1">
+            <span className="text-[11px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-1">Target</span>
+            <input
+              type="number"
+              value={target}
+              onChange={(e) => setTarget(Number(e.target.value))}
+              disabled={isSearching}
+              className="w-14 bg-transparent text-slate-900 dark:text-white font-bold text-sm outline-none text-center appearance-none"
+            />
+          </div>
 
-        <button
-          onClick={resetArray}
-          disabled={isSearching}
-          className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
-        >
-          <Shuffle className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-          New Array
-        </button>
+          <button
+            onClick={handleSearch}
+            disabled={isSearching}
+            className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all shadow-md shadow-emerald-600/20 hover:scale-105 active:scale-95"
+          >
+            <Search size={16} /> {isSearching ? 'Wait...' : 'Search'}
+          </button>
 
-        <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
+          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
 
-        {/* Educational Tools */}
-        <button
-          onClick={() => setShowExplanation(!showExplanation)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-            showExplanation ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-transparent'
-          }`}
-        >
-          <BookOpen className="w-4 h-4 opacity-80" />
-          Info
-        </button>
+          <button
+            onClick={resetArray}
+            disabled={isSearching}
+            title="New Random Array"
+            className="flex items-center gap-1.5 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-[12px] font-bold transition-all"
+          >
+            <Shuffle size={16} className="text-slate-400" /> Array
+          </button>
 
-        <button
-          onClick={() => setShowCodeViewer(!showCodeViewer)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-            showCodeViewer ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-transparent'
-          }`}
-        >
-          <Code2 className="w-4 h-4 opacity-80" />
-          Code
-        </button>
-
-        <button
-          onClick={() => setShowCustomTest(!showCustomTest)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-            showCustomTest ? 'bg-emerald-100 dark:bg-emerald-900/40 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-700 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-transparent'
-          }`}
-        >
-          <FileText className="w-4 h-4 opacity-80" />
-          Test
-        </button>
-
-        <div className="ml-auto flex items-center gap-3 text-slate-700 dark:text-slate-200 text-[13px] font-medium">
-          <div className="flex flex-col mr-2">
-            <label className="text-[11px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider mb-1">Array Size</label>
+          {/* Array Size slider inside HUD */}
+          <div className="flex items-center gap-2 bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl px-3 py-1.5 ml-1">
+            <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase">Size</span>
             <input
               type="range"
               min="10"
@@ -171,63 +180,60 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
               value={arraySize}
               onChange={(e) => setArraySize(Number(e.target.value))}
               disabled={isSearching}
-              className="w-32 accent-emerald-600 cursor-pointer"
+              className="w-16 accent-emerald-500"
             />
+            <span className="text-[11px] font-bold text-slate-700 dark:text-slate-200 w-4 text-center">{arraySize}</span>
           </div>
-          <span className="text-slate-900 dark:text-white font-bold bg-white dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm text-center min-w-[2.5rem]">
-            {arraySize}
-          </span>
+
+          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
+
+          {/* Educational Tools */}
+          <div className="flex bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-0.5">
+            <button
+              onClick={() => setShowExplanation(!showExplanation)}
+              title="Algorithm Explanation"
+              className={`p-1.5 rounded-lg transition-all ${showExplanation ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            >
+              <BookOpen size={16} />
+            </button>
+            <button
+              onClick={() => setShowCodeViewer(!showCodeViewer)}
+              title="Source Code"
+              className={`p-1.5 rounded-lg transition-all ${showCodeViewer ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            >
+              <Code2 size={16} />
+            </button>
+            <button
+              onClick={() => setShowCustomTest(!showCustomTest)}
+              title="Custom Test Case"
+              className={`p-1.5 rounded-lg transition-all ${showCustomTest ? 'bg-white dark:bg-slate-700 text-emerald-600 dark:text-emerald-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            >
+              <FileText size={16} />
+            </button>
+          </div>
+
         </div>
       </div>
 
-      {/* Search Result */}
-      {searchResult && (
-        <div className={`px-6 py-3 text-[13px] font-semibold border-b ${
-          searchResult.found 
-            ? 'bg-emerald-50 text-emerald-700 border-emerald-100' 
-            : 'bg-rose-50 text-rose-700 border-rose-100'
-        }`}>
-          {searchResult.found
-            ? `Found at index ${searchResult.index} in ${searchResult.time}ms`
-            : `Element ${target} not found in ${searchResult.time}ms`}
-        </div>
-      )}
-
-      {/* Visualization Area */}
-      <div className="flex-1 bg-white dark:bg-slate-900 p-6 flex items-end justify-center gap-[4px] overflow-hidden">
-        {array.map((value, idx) => (
-          <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end">
-            <div
-              className="rounded-t-md transition-all duration-150 border border-black/5 shadow-sm"
-              style={{
-                height: `${(value / maxValue) * 80}%`,
-                width: `${Math.max(800 / array.length, 16)}px`,
-                backgroundColor: getBarColor(idx),
-                minHeight: '24px',
-              }}
-            />
-            <span className="text-slate-600 dark:text-slate-400 text-[11px] font-bold">{value}</span>
+      {/* Floating Legend (Bottom Right) */}
+      <div className="absolute bottom-6 right-6 z-10 pointer-events-none hidden lg:block">
+        <div className="flex flex-col gap-2.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 p-4 rounded-2xl shadow-lg shadow-emerald-500/5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shadow-sm bg-[#a7f3d0]"></div>
+            <span className="uppercase tracking-widest">Unsearched</span>
           </div>
-        ))}
-      </div>
-
-      {/* Legend Footer */}
-      <div className="bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap gap-6 justify-center text-[12px] font-medium text-slate-600 dark:text-slate-300">
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm bg-[#a7f3d0]"></div>
-          <span>Unsearched</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm bg-[#34d399]"></div>
-          <span>Search Range</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm bg-[#f43f5e]"></div>
-          <span>Checking</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm bg-[#10b981]"></div>
-          <span>Found</span>
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shadow-sm bg-[#34d399]"></div>
+            <span className="uppercase tracking-widest">Search Range</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shadow-sm bg-[#f43f5e]"></div>
+            <span className="uppercase tracking-widest">Checking</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shadow-sm bg-[#10b981]"></div>
+            <span className="uppercase tracking-widest">Found</span>
+          </div>
         </div>
       </div>
 
@@ -239,27 +245,34 @@ const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
       />
 
       {showCodeViewer && (
-        <div className="fixed bottom-0 right-0 h-3/4 w-[500px] bg-white dark:bg-slate-900 border-t border-l border-slate-200 dark:border-slate-700 z-50 shadow-2xl rounded-tl-2xl overflow-hidden">
-          <CodeViewer
-            codeSnippets={algorithmDatabase.searching[algorithmInfo.name === 'Binary Search' ? 'binarySearch' : 'linearSearch']?.codeSnippets}
-            isOpen={showCodeViewer}
-            onClose={() => setShowCodeViewer(false)}
-          />
+        <div className="absolute bottom-24 right-6 h-[60%] w-[400px] z-40">
+          <div className="w-full h-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-2xl overflow-hidden relative">
+            <div className="absolute top-2 right-2 z-50">
+              <button onClick={() => setShowCodeViewer(false)} className="bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 p-1.5 rounded-full"><BookOpen size={14} /></button>
+            </div>
+             <CodeViewer
+              codeSnippets={algorithmDatabase.searching[algorithmInfo.name === 'Binary Search' ? 'binarySearch' : 'linearSearch']?.codeSnippets}
+              isOpen={showCodeViewer}
+              onClose={() => setShowCodeViewer(false)}
+            />
+          </div>
         </div>
       )}
 
       {showCustomTest && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 z-40 max-h-96 overflow-y-auto shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-          <CustomTestCases
-            onApplyTest={(customArr) => {
-              const sorted = [...customArr].sort((a, b) => a - b);
-              setArray(sorted);
-              if (!sorted.includes(target)) setTarget(sorted[0] || 0);
-              setShowCustomTest(false);
-            }}
-            isOpen={showCustomTest}
-            onClose={() => setShowCustomTest(false)}
-          />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50">
+          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-2xl overflow-hidden p-2">
+            <CustomTestCases
+              onApplyTest={(customArr) => {
+                const sorted = [...customArr].sort((a, b) => a - b);
+                setArray(sorted);
+                if (!sorted.includes(target)) setTarget(sorted[0] || 0);
+                setShowCustomTest(false);
+              }}
+              isOpen={showCustomTest}
+              onClose={() => setShowCustomTest(false)}
+            />
+          </div>
         </div>
       )}
     </div>

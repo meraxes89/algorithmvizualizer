@@ -222,153 +222,85 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
   const maxValue = Math.max(...array);
 
   return (
-    <div className="w-full h-full flex flex-col bg-white dark:bg-slate-900 rounded-3xl overflow-hidden">
-      {/* Algorithm Info Header */}
-      <div className="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-700 px-6 py-5">
-        <h2 className="text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-2">
-          {algorithmInfo.name}
-        </h2>
-        <div className="flex flex-wrap gap-3 text-xs mb-3">
-          <div className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-medium border border-indigo-100">
-            <span className="font-bold opacity-75 mr-1">Time:</span> {algorithmInfo.timeComplexity}
+    <div className="w-full h-full relative flex flex-col bg-slate-50 dark:bg-slate-950 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800/50">
+      
+      {/* Main Render View (Background) */}
+      <div className="absolute inset-0 flex">
+        {is3DMode ? (
+          <div className="flex-1 w-full h-full">
+            <Sorting3DVisualizer
+              array={array}
+              comparing={comparingIndices}
+              swapped={swappingIndices}
+            />
           </div>
-          <div className="bg-indigo-50 text-indigo-700 px-2.5 py-1 rounded-md font-medium border border-indigo-100">
-            <span className="font-bold opacity-75 mr-1">Space:</span> {algorithmInfo.spaceComplexity}
+        ) : (
+          <div className="flex-1 w-full h-full flex items-end justify-center gap-[2px] p-6 pb-24">
+            {array.map((value, idx) => (
+              <div
+                key={idx}
+                className="transition-all duration-75 rounded-t-sm shadow-sm"
+                style={{
+                  height: `${(value / maxValue) * 85}%`,
+                  width: `${100 / array.length}%`,
+                  backgroundColor: getBarColor(idx),
+                  minWidth: '2px',
+                }}
+                title={`Value: ${value}, Index: ${idx}`}
+              />
+            ))}
           </div>
-        </div>
-        <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-4xl">
-          {algorithmInfo.description}
-        </p>
-      </div>
-
-      {/* Action Controls Bar */}
-      <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center gap-3">
-        {/* If steps exist, the StepControls handle play/pause. Otherwise, show a main Sort button */}
-        {steps.length === 0 && (
-          <button
-            onClick={handleSort}
-            disabled={isSorting}
-            className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:bg-slate-300 dark:disabled:bg-slate-600 disabled:cursor-not-allowed text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm shadow-indigo-600/20"
-          >
-            <Play className="w-4 h-4 ml-0.5" />
-            {isSorting ? 'Generating...' : 'Sort'}
-          </button>
         )}
+      </div>
 
-        <button
-          onClick={() => resetArray()}
-          className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
-        >
-          <Shuffle className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-          New Array
-        </button>
-
-        <button
-          onClick={() => setShowSettings(!showSettings)}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium transition-all shadow-sm border ${
-            showSettings 
-              ? 'bg-purple-100 border-purple-200 text-purple-700 dark:bg-purple-900/40 dark:border-purple-700 dark:text-purple-300' 
-              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
-          }`}
-        >
-          <Settings className={`w-4 h-4 ${showSettings ? 'text-purple-600 dark:text-purple-400' : 'text-slate-500 dark:text-slate-400'}`} />
-          Settings
-        </button>
-
-        <button
-          onClick={() => setIs3DMode(!is3DMode)}
-          className={`flex items-center gap-2 px-3.5 py-2.5 rounded-lg text-xs font-bold transition-all shadow-sm border ${
-            is3DMode
-              ? 'bg-gradient-to-r from-cyan-600 to-blue-600 border-cyan-400 text-white shadow-cyan-500/20'
-              : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-700'
-          }`}
-        >
-          <Box className={`w-4 h-4 ${is3DMode ? 'animate-bounce' : 'text-cyan-500'}`} />
-          <span>{is3DMode ? '3D Render ON' : '3D Mode'}</span>
-        </button>
-
-        <SoundControls />
-
-        <div className="h-6 w-px bg-slate-200 dark:bg-slate-700 mx-1" />
-
-        {/* Educational Tools */}
-        <button
-          onClick={() => setShowExplanation(!showExplanation)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-            showExplanation ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-transparent'
-          }`}
-        >
-          <BookOpen className="w-4 h-4 opacity-80" />
-          Info
-        </button>
-
-        <button
-          onClick={() => setShowCodeViewer(!showCodeViewer)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-            showCodeViewer ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-transparent'
-          }`}
-        >
-          <Code2 className="w-4 h-4 opacity-80" />
-          Code
-        </button>
-
-        <button
-          onClick={() => setShowCustomTest(!showCustomTest)}
-          className={`flex items-center gap-1.5 px-3 py-2 rounded-lg text-[13px] font-medium transition-all ${
-            showCustomTest ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-white border border-transparent'
-          }`}
-        >
-          <FileText className="w-4 h-4 opacity-80" />
-          Test
-        </button>
-
-        <div className="ml-auto flex items-center gap-2 text-[13px] text-slate-500 dark:text-slate-400 font-medium bg-white dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
-          <span>Array Size:</span> 
-          <span className="text-slate-900 dark:text-white font-bold">{arraySize}</span>
+      {/* Floating Telemetry & Info Header (Top Left) */}
+      <div className="absolute top-4 left-4 z-10 pointer-events-none">
+        <div className="pointer-events-auto bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-slate-200/50 dark:border-slate-700/50 px-5 py-4 rounded-2xl shadow-xl shadow-indigo-500/5 max-w-sm">
+          <h2 className="text-xl font-extrabold text-slate-900 dark:text-white tracking-tight mb-3 flex items-center gap-2">
+            <Layers className="w-5 h-5 text-indigo-500" />
+            {algorithmInfo.name}
+          </h2>
+          
+          <div className="flex flex-wrap gap-2 text-xs mb-3">
+            <div className="bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-2 py-1 rounded border border-slate-200/50 dark:border-slate-700/50">
+              <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo.timeComplexity}</span>
+            </div>
+            <div className="bg-white/50 dark:bg-slate-800/50 text-slate-700 dark:text-slate-300 px-2 py-1 rounded border border-slate-200/50 dark:border-slate-700/50">
+              <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo.spaceComplexity}</span>
+            </div>
+          </div>
+          
+          <p className="text-[11px] font-medium text-slate-500 dark:text-slate-400 leading-relaxed">
+            {algorithmInfo.description}
+          </p>
         </div>
       </div>
 
-      {/* Inline Settings Panel */}
+      {/* Settings Overlay (Top Center) */}
       {showSettings && (
-        <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-6 shadow-inner flex flex-wrap gap-10">
-          <div className="flex-1 min-w-[200px]">
-            <label className="text-slate-700 dark:text-slate-200 text-sm font-bold mb-3 flex justify-between">
-              Array Size <span>{arraySize}</span>
-            </label>
-            <input
-              type="range"
-              min="10"
-              max="100"
-              value={arraySize}
-              onChange={(e) => setArraySize(Number(e.target.value))}
-              disabled={isPlaying}
-              className="w-full accent-indigo-600 cursor-pointer"
-            />
-          </div>
-
-          <div className="flex-1 min-w-[250px]">
-            <label className="text-slate-700 dark:text-slate-200 text-sm font-bold mb-3 flex justify-between">
-              Animation Speed <span>{speed < 50 ? 'Fast' : speed > 200 ? 'Slow' : 'Medium'}</span>
-            </label>
-            <input
-              type="range"
-              min="1"
-              max="1000"
-              value={1001 - speed}
-              onChange={(e) => setSpeed(1001 - Number(e.target.value))}
-              className="w-full accent-purple-600 cursor-pointer"
-            />
-            <div className="flex justify-between text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">
-              <span>Slow</span>
-              <span>Fast</span>
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-20">
+          <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-4 rounded-2xl shadow-2xl shadow-indigo-500/10 flex gap-6 w-80">
+            <div className="flex-1">
+              <label className="text-slate-700 dark:text-slate-200 text-[11px] font-bold mb-2 flex justify-between">
+                Array Size <span className="text-indigo-600 dark:text-indigo-400">{arraySize}</span>
+              </label>
+              <input
+                type="range"
+                min="10"
+                max="100"
+                value={arraySize}
+                onChange={(e) => setArraySize(Number(e.target.value))}
+                disabled={isPlaying}
+                className="w-full accent-indigo-600 cursor-pointer h-1.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none"
+              />
             </div>
           </div>
         </div>
       )}
 
-      {/* Step Controls Toolbar */}
+      {/* Step Controls (Floating above HUD) */}
       {steps.length > 0 && (
-        <div>
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-20 scale-90 origin-bottom shadow-2xl rounded-2xl">
           <StepControls
             currentStep={currentStepIndex + 1}
             totalSteps={steps.length}
@@ -384,50 +316,103 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
         </div>
       )}
 
-      {/* Main Visualization Area */}
-      <div className="flex-1 bg-white dark:bg-slate-900 relative min-h-[400px] overflow-hidden p-6">
-        {is3DMode ? (
-          <Sorting3DVisualizer
-            array={array}
-            comparing={comparingIndices}
-            swapped={swappingIndices}
-          />
-        ) : (
-          <div className="absolute inset-0 px-6 pt-6 pb-2 flex items-end justify-center gap-[2px]">
-            {array.map((value, idx) => (
-              <div
-                key={idx}
-                className="transition-all duration-75 rounded-t-sm"
-                style={{
-                  height: `${(value / maxValue) * 85}%`,
-                  width: `${100 / array.length}%`,
-                  backgroundColor: getBarColor(idx),
-                  minWidth: '2px',
-                }}
-                title={`Value: ${value}, Index: ${idx}`}
-              />
-            ))}
+      {/* Floating HUD Controls (Bottom Center) */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex items-center justify-center">
+        <div className="flex items-center gap-1.5 bg-white/80 dark:bg-slate-900/80 backdrop-blur-2xl border border-slate-200/60 dark:border-slate-700/60 p-2 rounded-2xl shadow-2xl shadow-indigo-500/10">
+          
+          {steps.length === 0 && (
+            <button
+              onClick={handleSort}
+              disabled={isSorting}
+              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-5 py-2 rounded-xl text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95 mr-1"
+            >
+              <Play size={16} fill="currentColor" /> {isSorting ? 'Wait...' : 'Sort'}
+            </button>
+          )}
+
+          <button
+            onClick={() => resetArray()}
+            title="New Random Array"
+            className="flex items-center gap-1.5 px-3 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-[12px] font-bold transition-all"
+          >
+            <Shuffle size={16} className="text-slate-400" /> Array
+          </button>
+
+          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
+
+          <button
+            onClick={() => setIs3DMode(!is3DMode)}
+            title="Toggle 3D Mode"
+            className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-[12px] font-bold transition-all border ${
+              is3DMode
+                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
+                : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+            }`}
+          >
+            <Box size={16} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
+          </button>
+
+          <SoundControls className="scale-90" />
+
+          <button
+            onClick={() => setShowSettings(!showSettings)}
+            title="Settings"
+            className={`p-2 rounded-xl transition-all ${
+              showSettings ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Settings size={18} />
+          </button>
+
+          <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-1"></div>
+
+          {/* Educational Tools */}
+          <div className="flex bg-slate-100/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-0.5">
+            <button
+              onClick={() => setShowExplanation(!showExplanation)}
+              title="Algorithm Explanation"
+              className={`p-1.5 rounded-lg transition-all ${showExplanation ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            >
+              <BookOpen size={16} />
+            </button>
+            <button
+              onClick={() => setShowCodeViewer(!showCodeViewer)}
+              title="Source Code"
+              className={`p-1.5 rounded-lg transition-all ${showCodeViewer ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            >
+              <Code2 size={16} />
+            </button>
+            <button
+              onClick={() => setShowCustomTest(!showCustomTest)}
+              title="Custom Test Case"
+              className={`p-1.5 rounded-lg transition-all ${showCustomTest ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+            >
+              <FileText size={16} />
+            </button>
           </div>
-        )}
+
+        </div>
       </div>
 
-      {/* Legend Footer */}
-      <div className="bg-slate-50 dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap gap-6 justify-center text-[12px] font-medium text-slate-600 dark:text-slate-300">
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: COLORS.DEFAULT || '#a5b4fc' }}></div>
-          <span>Unsorted</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: COLORS.COMPARING || '#f472b6' }}></div>
-          <span>Comparing</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: COLORS.SWAPPING || '#f43f5e' }}></div>
-          <span>Swapping</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm" style={{ backgroundColor: COLORS.SORTED || '#fb923c' }}></div>
-          <span>Sorted</span>
+      {/* Floating Legend (Bottom Right) */}
+      <div className="absolute bottom-6 right-6 z-10 pointer-events-none hidden lg:block">
+        <div className="flex flex-col gap-2.5 bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-slate-200/50 dark:border-slate-700/50 p-4 rounded-2xl shadow-lg shadow-indigo-500/5 text-[11px] font-bold text-slate-500 dark:text-slate-400">
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS.DEFAULT || '#a5b4fc' }}></div>
+            <span className="uppercase tracking-widest">Unsorted</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS.COMPARING || '#f472b6' }}></div>
+            <span className="uppercase tracking-widest">Comparing</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS.SWAPPING || '#f43f5e' }}></div>
+            <span className="uppercase tracking-widest">Swapping</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full shadow-sm" style={{ backgroundColor: COLORS.SORTED || '#fb923c' }}></div>
+            <span className="uppercase tracking-widest">Sorted</span>
+          </div>
         </div>
       </div>
 
@@ -439,22 +424,29 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
       />
 
       {showCodeViewer && (
-        <div className="fixed bottom-0 right-0 h-3/4 w-[500px] bg-white dark:bg-slate-900 border-t border-l border-slate-200 dark:border-slate-700 z-50 shadow-2xl rounded-tl-2xl overflow-hidden">
-          <CodeViewer
-            codeSnippets={getAlgorithmData(algorithmInfo.name)?.codeSnippets}
-            isOpen={showCodeViewer}
-            onClose={() => setShowCodeViewer(false)}
-          />
+        <div className="absolute bottom-24 right-6 h-[60%] w-[400px] z-40">
+          <div className="w-full h-full bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-2xl overflow-hidden relative">
+            <div className="absolute top-2 right-2 z-50">
+              <button onClick={() => setShowCodeViewer(false)} className="bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 p-1.5 rounded-full"><BookOpen size={14} /></button>
+            </div>
+             <CodeViewer
+              codeSnippets={getAlgorithmData(algorithmInfo.name)?.codeSnippets}
+              isOpen={showCodeViewer}
+              onClose={() => setShowCodeViewer(false)}
+            />
+          </div>
         </div>
       )}
 
       {showCustomTest && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 z-40 max-h-96 overflow-y-auto shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-          <CustomTestCases
-            onApplyTest={handleCustomTest}
-            isOpen={showCustomTest}
-            onClose={() => setShowCustomTest(false)}
-          />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-md z-50">
+          <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-3xl border border-slate-200/60 dark:border-slate-700/60 shadow-2xl rounded-2xl overflow-hidden p-2">
+            <CustomTestCases
+              onApplyTest={handleCustomTest}
+              isOpen={showCustomTest}
+              onClose={() => setShowCustomTest(false)}
+            />
+          </div>
         </div>
       )}
     </div>
