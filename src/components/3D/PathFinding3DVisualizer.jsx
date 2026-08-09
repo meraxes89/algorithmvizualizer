@@ -150,7 +150,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     };
   }, [isDark, isFPV]);
 
-  // High-performance InstancedMesh Skyscraper & Voxel Update
+  // High-performance Glassmorphic InstancedMesh Skyscraper & Voxel Update
   useEffect(() => {
     const scene = sceneRef.current;
     if (!scene || grid.length === 0) return;
@@ -160,24 +160,55 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
     const numRows = grid.length;
     const numCols = grid[0].length;
-    const totalTiles = numRows * numCols;
     const tileSize = 0.9;
     const startX = -((numCols * tileSize) / 2) + tileSize / 2;
     const startZ = -((numRows * tileSize) / 2) + tileSize / 2;
 
+    // Count wall tiles vs non-wall tiles
+    let wallCount = 0;
+    let groundCount = 0;
+
+    for (let r = 0; r < numRows; r++) {
+      for (let c = 0; c < numCols; c++) {
+        if (grid[r][c].isWall) wallCount++;
+        else groundCount++;
+      }
+    }
+
     const boxGeometry = new THREE.BoxGeometry(tileSize * 0.88, 1, tileSize * 0.88);
-    const material = new THREE.MeshStandardMaterial({
+
+    // Opaque Material for Ground, Visited, Start, End, and Shortest Path Beacons
+    const groundMaterial = new THREE.MeshStandardMaterial({
       roughness: 0.25,
-      metalness: 0.35
+      metalness: 0.3,
     });
 
-    const instancedMesh = new THREE.InstancedMesh(boxGeometry, material, totalTiles);
-    instancedMesh.castShadow = true;
-    instancedMesh.receiveShadow = true;
+    // Glassmorphic Translucent Material for NYC Skyscraper Buildings
+    const glassMaterial = new THREE.MeshPhysicalMaterial({
+      color: isDark ? 0x38bdf8 : 0x0284c7, // Frosted Cyan Glass Tint
+      transparent: true,
+      opacity: 0.48,
+      roughness: 0.1,
+      metalness: 0.15,
+      transmission: 0.65,
+      ior: 1.33,
+      side: THREE.DoubleSide,
+      depthWrite: false, // Allows path & visited nodes beneath glass to shine through crisply
+    });
+
+    const groundInstancedMesh = new THREE.InstancedMesh(boxGeometry, groundMaterial, groundCount || 1);
+    groundInstancedMesh.castShadow = true;
+    groundInstancedMesh.receiveShadow = true;
+
+    const wallInstancedMesh = new THREE.InstancedMesh(boxGeometry, glassMaterial, wallCount || 1);
+    wallInstancedMesh.castShadow = true;
+    wallInstancedMesh.receiveShadow = true;
+    wallInstancedMesh.renderOrder = 2; // Render after ground mesh so glass transparency is pristine
 
     const dummy = new THREE.Object3D();
     const color = new THREE.Color();
-    let idx = 0;
+    let gIdx = 0;
+    let wIdx = 0;
 
     for (let r = 0; r < numRows; r++) {
       for (let c = 0; c < numCols; c++) {
@@ -185,50 +216,70 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
         const posX = startX + c * tileSize;
         const posZ = startZ + r * tileSize;
 
-        let heightY = 0.1;
-        let posY = 0.05;
-        let hexColor = isDark ? 0x1e293b : 0xf1f5f9;
-
-        if (node.isStart) {
-          hexColor = 0x10b981; // Emerald Start Beacon
-          heightY = 3.2;
-          posY = heightY / 2;
-        } else if (node.isEnd) {
-          hexColor = 0xf43f5e; // Rose Target Beacon
-          heightY = 3.2;
-          posY = heightY / 2;
-        } else if (node.isWall) {
-          // Varying skyscraper building heights for NYC aesthetic
+        if (node.isWall) {
+          // Glassmorphic Skyscraper Building
           const pseudoHash = ((r * 13 + c * 37) % 5) * 0.7;
-          hexColor = isDark ? 0x334155 : 0x475569; // Skyscraper wall
-          heightY = 2.4 + pseudoHash;
-          posY = heightY / 2;
-        } else if (node.isPath) {
-          hexColor = 0xf59e0b; // Gold Shortest Path Street Light
-          heightY = 0.55;
-          posY = heightY / 2;
-        } else if (node.isVisited) {
-          hexColor = isDark ? 0x3b82f6 : 0x60a5fa; // Visited Tile
-          heightY = 0.25;
-          posY = heightY / 2;
+          const heightY = 2.4 + pseudoHash;
+          const posY = heightY / 2;
+          const glassColor = isDark ? 0x38bdf8 : 0x0284c7;
+
+          dummy.position.set(posX, posY, posZ);
+          dummy.scale.set(1, heightY, 1);
+          dummy.updateMatrix();
+
+          wallInstancedMesh.setMatrixAt(wIdx, dummy.matrix);
+          color.setHex(glassColor);
+          wallInstancedMesh.setColorAt(wIdx, color);
+          wIdx++;
+        } else {
+          // Ground, Visited, Start, End, or Shortest Path
+          let heightY = 0.1;
+          let posY = 0.05;
+          let hexColor = isDark ? 0x1e293b : 0xf1f5f9;
+
+          if (node.isStart) {
+            hexColor = 0x10b981; // Emerald Start Beacon
+            heightY = 3.2;
+            posY = heightY / 2;
+          } else if (node.isEnd) {
+            hexColor = 0xf43f5e; // Rose Target Beacon
+            heightY = 3.2;
+            posY = heightY / 2;
+          } else if (node.isPath) {
+            hexColor = 0xfacc15; // Vibrant Gold Shortest Path Laser/Beam
+            heightY = 0.85;       // Elevated above ground for max visibility
+            posY = heightY / 2;
+          } else if (node.isVisited) {
+            hexColor = isDark ? 0x3b82f6 : 0x60a5fa; // Visited Tile
+            heightY = 0.35;
+            posY = heightY / 2;
+          }
+
+          dummy.position.set(posX, posY, posZ);
+          dummy.scale.set(1, heightY, 1);
+          dummy.updateMatrix();
+
+          groundInstancedMesh.setMatrixAt(gIdx, dummy.matrix);
+          color.setHex(hexColor);
+          groundInstancedMesh.setColorAt(gIdx, color);
+          gIdx++;
         }
-
-        dummy.position.set(posX, posY, posZ);
-        dummy.scale.set(1, heightY, 1);
-        dummy.updateMatrix();
-
-        instancedMesh.setMatrixAt(idx, dummy.matrix);
-        color.setHex(hexColor);
-        instancedMesh.setColorAt(idx, color);
-        idx++;
       }
     }
 
-    instancedMesh.instanceMatrix.needsUpdate = true;
-    if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
+    if (groundCount > 0) {
+      groundInstancedMesh.instanceMatrix.needsUpdate = true;
+      if (groundInstancedMesh.instanceColor) groundInstancedMesh.instanceColor.needsUpdate = true;
+      scene.add(groundInstancedMesh);
+      instancedMeshesRef.current.push(groundInstancedMesh);
+    }
 
-    scene.add(instancedMesh);
-    instancedMeshesRef.current.push(instancedMesh);
+    if (wallCount > 0) {
+      wallInstancedMesh.instanceMatrix.needsUpdate = true;
+      if (wallInstancedMesh.instanceColor) wallInstancedMesh.instanceColor.needsUpdate = true;
+      scene.add(wallInstancedMesh);
+      instancedMeshesRef.current.push(wallInstancedMesh);
+    }
   }, [grid, isDark]);
 
   return (
@@ -237,7 +288,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       <div className="absolute top-3 left-3 z-10 flex items-center gap-2">
         <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border border-slate-200 dark:border-slate-700/60 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shadow-sm">
           <Box className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400" />
-          <span>3D NYC Skyscraper Voxel Render</span>
+          <span>3D NYC Glassmorphic Skyscraper Render</span>
         </div>
 
         <button
