@@ -8,7 +8,7 @@ import CodeViewer from './educational/CodeViewer';
 import CustomTestCases from './educational/CustomTestCases';
 import { algorithmDatabase } from '../data/algorithmData';
 import { soundEngine } from '../utils/soundEngine';
-import { triggerVictoryConfetti } from '../utils/confettiHelper';
+import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
 import SoundControls from './SoundControls';
 import Sorting3DVisualizer from './3D/Sorting3DVisualizer';
 import MemoryStackInspector from './MemoryStackInspector';
@@ -136,7 +136,7 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
     } else if (isPlaying && currentStepIndex >= steps.length - 1 && steps.length > 0) {
       setIsPlaying(false);
       setIsPaused(false);
-      triggerVictoryConfetti();
+      triggerVictoryConfetti(getColorsFromTailwind(algorithmInfo.color || ''));
     }
     return () => clearTimeout(timeoutId);
   }, [isPlaying, isPaused, currentStepIndex, steps, speed]);

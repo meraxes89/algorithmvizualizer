@@ -20,7 +20,7 @@
 - [x] 8. Keyboard-First Microinteractions
 - [x] 11. Spatial Audio Engine Upgrade
 - [x] 12. Interactive Onboarding Tour
-- [ ] 15. Particle System Upgrade
+- [x] 15. Particle System Upgrade
 - [ ] 18. Toast Notifications with Style
 
 ## P3

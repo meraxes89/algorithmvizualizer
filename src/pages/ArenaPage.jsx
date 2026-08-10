@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, Swords, Trophy, CheckCircle2, Search as SearchIcon, Network, BarChart2 } from 'lucide-react';
 import SoundControls from '../components/SoundControls';
 import soundEngine from '../utils/soundEngine';
-import { triggerVictoryConfetti } from '../utils/confettiHelper';
+import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
 import { useTheme } from '../context/ThemeContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -544,11 +544,19 @@ const ArenaPage = () => {
           if (newlyFinished.length > 0) {
             setWinner(prevWinner => {
               if (!prevWinner) {
-                triggerVictoryConfetti();
                 let name = '';
-                if (activeCategory === 'sorting') name = SORTING_ALGORITHMS[newlyFinished[0]]?.name;
-                else if (activeCategory === 'searching') name = SEARCHING_ALGORITHMS[newlyFinished[0]]?.name;
-                else if (activeCategory === 'pathfinding') name = PATHFINDING_ALGORITHMS[newlyFinished[0]]?.name;
+                let colorStr = '';
+                if (activeCategory === 'sorting') {
+                  name = SORTING_ALGORITHMS[newlyFinished[0]]?.name;
+                  colorStr = SORTING_ALGORITHMS[newlyFinished[0]]?.color;
+                } else if (activeCategory === 'searching') {
+                  name = SEARCHING_ALGORITHMS[newlyFinished[0]]?.name;
+                  colorStr = SEARCHING_ALGORITHMS[newlyFinished[0]]?.color;
+                } else if (activeCategory === 'pathfinding') {
+                  name = PATHFINDING_ALGORITHMS[newlyFinished[0]]?.name;
+                  colorStr = PATHFINDING_ALGORITHMS[newlyFinished[0]]?.color;
+                }
+                triggerVictoryConfetti(getColorsFromTailwind(colorStr));
                 setCommentary(`🎉 ${name} wins the race! What an incredible performance!`);
                 return name;
               }
