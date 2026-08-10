@@ -5,6 +5,7 @@ import GitLabIcon from './GitLabIcon';
 import { useTheme } from '../context/ThemeContext';
 import CommandPalette from './CommandPalette';
 import Logo from './Logo';
+import SoundControls from './SoundControls';
 
 const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -63,7 +64,7 @@ const Navbar = () => {
               </div>
 
               <Link to="/algorithms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Categories</Link>
-              <Link to="/arena" className="hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1.5 transition-colors">
+              <Link id="tour-arena" to="/arena" className="hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1.5 transition-colors">
                 <Swords className="w-3.5 h-3.5 text-amber-500" />
                 <span>Battle Arena</span>
               </Link>
@@ -88,8 +89,14 @@ const Navbar = () => {
               </kbd>
             </button>
 
+            {/* Sound Toggle */}
+            <div id="tour-sound" className="hidden sm:block scale-90 origin-right">
+              <SoundControls />
+            </div>
+
             {/* Theme Toggle Button */}
             <button
+              id="tour-theme"
               onClick={(e) => toggleTheme(e)}
               title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
               className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-zinc-900/60 rounded-lg transition-colors"

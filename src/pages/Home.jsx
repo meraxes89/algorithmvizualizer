@@ -163,7 +163,7 @@ const Home = () => {
           </div>
 
           {/* Right Content: 3D Stage matching theme */}
-          <div className="flex-1 w-full max-w-xl">
+          <div id="tour-visualizer" className="flex-1 w-full max-w-xl">
             <Hero3DVisualizer />
           </div>
 
