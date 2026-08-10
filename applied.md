@@ -6,7 +6,7 @@
 - [x] 4. Magnetic Buttons & Elastic Interactions
 - [x] 6. Glassmorphism 2.0 — Noise Texture + Chromatic Borders
 - [x] 14. Algorithm-Specific Color Theming
-- [ ] 16. Custom Cursor
+- [x] 16. Custom Cursor
 
 ## P1
 - [ ] 3. Scroll-Driven Storytelling Home Page

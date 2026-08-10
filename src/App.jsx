@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import Navbar from './components/Navbar';
 import BottomDock from './components/BottomDock';
 import AccentColorManager from './components/AccentColorManager';
+import CustomCursor from './components/CustomCursor';
 
 // Lazy load pages for huge performance boost (Code Splitting)
 const Home = lazy(() => import('./pages/Home'));
@@ -80,6 +81,7 @@ function App() {
     <ThemeProvider>
       <Router>
         <AccentColorManager />
+        <CustomCursor />
         <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
           <Navbar />
           <DioramaWrapper>
