@@ -30,10 +30,27 @@ const pageVariants = {
 
 import DioramaWrapper from './components/DioramaWrapper';
 
-// Loading fallback for lazy pages
+// Loading fallback for lazy pages (Loading States with Personality)
 const PageLoader = () => (
-  <div className="w-full min-h-screen flex items-center justify-center pt-24">
-    <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+  <div className="w-full min-h-screen flex flex-col items-center justify-center pt-24 gap-4">
+    <div className="flex items-end gap-1.5 h-12">
+      {[40, 70, 30, 90, 50].map((height, i) => (
+        <motion.div
+          key={i}
+          initial={{ height: "10%" }}
+          animate={{ height: `${height}%` }}
+          transition={{
+            duration: 0.6,
+            repeat: Infinity,
+            repeatType: "reverse",
+            delay: i * 0.1,
+            ease: "easeInOut"
+          }}
+          className="w-2.5 bg-indigo-500 rounded-t-sm shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+        />
+      ))}
+    </div>
+    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">Organizing Data...</span>
   </div>
 );
 
