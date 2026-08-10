@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import {
   ArrowRight,
   Layers,
@@ -98,17 +99,17 @@ const CategoriesPage = () => {
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-indigo-500/50 transition-all shadow-sm">
+                    <motion.div layoutId={`icon-${category.tag}`} className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-indigo-500/50 transition-all shadow-sm">
                       {category.icon}
-                    </div>
+                    </motion.div>
                     <span className="font-mono bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-slate-200 dark:border-white/10 group-hover:border-indigo-500/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       {category.tag}
                     </span>
                   </div>
 
-                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors relative z-10">
+                  <motion.h2 layoutId={`title-${category.tag}`} className="text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors relative z-10">
                     {category.title}
-                  </h2>
+                  </motion.h2>
                   
                   <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium mb-6 relative z-10">
                     {category.description}

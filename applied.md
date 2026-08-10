@@ -10,7 +10,7 @@
 
 ## P1
 - [x] 3. Scroll-Driven Storytelling Home Page
-- [ ] 5. Page Transition Morphing (Shared Layout Animations)
+- [x] 5. Page Transition Morphing (Shared Layout Animations)
 - [ ] 7. Dynamic Gradient Mesh Background
 - [ ] 9. Visualizer Control Bar Redesign — "Studio Panel"
 - [ ] 10. Arena Mode — Split-Screen Battle Redesign

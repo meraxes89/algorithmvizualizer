@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, Scale, Sparkles } from 'lucide-react';
+import { ArrowLeft, Scale, Sparkles, Layers } from 'lucide-react';
+import { motion } from 'framer-motion';
 import SortingVisualizer from '../components/SortingVisualizer';
 import ComparisonMode from '../components/educational/ComparisonMode';
 import { bubbleSort, bubbleSortInfo } from '../algorithms/sorting/bubbleSort';
@@ -47,8 +48,13 @@ const SortingPage = () => {
             <span>Back to Categories</span>
           </Link>
 
-          <div className="text-center">
-            <h1 className="text-3xl font-extrabold tracking-tight">Sorting Algorithms</h1>
+          <div className="flex flex-col items-center justify-center">
+            <motion.div layoutId="icon-SORTING" className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center mb-3 hidden md:flex">
+              <Layers className="w-6 h-6 text-indigo-400" />
+            </motion.div>
+            <motion.h1 layoutId="title-SORTING" className="text-3xl font-extrabold tracking-tight">
+              Sorting Algorithms
+            </motion.h1>
             <p className="text-xs text-slate-400 mt-1">Real-time array operations & sound synthesis</p>
           </div>
 
