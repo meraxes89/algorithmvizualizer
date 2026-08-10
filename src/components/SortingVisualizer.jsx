@@ -9,6 +9,7 @@ import CustomTestCases from './educational/CustomTestCases';
 import { algorithmDatabase } from '../data/algorithmData';
 import { soundEngine } from '../utils/soundEngine';
 import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
+import { startFaviconAnimation, stopFaviconAnimation } from '../utils/animatedFavicon';
 import SoundControls from './SoundControls';
 import Sorting3DVisualizer from './3D/Sorting3DVisualizer';
 import MemoryStackInspector from './MemoryStackInspector';
@@ -202,6 +203,16 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
       applyStep(currentStepIndex + 1);
     }
   };
+
+  // Favicon animation
+  useEffect(() => {
+    if (isPlaying) {
+      startFaviconAnimation();
+    } else {
+      stopFaviconAnimation();
+    }
+    return () => stopFaviconAnimation();
+  }, [isPlaying]);
 
   const handleStepPrevious = () => {
     setIsPlaying(false);
