@@ -87,26 +87,64 @@ code, kbd, samp, pre, .font-mono {
 /* ============================================
    PREMIUM AMBIENT BACKGROUND (REPLACES AURORA)
    ============================================ */
+@keyframes mesh-drift-1 {
+  0% { transform: translate(0%, 0%) scale(1); }
+  33% { transform: translate(10%, -10%) scale(1.1); }
+  66% { transform: translate(-10%, 10%) scale(0.9); }
+  100% { transform: translate(0%, 0%) scale(1); }
+}
+
+@keyframes mesh-drift-2 {
+  0% { transform: translate(0%, 0%) scale(1); }
+  33% { transform: translate(-10%, 10%) scale(0.9); }
+  66% { transform: translate(10%, -10%) scale(1.1); }
+  100% { transform: translate(0%, 0%) scale(1); }
+}
+
 .bg-ambient {
   position: fixed;
   inset: 0;
   z-index: -2;
   background: var(--bg-primary);
   pointer-events: none;
+  overflow: hidden;
+}
+
+.bg-ambient::before, .bg-ambient::after {
+  content: '';
+  position: absolute;
+  width: 120vw;
+  height: 120vh;
+  top: -10vh;
+  left: -10vw;
+  filter: blur(90px);
+  will-change: transform;
 }
 
 .bg-ambient::before {
-  content: '';
-  position: absolute;
-  width: 800px;
-  height: 800px;
-  border-radius: 50%;
-  background: radial-gradient(circle, var(--glow-primary), transparent 70%);
-  top: -20%;
-  left: 50%;
-  transform: translateX(-50%);
-  will-change: transform;
-  filter: blur(80px);
+  background: 
+    radial-gradient(circle at 20% 30%, var(--mesh-color-1, rgba(99, 102, 241, 0.15)), transparent 50%),
+    radial-gradient(circle at 80% 80%, var(--mesh-color-2, rgba(168, 85, 247, 0.15)), transparent 50%);
+  animation: mesh-drift-1 18s ease-in-out infinite;
+}
+
+.bg-ambient::after {
+  background: 
+    radial-gradient(circle at 80% 20%, var(--mesh-color-3, rgba(6, 182, 212, 0.15)), transparent 50%),
+    radial-gradient(circle at 20% 80%, var(--mesh-color-4, rgba(244, 63, 94, 0.15)), transparent 50%);
+  animation: mesh-drift-2 22s ease-in-out infinite reverse;
+}
+
+.dark .bg-ambient::before {
+  background: 
+    radial-gradient(circle at 20% 30%, var(--mesh-color-1, rgba(99, 102, 241, 0.2)), transparent 50%),
+    radial-gradient(circle at 80% 80%, var(--mesh-color-2, rgba(168, 85, 247, 0.2)), transparent 50%);
+}
+
+.dark .bg-ambient::after {
+  background: 
+    radial-gradient(circle at 80% 20%, var(--mesh-color-3, rgba(6, 182, 212, 0.2)), transparent 50%),
+    radial-gradient(circle at 20% 80%, var(--mesh-color-4, rgba(244, 63, 94, 0.2)), transparent 50%);
 }
 
 .cursor-glow {
