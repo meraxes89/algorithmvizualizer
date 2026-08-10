@@ -348,6 +348,9 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
             onNext={handleStepNext}
             onPrevious={handleStepPrevious}
             onReset={handleStepReset}
+            onSeek={(val) => applyStep(val)}
+            speed={speed}
+            onSpeedChange={setSpeed}
           />
         </div>
       )}
