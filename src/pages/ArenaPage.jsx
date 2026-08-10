@@ -6,6 +6,7 @@ import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confetti
 import { useTheme } from '../context/ThemeContext';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from '../components/Toast';
 
 // ----------------------------------------------------
 // 1. SORTING ALGORITHMS
@@ -558,6 +559,7 @@ const ArenaPage = () => {
                 }
                 triggerVictoryConfetti(getColorsFromTailwind(colorStr));
                 setCommentary(`🎉 ${name} wins the race! What an incredible performance!`);
+                toast.success(`${name} wins the race!`);
                 return name;
               }
               return prevWinner;

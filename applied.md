@@ -21,7 +21,7 @@
 - [x] 11. Spatial Audio Engine Upgrade
 - [x] 12. Interactive Onboarding Tour
 - [x] 15. Particle System Upgrade
-- [ ] 18. Toast Notifications with Style
+- [x] 18. Toast Notifications with Style
 
 ## P3
 - [ ] 13. Mobile Experience — Gesture-Driven Visualizations

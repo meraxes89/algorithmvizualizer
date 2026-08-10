@@ -12,6 +12,7 @@ import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confetti
 import SoundControls from './SoundControls';
 import Sorting3DVisualizer from './3D/Sorting3DVisualizer';
 import MemoryStackInspector from './MemoryStackInspector';
+import { toast } from './Toast';
 
 const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
   const [array, setArray] = useState([]);
@@ -137,6 +138,7 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
       setIsPlaying(false);
       setIsPaused(false);
       triggerVictoryConfetti(getColorsFromTailwind(algorithmInfo.color || ''));
+      toast.success('Algorithm execution finished!');
     }
     return () => clearTimeout(timeoutId);
   }, [isPlaying, isPaused, currentStepIndex, steps, speed]);
