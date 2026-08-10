@@ -5,7 +5,7 @@
 - [x] 2. Cursor-Reactive Ambient Lighting
 - [x] 4. Magnetic Buttons & Elastic Interactions
 - [x] 6. Glassmorphism 2.0 — Noise Texture + Chromatic Borders
-- [ ] 14. Algorithm-Specific Color Theming
+- [x] 14. Algorithm-Specific Color Theming
 - [ ] 16. Custom Cursor
 
 ## P1
