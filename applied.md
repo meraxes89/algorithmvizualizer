@@ -24,6 +24,6 @@
 - [x] 18. Toast Notifications with Style
 
 ## P3
-- [ ] 13. Mobile Experience — Gesture-Driven Visualizations
+- [x] 13. Mobile Experience — Gesture-Driven Visualizations
 - [ ] 19. Easter Eggs
 - [ ] 20. Animated Favicon

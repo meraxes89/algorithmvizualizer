@@ -13,6 +13,7 @@ import SoundControls from './SoundControls';
 import Sorting3DVisualizer from './3D/Sorting3DVisualizer';
 import MemoryStackInspector from './MemoryStackInspector';
 import { toast } from './Toast';
+import { useGesture } from '@use-gesture/react';
 
 const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
   const [array, setArray] = useState([]);
@@ -244,8 +245,21 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
 
   const maxValue = Math.max(...array, 1);
 
+  // Gesture Controls for Mobile
+  const bindGestures = useGesture({
+    onDragEnd: ({ movement: [mx], velocity: [vx], direction: [dx] }) => {
+      if (Math.abs(mx) > 40 && vx > 0.3) {
+        if (dx > 0) {
+          handleStepPrevious(); // Swipe Right -> Previous Step
+        } else if (dx < 0) {
+          handleStepNext(); // Swipe Left -> Next Step
+        }
+      }
+    }
+  });
+
   return (
-    <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-black rounded-3xl overflow-hidden border border-slate-200 dark:border-zinc-800/80">
+    <div {...bindGestures()} className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-black rounded-3xl overflow-hidden border border-slate-200 dark:border-zinc-800/80 touch-pan-y">
       
       {/* Top Header & Telemetry Bar */}
       <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-zinc-800/80">
