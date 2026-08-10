@@ -90,30 +90,25 @@ const OnboardingTour = () => {
   if (!isVisible) return null;
 
   const step = TOUR_STEPS[currentStep];
-  
   // Calculate tooltip position based on targetRect
   let tooltipStyle = {};
+  let wrapperClass = "absolute z-50 pointer-events-none ";
+  
   if (targetRect) {
     if (step.placement === 'bottom') {
       tooltipStyle = {
         top: targetRect.bottom + 16,
-        left: targetRect.left + (targetRect.width / 2),
-        transform: 'translateX(-50%)'
+        left: Math.min(Math.max(16, targetRect.left + (targetRect.width / 2) - 160), window.innerWidth - 336), // 320px width + 16px margin
       };
     } else if (step.placement === 'left') {
       tooltipStyle = {
-        top: targetRect.top + (targetRect.height / 2),
-        left: targetRect.left - 16,
-        transform: 'translate(-100%, -50%)'
+        top: targetRect.top + (targetRect.height / 2) - 100,
+        left: Math.max(16, targetRect.left - 320 - 16),
       };
     }
   } else {
-    // Center placement or fallback
-    tooltipStyle = {
-      top: '50%',
-      left: '50%',
-      transform: 'translate(-50%, -50%)'
-    };
+    // Center placement
+    wrapperClass += "top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2";
   }
 
   return (
@@ -157,62 +152,63 @@ const OnboardingTour = () => {
         )}
       </AnimatePresence>
 
-      {/* Tooltip Card */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentStep}
-          initial={{ opacity: 0, y: 20, scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -20, scale: 0.95 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
-          className="absolute w-80 bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-2xl border border-indigo-100 dark:border-zinc-800 pointer-events-auto z-50"
-          style={tooltipStyle}
-        >
-          <button 
-            onClick={endTour}
-            className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+      {/* Tooltip Card Wrapper */}
+      <div className={wrapperClass} style={targetRect ? tooltipStyle : {}}>
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentStep}
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -20, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 200, damping: 20 }}
+            className="w-80 bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-2xl border border-indigo-100 dark:border-zinc-800 pointer-events-auto"
           >
-            <X size={16} />
-          </button>
-
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
-              <Sparkles size={16} />
-            </div>
-            <h3 className="font-bold text-slate-900 dark:text-white text-lg">
-              {step.title}
-            </h3>
-          </div>
-
-          <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
-            {step.content}
-          </p>
-
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1.5">
-              {TOUR_STEPS.map((_, idx) => (
-                <div 
-                  key={idx}
-                  className={`h-1.5 rounded-full transition-all duration-300 ${
-                    idx === currentStep ? 'w-6 bg-indigo-500' : 'w-1.5 bg-slate-200 dark:bg-zinc-700'
-                  }`}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={handleNext}
-              className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+            <button 
+              onClick={endTour}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
-              {currentStep === TOUR_STEPS.length - 1 ? (
-                <>Finish <Check size={16} /></>
-              ) : (
-                <>Next <ChevronRight size={16} /></>
-              )}
+              <X size={16} />
             </button>
-          </div>
-        </motion.div>
-      </AnimatePresence>
+
+            <div className="flex items-center gap-2 mb-3">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+                <Sparkles size={16} />
+              </div>
+              <h3 className="font-bold text-slate-900 dark:text-white text-lg">
+                {step.title}
+              </h3>
+            </div>
+
+            <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
+              {step.content}
+            </p>
+
+            <div className="flex items-center justify-between">
+              <div className="flex gap-1.5">
+                {TOUR_STEPS.map((_, idx) => (
+                  <div 
+                    key={idx}
+                    className={`h-1.5 rounded-full transition-all duration-300 ${
+                      idx === currentStep ? 'w-6 bg-indigo-500' : 'w-1.5 bg-slate-200 dark:bg-zinc-700'
+                    }`}
+                  />
+                ))}
+              </div>
+
+              <button
+                onClick={handleNext}
+                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-md shadow-indigo-500/20 transition-all hover:scale-105 active:scale-95"
+              >
+                {currentStep === TOUR_STEPS.length - 1 ? (
+                  <>Finish <Check size={16} /></>
+                ) : (
+                  <>Next <ChevronRight size={16} /></>
+                )}
+              </button>
+            </div>
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 };
