@@ -22,6 +22,7 @@ import GitLabIcon from '../components/GitLabIcon';
 import Logo from '../components/Logo';
 import TiltCard from '../components/TiltCard';
 import Hero3DVisualizer from '../components/3D/Hero3DVisualizer';
+import MagneticButton from '../components/MagneticButton';
 
 const TYPEWRITER_PHRASES = [
   { 
@@ -118,21 +119,25 @@ const Home = () => {
             </p>
 
             <div className="flex flex-wrap items-center gap-4 mb-12 translate-z-20 preserve-3d">
-              <Link
-                to="/algorithms"
-                className="btn-premium px-7 py-3.5 text-sm rounded-2xl"
-              >
-                <span>Explore Algorithms</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
+              <MagneticButton>
+                <Link
+                  to="/algorithms"
+                  className="btn-premium px-7 py-3.5 text-sm rounded-2xl flex items-center gap-2"
+                >
+                  <span>Explore Algorithms</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </MagneticButton>
 
-              <Link
-                to="/arena"
-                className="btn-secondary glass-card px-6 py-3.5 text-sm rounded-2xl"
-              >
-                <Swords className="w-4 h-4 text-amber-400" />
-                <span>Battle Arena</span>
-              </Link>
+              <MagneticButton>
+                <Link
+                  to="/arena"
+                  className="btn-secondary glass-card px-6 py-3.5 text-sm rounded-2xl flex items-center gap-2"
+                >
+                  <Swords className="w-4 h-4 text-amber-400" />
+                  <span>Battle Arena</span>
+                </Link>
+              </MagneticButton>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300">

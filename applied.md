@@ -3,7 +3,7 @@
 ## P0 (Highest Priority)
 - [x] 1. Cinematic Theme Transition (Dark ↔ Light)
 - [x] 2. Cursor-Reactive Ambient Lighting
-- [ ] 4. Magnetic Buttons & Elastic Interactions
+- [x] 4. Magnetic Buttons & Elastic Interactions
 - [ ] 6. Glassmorphism 2.0 — Noise Texture + Chromatic Borders
 - [ ] 14. Algorithm-Specific Color Theming
 - [ ] 16. Custom Cursor
