@@ -4,7 +4,7 @@
 - [x] 1. Cinematic Theme Transition (Dark ↔ Light)
 - [x] 2. Cursor-Reactive Ambient Lighting
 - [x] 4. Magnetic Buttons & Elastic Interactions
-- [ ] 6. Glassmorphism 2.0 — Noise Texture + Chromatic Borders
+- [x] 6. Glassmorphism 2.0 — Noise Texture + Chromatic Borders
 - [ ] 14. Algorithm-Specific Color Theming
 - [ ] 16. Custom Cursor
 
