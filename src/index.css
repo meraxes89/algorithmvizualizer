@@ -102,6 +102,29 @@ code, kbd, samp, pre, .font-mono {
   will-change: transform;
   filter: blur(80px);
 }
+
+.cursor-glow {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(
+    450px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+    var(--glow-primary),
+    transparent 60%
+  );
+  will-change: background;
+}
+.dark .cursor-glow {
+  background: radial-gradient(
+    450px circle at var(--mouse-x, 50vw) var(--mouse-y, 50vh),
+    rgba(99, 102, 241, 0.12),
+    transparent 60%
+  );
+}
 /* ============================================
    ULTRA-PREMIUM KINETIC ANIMATIONS
    ============================================ */
