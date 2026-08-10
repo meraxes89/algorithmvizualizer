@@ -564,6 +564,18 @@ const ArenaPage = () => {
     setIsRunning(!isRunning);
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+      if (e.code === 'Space') {
+        e.preventDefault();
+        toggleRun();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isRunning, runners, activeCategory, toggleRun]);
+
   const getActiveDict = () => {
     if (activeCategory === 'sorting') return SORTING_ALGORITHMS;
     if (activeCategory === 'searching') return SEARCHING_ALGORITHMS;
@@ -601,6 +613,7 @@ const ArenaPage = () => {
             </button>
             <button
               onClick={toggleRun}
+              title="Start/Pause [Space]"
               className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
                 isRunning
                   ? 'bg-amber-500 hover:bg-amber-600 text-white'
@@ -608,7 +621,7 @@ const ArenaPage = () => {
               }`}
             >
               {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-              <span>{isRunning ? 'PAUSE BATTLE' : 'START RACE'}</span>
+              <span>{isRunning ? 'PAUSE [SPACE]' : 'START [SPACE]'}</span>
             </button>
           </div>
         </div>

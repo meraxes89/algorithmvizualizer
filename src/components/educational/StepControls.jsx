@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
 import { SPEED_PRESETS } from '../../utils/animationHelpers';
 
@@ -18,6 +18,27 @@ const StepControls = ({
   onSpeedChange,
   disabled = false
 }) => {
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (disabled) return;
+      // Don't trigger if user is typing in an input
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+      if (e.code === 'Space') {
+        e.preventDefault();
+        isPlaying ? onPause() : onPlay();
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        if (currentStep < totalSteps) onNext();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        if (currentStep > 1) onPrevious();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [disabled, isPlaying, onPause, onPlay, onNext, onPrevious, currentStep, totalSteps]);
+
   const progress = totalSteps > 1 ? ((currentStep - 1) / (totalSteps - 1)) * 100 : 0;
 
   return (
@@ -62,17 +83,18 @@ const StepControls = ({
         <button
           onClick={onReset}
           disabled={disabled}
-          className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all disabled:opacity-50"
+          className="p-2 text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all disabled:opacity-50 relative group"
           title="Reset"
         >
           <RotateCcw size={16} />
         </button>
 
         {/* Music Player Controls */}
-        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-zinc-900 rounded-2xl p-1 border border-slate-200/50 dark:border-zinc-800/50">
+        <div className="flex items-center gap-1.5 bg-slate-100 dark:bg-zinc-900 rounded-2xl p-1 border border-slate-200/50 dark:border-zinc-800/50 relative">
           <button
             onClick={onPrevious}
             disabled={disabled || currentStep <= 1}
+            title="Previous [←]"
             className="p-2 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-zinc-800 hover:text-indigo-500 rounded-xl transition-all shadow-sm disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <SkipBack size={16} />
@@ -82,7 +104,8 @@ const StepControls = ({
             <button
               onClick={onPlay}
               disabled={disabled || currentStep >= totalSteps}
-              className="w-10 h-10 flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
+              title="Play [Space]"
+              className="w-10 h-10 flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 relative"
             >
               <Play size={18} className="ml-0.5" fill="currentColor" />
             </button>
@@ -90,6 +113,7 @@ const StepControls = ({
             <button
               onClick={onPause}
               disabled={disabled}
+              title="Pause [Space]"
               className="w-10 h-10 flex items-center justify-center bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
             >
               <Pause size={18} fill="currentColor" />
@@ -99,6 +123,7 @@ const StepControls = ({
           <button
             onClick={onNext}
             disabled={disabled || currentStep >= totalSteps}
+            title="Next [→]"
             className="p-2 text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-zinc-800 hover:text-indigo-500 rounded-xl transition-all shadow-sm disabled:opacity-30 disabled:hover:bg-transparent"
           >
             <SkipForward size={16} />

@@ -17,7 +17,7 @@
 - [x] 17. Loading States with Personality
 
 ## P2
-- [ ] 8. Keyboard-First Microinteractions
+- [x] 8. Keyboard-First Microinteractions
 - [ ] 11. Spatial Audio Engine Upgrade
 - [ ] 12. Interactive Onboarding Tour
 - [ ] 15. Particle System Upgrade
