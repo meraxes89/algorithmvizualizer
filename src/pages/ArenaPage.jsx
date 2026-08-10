@@ -4,6 +4,8 @@ import SoundControls from '../components/SoundControls';
 import soundEngine from '../utils/soundEngine';
 import { triggerVictoryConfetti } from '../utils/confettiHelper';
 import { useTheme } from '../context/ThemeContext';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ----------------------------------------------------
 // 1. SORTING ALGORITHMS
@@ -405,6 +407,8 @@ const ArenaPage = () => {
   const [speed, setSpeed] = useState(40);
   const [isRunning, setIsRunning] = useState(false);
   const [winner, setWinner] = useState(null);
+  const [raceHistory, setRaceHistory] = useState([]);
+  const [commentary, setCommentary] = useState("Waiting for the race to begin...");
 
   const [runners, setRunners] = useState({});
   const [searchTarget, setSearchTarget] = useState(45);
@@ -412,6 +416,8 @@ const ArenaPage = () => {
   const initCategory = (cat = activeCategory) => {
     setIsRunning(false);
     setWinner(null);
+    setRaceHistory([]);
+    setCommentary(`Welcome to the ${cat} arena! Select your settings and start the race.`);
 
     if (cat === 'sorting') {
       const arr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 85) + 15);
@@ -495,6 +501,36 @@ const ArenaPage = () => {
             }
           });
 
+          // Update race history for charts
+          setRaceHistory(history => {
+            const newPoint = { time: history.length };
+            Object.keys(updated).forEach(key => {
+              newPoint[key] = updated[key].comps || updated[key].steps || 0;
+            });
+            return [...history, newPoint];
+          });
+
+          // Update commentary
+          if (activeCount > 0 && Math.random() > 0.8) {
+            const activeKeys = Object.keys(updated).filter(k => !updated[k].finished);
+            if (activeKeys.length > 0) {
+              const leader = activeKeys.reduce((min, curr) => 
+                (updated[curr].comps || updated[curr].steps || 0) < (updated[min].comps || updated[min].steps || 0) ? curr : min
+              );
+              const activeDict = activeCategory === 'sorting' ? SORTING_ALGORITHMS : activeCategory === 'searching' ? SEARCHING_ALGORITHMS : PATHFINDING_ALGORITHMS;
+              const leaderName = activeDict[leader]?.name;
+              
+              const phrases = [
+                `${leaderName} is making quick work of this!`,
+                `${leaderName} takes an early lead!`,
+                `Look at ${leaderName} go! Very efficient.`,
+                `${leaderName} is pulling ahead in operations!`,
+                `It's a tight race, but ${leaderName} seems to be optimizing well!`
+              ];
+              setCommentary(phrases[Math.floor(Math.random() * phrases.length)]);
+            }
+          }
+
           if (newlyFinished.length > 0) {
             setWinner(prevWinner => {
               if (!prevWinner) {
@@ -503,6 +539,7 @@ const ArenaPage = () => {
                 if (activeCategory === 'sorting') name = SORTING_ALGORITHMS[newlyFinished[0]]?.name;
                 else if (activeCategory === 'searching') name = SEARCHING_ALGORITHMS[newlyFinished[0]]?.name;
                 else if (activeCategory === 'pathfinding') name = PATHFINDING_ALGORITHMS[newlyFinished[0]]?.name;
+                setCommentary(`🎉 ${name} wins the race! What an incredible performance!`);
                 return name;
               }
               return prevWinner;
@@ -646,135 +683,208 @@ const ArenaPage = () => {
         </div>
 
         {/* Arena Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {Object.keys(getActiveDict()).map((key) => {
-            const runner = runners[key] || {};
-            const algInfo = getActiveDict()[key];
+        <AnimatePresence>
+          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {Object.keys(getActiveDict()).map((key, index) => {
+              const runner = runners[key] || {};
+              const algInfo = getActiveDict()[key];
 
-            return (
-              <div
-                key={key}
-                className={`relative flex flex-col bg-white dark:bg-slate-800/70 border rounded-3xl p-5 backdrop-blur-md transition-all shadow-sm ${
-                  runner.finished && winner === algInfo.name
-                    ? 'border-amber-500/60 ring-2 ring-amber-500/20'
-                    : 'border-slate-200 dark:border-slate-700/60'
-                }`}
-              >
-                {/* Header info */}
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2.5">
-                    <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${algInfo.color}`} />
-                    <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{algInfo.name}</h3>
-                    <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-300">
-                      {algInfo.complexity}
-                    </span>
+              return (
+                <motion.div
+                  initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ type: "spring", stiffness: 100, delay: index * 0.1 }}
+                  key={key}
+                  className={`relative flex flex-col bg-white dark:bg-slate-800/70 border rounded-3xl p-5 backdrop-blur-md transition-all shadow-sm ${
+                    runner.finished && winner === algInfo.name
+                      ? 'border-amber-500/60 ring-2 ring-amber-500/20 shadow-amber-500/20 shadow-xl'
+                      : 'border-slate-200 dark:border-slate-700/60'
+                  }`}
+                >
+                  {/* Header info */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${algInfo.color}`} />
+                      <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{algInfo.name}</h3>
+                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-300">
+                        {algInfo.complexity}
+                      </span>
+                    </div>
+
+                    {runner.finished && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" /> Finished
+                      </span>
+                    )}
                   </div>
 
-                  {runner.finished && (
-                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Finished
-                    </span>
+                  {/* Visualizer Renderer */}
+                  {activeCategory === 'sorting' && (
+                    <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                      {runner.array?.map((val, idx) => {
+                        const maxVal = Math.max(...runner.array, 100);
+                        const isComparing = runner.comparing?.includes(idx);
+                        const isSwapped = runner.swapped?.includes(idx);
+
+                        let barColor = `bg-gradient-to-t ${algInfo.color}`;
+                        if (isSwapped) barColor = 'bg-rose-500';
+                        else if (isComparing) barColor = 'bg-amber-400';
+
+                        return (
+                          <div
+                            key={idx}
+                            style={{ height: `${(val / maxVal) * 100}%` }}
+                            className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
+                          />
+                        );
+                      })}
+                    </div>
                   )}
-                </div>
 
-                {/* Visualizer Renderer */}
-                {activeCategory === 'sorting' && (
-                  <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
-                    {runner.array?.map((val, idx) => {
-                      const maxVal = Math.max(...runner.array, 100);
-                      const isComparing = runner.comparing?.includes(idx);
-                      const isSwapped = runner.swapped?.includes(idx);
+                  {activeCategory === 'searching' && (
+                    <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                      {runner.array?.map((val, idx) => {
+                        const maxVal = Math.max(...runner.array, 100);
+                        const isComparing = runner.comparing?.includes(idx);
+                        const isFound = runner.foundIndex === idx;
 
-                      let barColor = `bg-gradient-to-t ${algInfo.color}`;
-                      if (isSwapped) barColor = 'bg-rose-500';
-                      else if (isComparing) barColor = 'bg-amber-400';
+                        let barColor = 'bg-indigo-400/50 dark:bg-indigo-600/40';
+                        if (isFound) barColor = 'bg-emerald-500 ring-2 ring-emerald-400';
+                        else if (isComparing) barColor = 'bg-amber-400';
 
-                      return (
-                        <div
-                          key={idx}
-                          style={{ height: `${(val / maxVal) * 100}%` }}
-                          className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+                        return (
+                          <div
+                            key={idx}
+                            style={{ height: `${(val / maxVal) * 100}%` }}
+                            className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
+                          />
+                        );
+                      })}
+                    </div>
+                  )}
 
-                {activeCategory === 'searching' && (
-                  <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
-                    {runner.array?.map((val, idx) => {
-                      const maxVal = Math.max(...runner.array, 100);
-                      const isComparing = runner.comparing?.includes(idx);
-                      const isFound = runner.foundIndex === idx;
+                  {activeCategory === 'pathfinding' && (
+                    <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-2.5 flex items-center justify-center border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                      <div className="grid grid-rows-8 grid-cols-12 gap-1 w-full h-full">
+                        {Array.from({ length: 8 }).map((_, r) =>
+                          Array.from({ length: 12 }).map((_, c) => {
+                            const key = `${r},${c}`;
+                            const isStart = r === 1 && c === 1;
+                            const isTarget = r === 6 && c === 10;
+                            const isVisited = runner.visitedList?.includes(key);
+                            const isPath = runner.pathList?.includes(key);
+                            const isActive = runner.activeNode && runner.activeNode[0] === r && runner.activeNode[1] === c;
 
-                      let barColor = 'bg-indigo-400/50 dark:bg-indigo-600/40';
-                      if (isFound) barColor = 'bg-emerald-500 ring-2 ring-emerald-400';
-                      else if (isComparing) barColor = 'bg-amber-400';
+                            let cellStyle = 'bg-slate-200/50 dark:bg-slate-800/40 border-slate-300/30 dark:border-slate-800/30';
+                            if (isStart) cellStyle = 'bg-emerald-500 ring-2 ring-emerald-400 font-bold';
+                            else if (isTarget) cellStyle = 'bg-rose-500 ring-2 ring-rose-400 font-bold';
+                            else if (isPath) cellStyle = 'bg-amber-400 dark:bg-amber-500 shadow-md shadow-amber-500/50';
+                            else if (isActive) cellStyle = 'bg-amber-300 dark:bg-amber-400 animate-pulse';
+                            else if (isVisited) cellStyle = 'bg-indigo-400/40 dark:bg-indigo-600/50';
 
-                      return (
-                        <div
-                          key={idx}
-                          style={{ height: `${(val / maxVal) * 100}%` }}
-                          className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
-                        />
-                      );
-                    })}
-                  </div>
-                )}
+                            return (
+                              <div
+                                key={key}
+                                className={`rounded-sm border text-[9px] flex items-center justify-center transition-all duration-100 ${cellStyle}`}
+                              />
+                            );
+                          })
+                        )}
+                      </div>
+                    </div>
+                  )}
 
-                {activeCategory === 'pathfinding' && (
-                  <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-2.5 flex items-center justify-center border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
-                    <div className="grid grid-rows-8 grid-cols-12 gap-1 w-full h-full">
-                      {Array.from({ length: 8 }).map((_, r) =>
-                        Array.from({ length: 12 }).map((_, c) => {
-                          const key = `${r},${c}`;
-                          const isStart = r === 1 && c === 1;
-                          const isTarget = r === 6 && c === 10;
-                          const isVisited = runner.visitedList?.includes(key);
-                          const isPath = runner.pathList?.includes(key);
-                          const isActive = runner.activeNode && runner.activeNode[0] === r && runner.activeNode[1] === c;
-
-                          let cellStyle = 'bg-slate-200/50 dark:bg-slate-800/40 border-slate-300/30 dark:border-slate-800/30';
-                          if (isStart) cellStyle = 'bg-emerald-500 ring-2 ring-emerald-400 font-bold';
-                          else if (isTarget) cellStyle = 'bg-rose-500 ring-2 ring-rose-400 font-bold';
-                          else if (isPath) cellStyle = 'bg-amber-400 dark:bg-amber-500 shadow-md shadow-amber-500/50';
-                          else if (isActive) cellStyle = 'bg-amber-300 dark:bg-amber-400 animate-pulse';
-                          else if (isVisited) cellStyle = 'bg-indigo-400/40 dark:bg-indigo-600/50';
-
-                          return (
-                            <div
-                              key={key}
-                              className={`rounded-sm border text-[9px] flex items-center justify-center transition-all duration-100 ${cellStyle}`}
-                            />
-                          );
-                        })
-                      )}
+                  {/* Stats Footer */}
+                  <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                        {activeCategory === 'pathfinding' ? 'Total Operations' : 'Comparisons'}
+                      </span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">
+                        {runner.steps || runner.comps || 0}
+                      </span>
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                        {activeCategory === 'sorting' ? 'Array Swaps' : activeCategory === 'searching' ? 'Status' : 'Exploration'}
+                      </span>
+                      <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">
+                        {activeCategory === 'sorting' ? runner.swaps || 0 : runner.foundIndex !== undefined && runner.foundIndex !== null ? 'TARGET FOUND' : runner.finished ? 'DONE' : 'RUNNING'}
+                      </span>
                     </div>
                   </div>
-                )}
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </AnimatePresence>
 
-                {/* Stats Footer */}
-                <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                      {activeCategory === 'pathfinding' ? 'Total Operations' : 'Comparisons'}
-                    </span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">
-                      {runner.steps || runner.comps || 0}
-                    </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
-                      {activeCategory === 'sorting' ? 'Array Swaps' : activeCategory === 'searching' ? 'Status' : 'Exploration'}
-                    </span>
-                    <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">
-                      {activeCategory === 'sorting' ? runner.swaps || 0 : runner.foundIndex !== undefined && runner.foundIndex !== null ? 'TARGET FOUND' : runner.finished ? 'DONE' : 'RUNNING'}
-                    </span>
-                  </div>
+        {/* Live Race Line Chart & Commentary */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+          <div className="lg:col-span-2 glass-card p-5 rounded-3xl border border-slate-200 dark:border-slate-700 h-[300px] flex flex-col">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
+              <BarChart2 className="w-4 h-4 text-indigo-500" />
+              Live Operations Race
+            </h3>
+            <div className="flex-1 w-full min-h-0">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={raceHistory} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} vertical={false} />
+                  <XAxis dataKey="time" hide />
+                  <YAxis stroke={isDark ? '#94a3b8' : '#64748b'} fontSize={10} tickLine={false} axisLine={false} />
+                  <RechartsTooltip 
+                    contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#ffffff', borderColor: isDark ? '#1e293b' : '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
+                    itemStyle={{ padding: '2px 0' }}
+                  />
+                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} iconType="circle" />
+                  
+                  {Object.keys(getActiveDict()).map((key) => {
+                    const algInfo = getActiveDict()[key];
+                    // Extract a representative color from the gradient string
+                    const strokeColor = algInfo.color.includes('blue') || algInfo.color.includes('indigo') ? '#6366f1' :
+                                        algInfo.color.includes('purple') ? '#a855f7' :
+                                        algInfo.color.includes('emerald') ? '#10b981' :
+                                        algInfo.color.includes('amber') || algInfo.color.includes('orange') ? '#f59e0b' :
+                                        algInfo.color.includes('cyan') ? '#06b6d4' :
+                                        algInfo.color.includes('rose') ? '#f43f5e' : '#94a3b8';
+                    
+                    return (
+                      <Line 
+                        key={key} 
+                        type="monotone" 
+                        dataKey={key} 
+                        name={algInfo.name} 
+                        stroke={strokeColor} 
+                        strokeWidth={2}
+                        dot={false}
+                        isAnimationActive={false}
+                      />
+                    );
+                  })}
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+          
+          <div className="glass-card p-5 rounded-3xl border border-slate-200 dark:border-slate-700 h-[300px] flex flex-col bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10">
+            <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">Live Commentary</h3>
+            <div className="flex-1 flex flex-col justify-center items-center text-center">
+              <motion.p 
+                key={commentary}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-lg md:text-xl font-serif italic font-bold text-slate-700 dark:text-slate-300 leading-relaxed"
+              >
+                "{commentary}"
+              </motion.p>
+              {isRunning && (
+                <div className="mt-6 flex gap-1 items-center">
+                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
+                  <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">LIVE</span>
                 </div>
-              </div>
-            );
-          })}
+              )}
+            </div>
+          </div>
         </div>
       </main>
     </div>
