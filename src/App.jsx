@@ -9,6 +9,7 @@ import AccentColorManager from './components/AccentColorManager';
 import CustomCursor from './components/CustomCursor';
 import OnboardingTour from './components/OnboardingTour';
 import ToastContainer from './components/Toast';
+import EasterEgg from './components/EasterEgg';
 
 // Lazy load pages for huge performance boost (Code Splitting)
 const Home = lazy(() => import('./pages/Home'));
@@ -108,6 +109,7 @@ function App() {
           </DioramaWrapper>
           <OnboardingTour />
           <ToastContainer />
+          <EasterEgg />
           <BottomDock />
         </div>
       </Router>

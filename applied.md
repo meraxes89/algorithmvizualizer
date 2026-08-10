@@ -25,5 +25,5 @@
 
 ## P3
 - [x] 13. Mobile Experience — Gesture-Driven Visualizations
-- [ ] 19. Easter Eggs
+- [x] 19. Easter Eggs
 - [ ] 20. Animated Favicon
