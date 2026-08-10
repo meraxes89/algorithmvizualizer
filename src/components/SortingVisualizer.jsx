@@ -152,6 +152,24 @@ const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
          setSortedIndices(step.arrayState.map((_, i) => i));
       } else {
          setSortedIndices([]);
+         
+         // Play sound based on action
+         const maxVal = Math.max(...step.arrayState, 1);
+         if (step.swappingIndices.length === 2) {
+           const [i, j] = step.swappingIndices;
+           soundEngine.playSwap(step.arrayState[i], step.arrayState[j], 1, maxVal, {
+             algorithm: algorithmInfo.name,
+             index: i,
+             arrayLength: step.arrayState.length
+           });
+         } else if (step.comparingIndices.length > 0) {
+           const i = step.comparingIndices[0];
+           soundEngine.playCompare(step.arrayState[i], 1, maxVal, {
+             algorithm: algorithmInfo.name,
+             index: i,
+             arrayLength: step.arrayState.length
+           });
+         }
       }
     }
   };

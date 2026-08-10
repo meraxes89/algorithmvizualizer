@@ -35,15 +35,17 @@ class SoundEngine {
     for (let i = 0; i < this.poolSize; i++) {
       const osc = this.audioCtx.createOscillator();
       const gain = this.audioCtx.createGain();
+      const panner = this.audioCtx.createStereoPanner();
       
       osc.type = 'sine'; // Default type
       gain.gain.value = 0; // Silent initially
       
       osc.connect(gain);
-      gain.connect(this.audioCtx.destination);
+      gain.connect(panner);
+      panner.connect(this.audioCtx.destination);
       osc.start(); // Start them immediately, but they are silent
       
-      this.oscPool.push({ osc, gain, isActive: false });
+      this.oscPool.push({ osc, gain, panner, isActive: false });
     }
     this.isPoolInitialized = true;
   }
@@ -88,41 +90,69 @@ class SoundEngine {
   }
 
   // Calculate frequency based on value proportion (200Hz to 1200Hz)
-  calcFreq(val, minVal = 5, maxVal = 100) {
+  calcFreq(val, minVal = 5, maxVal = 100, algorithm = '') {
     const norm = Math.max(0, Math.min(1, (val - minVal) / (maxVal - minVal || 1)));
+    
+    // Deep bass chords for Merge Sort
+    if (algorithm === 'Merge Sort') {
+      const baseFreq = 65; // C2 (deep bass)
+      const octaves = 2;
+      return baseFreq * Math.pow(2, norm * octaves);
+    }
+    
     // Pentatonic scale frequency mapping for pleasant harmony
     const baseFreq = 220; // A3
     const octaves = 2.5;
     return baseFreq * Math.pow(2, norm * octaves);
   }
 
-  playNote(val, minVal = 5, maxVal = 100, duration = 0.08, type = 'compare') {
+  playNote(val, minVal = 5, maxVal = 100, duration = 0.08, type = 'compare', options = {}) {
     if (!this.isEnabled) return;
     this.init();
     if (!this.audioCtx || !this.isPoolInitialized) return;
 
     try {
-      const freq = this.calcFreq(val, minVal, maxVal);
+      const { algorithm = '', index = 0, arrayLength = 1 } = options;
+      const freq = this.calcFreq(val, minVal, maxVal, algorithm);
       const now = this.audioCtx.currentTime;
 
       // Get next available oscillator from pool (Round Robin)
       const node = this.oscPool[this.poolIndex];
       this.poolIndex = (this.poolIndex + 1) % this.poolSize;
 
-      // Handle waveform specifics per type temporarily if needed, though usually profile dictates this
-      if (this.soundProfile === 'arcade') {
-        node.osc.type = type === 'swap' ? 'square' : 'triangle';
-      } else if (this.soundProfile === 'synth') {
-        node.osc.type = type === 'swap' ? 'sawtooth' : 'sine';
-      } else if (this.soundProfile === 'marimba') {
-        node.osc.type = 'sine';
+      // Granular Synthesis per Algorithm
+      if (algorithm === 'Bubble Sort') {
+        node.osc.type = 'sine'; // Bubbling liquid
+        duration = duration * 1.5; // Longer resonance
+      } else if (algorithm === 'Quick Sort') {
+        node.osc.type = 'sawtooth'; // Sharp, laser-like
+        duration = duration * 0.5; // Staccato
+      } else if (algorithm === 'Merge Sort') {
+        node.osc.type = 'square'; // Deep, resonating
+        duration = duration * 2.0; 
+      } else {
+        // Handle standard waveform specifics per type
+        if (this.soundProfile === 'arcade') {
+          node.osc.type = type === 'swap' ? 'square' : 'triangle';
+        } else if (this.soundProfile === 'synth') {
+          node.osc.type = type === 'swap' ? 'sawtooth' : 'sine';
+        } else if (this.soundProfile === 'marimba') {
+          node.osc.type = 'sine';
+        }
       }
+
+      // 3D Spatial panning based on index position
+      const panValue = (index / Math.max(1, arrayLength - 1)) * 2 - 1; // Maps 0..L to -1..1
+      node.panner.pan.setValueAtTime(panValue, now);
 
       // Snap frequency
       node.osc.frequency.setValueAtTime(freq, now);
 
       // Envelope logic via Gain
-      const peakVol = type === 'swap' ? this.volume * 1.2 : this.volume;
+      let peakVol = type === 'swap' ? this.volume * 1.2 : this.volume;
+      if (algorithm === 'Quick Sort') peakVol *= 0.7; // Sawtooth is loud
+      if (algorithm === 'Merge Sort') peakVol *= 1.5; // Boost bass
+
       node.gain.gain.cancelScheduledValues(now);
       node.gain.gain.setValueAtTime(0, now);
       node.gain.gain.linearRampToValueAtTime(peakVol, now + 0.01); // Quick Attack
@@ -134,15 +164,15 @@ class SoundEngine {
     }
   }
 
-  playSwap(val1, val2, minVal, maxVal) {
-    this.playNote(val1, minVal, maxVal, 0.1, 'swap');
+  playSwap(val1, val2, minVal, maxVal, options = {}) {
+    this.playNote(val1, minVal, maxVal, 0.1, 'swap', options);
     if (val2 !== undefined) {
-      setTimeout(() => this.playNote(val2, minVal, maxVal, 0.1, 'swap'), 30);
+      setTimeout(() => this.playNote(val2, minVal, maxVal, 0.1, 'swap', options), 30);
     }
   }
 
-  playCompare(val1, minVal, maxVal) {
-    this.playNote(val1, minVal, maxVal, 0.06, 'compare');
+  playCompare(val1, minVal, maxVal, options = {}) {
+    this.playNote(val1, minVal, maxVal, 0.06, 'compare', options);
   }
 
   playSuccess() {

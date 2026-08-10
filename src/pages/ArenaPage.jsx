@@ -496,7 +496,17 @@ const ArenaPage = () => {
                   ...runner,
                   ...res.value
                 };
-                soundEngine.playCompare(res.value.visitedCount || res.value.comps || 50, 10, 100);
+                
+                const val1 = res.value.array ? res.value.array[res.value.comparing?.[0] || 0] : (res.value.visitedCount || res.value.comps || 50);
+                const idx = res.value.comparing?.[0] || 0;
+                const len = res.value.array?.length || 100;
+                const algoName = SORTING_ALGORITHMS[key]?.name || SEARCHING_ALGORITHMS[key]?.name || PATHFINDING_ALGORITHMS[key]?.name || '';
+
+                soundEngine.playCompare(val1 || 50, 10, 100, {
+                  algorithm: algoName,
+                  index: idx,
+                  arrayLength: len
+                });
               }
             }
           });
