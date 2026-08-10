@@ -103,11 +103,8 @@ const QuizPage = () => {
 
   return (
     <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-purple-500/30 flex flex-col">
-      {/* Aurora Mesh Background */}
-      <div className="bg-aurora">
-        <div className="bg-aurora-orb"></div>
-        <div className="bg-cyber-grid"></div>
-      </div>
+      {/* Ambient Background */}
+      <div className="bg-ambient"></div>
 
       <main className="flex-1 max-w-3xl w-full mx-auto px-6 py-12 relative z-10">
         
@@ -191,7 +188,7 @@ const QuizPage = () => {
               <div className="flex justify-end">
                 <button
                   onClick={handleNext}
-                  className="cyber-btn cyber-btn-primary px-6 py-3 text-xs font-bold rounded-xl flex items-center gap-2 shadow-lg shadow-indigo-600/30"
+                  className="btn-premium px-6 py-3 text-xs flex items-center gap-2"
                 >
                   <span>{currentIdx < QUIZ_QUESTIONS.length - 1 ? 'Next Question' : 'See Results'}</span>
                   <ArrowRight className="w-4 h-4" />
@@ -212,7 +209,7 @@ const QuizPage = () => {
 
             <button
               onClick={handleRestart}
-              className="cyber-btn cyber-btn-primary px-8 py-3 text-sm font-bold rounded-2xl inline-flex items-center gap-2 shadow-xl"
+              className="btn-premium px-8 py-3 text-sm inline-flex items-center gap-2"
             >
               <RefreshCw className="w-4 h-4" />
               <span>Retry Quiz</span>

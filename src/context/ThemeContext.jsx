@@ -6,11 +6,8 @@ export const ThemeProvider = ({ children }) => {
   const [isDark, setIsDark] = useState(() => {
     const saved = localStorage.getItem('av-theme');
     if (saved) return saved === 'dark';
-    return true;
+    return false;
   });
-
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [animDirection, setAnimDirection] = useState('right');
 
   useEffect(() => {
     const root = document.documentElement;
@@ -23,36 +20,49 @@ export const ThemeProvider = ({ children }) => {
     }
   }, [isDark]);
 
-  const toggleTheme = () => {
-    if (isAnimating) return;
-    setIsAnimating(true);
-    setAnimDirection(prev => (prev === 'right' ? 'left' : 'right'));
+  const toggleTheme = (e) => {
+    const isDarkNew = !isDark;
 
-    // Switch theme halfway through curtain sweep (200ms)
-    setTimeout(() => {
-      setIsDark(prev => !prev);
-    }, 200);
+    if (!document.startViewTransition || !e) {
+      setIsDark(isDarkNew);
+      return;
+    }
 
-    // Complete transition (450ms)
-    setTimeout(() => {
-      setIsAnimating(false);
-    }, 450);
+    const x = e.clientX;
+    const y = e.clientY;
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition(() => {
+      setIsDark(isDarkNew);
+    });
+
+    transition.ready.then(() => {
+      const clipPath = [
+        `circle(0px at ${x}px ${y}px)`,
+        `circle(${endRadius}px at ${x}px ${y}px)`
+      ];
+
+      document.documentElement.animate(
+        {
+          clipPath: isDarkNew ? [...clipPath].reverse() : clipPath
+        },
+        {
+          duration: 600,
+          easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+          pseudoElement: isDarkNew
+            ? '::view-transition-old(root)'
+            : '::view-transition-new(root)'
+        }
+      );
+    });
   };
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
       {children}
-      {/* Hardware-Accelerated 60 FPS GPU Theme Wave Curtain Overlay */}
-      <div
-        className={`fixed inset-0 z-[9999] pointer-events-none transition-transform duration-450 ease-in-out ${
-          isDark ? 'bg-[#05070f]' : 'bg-[#f8fafc]'
-        } ${
-          isAnimating ? 'scale-x-100 opacity-100' : 'scale-x-0 opacity-0'
-        } ${
-          animDirection === 'right' ? 'origin-right' : 'origin-left'
-        }`}
-        style={{ willChange: 'transform' }}
-      />
     </ThemeContext.Provider>
   );
 };

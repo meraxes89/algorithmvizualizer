@@ -26,6 +26,8 @@ const pageVariants = {
   exit: { opacity: 0, y: -15, scale: 0.98, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }
 };
 
+import DioramaWrapper from './components/DioramaWrapper';
+
 // Loading fallback for lazy pages
 const PageLoader = () => (
   <div className="w-full min-h-screen flex items-center justify-center pt-24">
@@ -40,7 +42,7 @@ const PageWrapper = ({ children }) => {
       animate="animate"
       exit="exit"
       variants={pageVariants}
-      className="w-full min-h-screen pt-24" // pt-24 accommodates the floating navbar
+      className="w-full min-h-screen pt-24 preserve-3d" // pt-24 accommodates the floating navbar
     >
       {children}
     </motion.div>
@@ -76,9 +78,11 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
-        <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300 pb-20">
+        <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
           <Navbar />
-          <AnimatedRoutes />
+          <DioramaWrapper>
+            <AnimatedRoutes />
+          </DioramaWrapper>
           <BottomDock />
         </div>
       </Router>

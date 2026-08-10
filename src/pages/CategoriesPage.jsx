@@ -73,21 +73,17 @@ const CategoriesPage = () => {
 
   return (
     <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30 flex flex-col">
-      {/* Aurora Background */}
-      <div className="bg-aurora">
-        <div className="bg-aurora-orb"></div>
-        <div className="bg-cyber-grid"></div>
-      </div>
+      {/* Ambient Background is now handled globally by DioramaWrapper */}
 
       <main className="flex-1 max-w-7xl mx-auto px-6 py-12 relative z-10 w-full">
         {/* Header */}
-        <div className="mb-12 text-center max-w-2xl mx-auto">
-          <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 px-3 py-1.5 rounded-full text-xs font-semibold mb-4 backdrop-blur-md">
+        <div className="mb-14 text-center max-w-2xl mx-auto">
+          <div className="inline-flex items-center gap-2 bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 px-4 py-2 rounded-full text-xs font-bold tracking-widest uppercase mb-6 backdrop-blur-md">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>ALGORITHM CATEGORIES</span>
+            <span>Algorithm Categories</span>
           </div>
-          <h1 className="text-4xl font-extrabold tracking-tight mb-4">Explore Domains</h1>
-          <p className="text-sm text-slate-400 leading-relaxed">
+          <h1 className="text-5xl md:text-7xl font-serif italic tracking-tight mb-6 text-slate-900 dark:text-white translate-z-40">Explore Domains</h1>
+          <p className="text-base md:text-xl font-display text-slate-600 dark:text-slate-400 leading-relaxed font-medium translate-z-20">
             Select a category to launch interactive 2D/3D visualizations, audio sonification, and step-by-step code traceouts.
           </p>
         </div>
@@ -95,40 +91,54 @@ const CategoriesPage = () => {
         {/* Categories Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {categories.map((category, index) => (
-            <TiltCard key={index} className="rounded-3xl h-full">
+            <TiltCard key={index} className="rounded-3xl h-full group" breathingDelay={index * 0.3}>
               <Link
                 to={category.path}
-                className="glass-card p-8 h-full flex flex-col justify-between group border border-white/10 dark:border-indigo-500/20 hover:border-indigo-500/40 transition-all shadow-xl"
+                className="glass-card p-8 h-full flex flex-col justify-between group"
               >
                 <div>
                   <div className="flex items-center justify-between mb-6">
-                    <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <div className="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-white/5 border border-slate-200 dark:border-white/10 flex items-center justify-center group-hover:scale-110 group-hover:border-indigo-500/50 transition-all shadow-sm">
                       {category.icon}
                     </div>
-                    <span className="bg-indigo-500/10 text-indigo-400 text-[10px] font-extrabold px-3 py-1 rounded-full border border-indigo-500/20">
+                    <span className="font-mono bg-slate-100 dark:bg-white/5 text-slate-600 dark:text-slate-300 text-[10px] font-bold tracking-widest uppercase px-3 py-1 rounded-full border border-slate-200 dark:border-white/10 group-hover:border-indigo-500/30 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
                       {category.tag}
                     </span>
                   </div>
 
-                  <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-3 group-hover:text-indigo-400 transition-colors">
+                  <h2 className="text-2xl font-display font-bold text-slate-900 dark:text-white tracking-tight mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors relative z-10">
                     {category.title}
                   </h2>
                   
-                  <p className="text-xs text-slate-400 leading-relaxed mb-6">
+                  <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed font-medium mb-6 relative z-10">
                     {category.description}
                   </p>
 
-                  <div className="space-y-2 mb-6 pt-4 border-t border-white/5">
+                  {/* Ultra-Premium Micro-Visualizer Backgrounds */}
+                  {category.tag === 'SORTING' && (
+                    <div className="absolute right-4 bottom-16 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none flex items-end gap-1 z-0">
+                      <div className="w-1.5 bg-indigo-500/40 dark:bg-indigo-400/90 dark:shadow-[0_0_12px_rgba(129,140,248,0.8)] rounded-full" style={{ animation: 'bars-swap 1.5s infinite ease-in-out' }}></div>
+                      <div className="w-1.5 bg-indigo-500/40 dark:bg-indigo-400/90 dark:shadow-[0_0_12px_rgba(129,140,248,0.8)] rounded-full" style={{ animation: 'bars-swap 1.5s infinite ease-in-out 0.2s', height: '15px' }}></div>
+                      <div className="w-1.5 bg-indigo-500/40 dark:bg-indigo-400/90 dark:shadow-[0_0_12px_rgba(129,140,248,0.8)] rounded-full" style={{ animation: 'bars-swap 1.5s infinite ease-in-out 0.4s', height: '8px' }}></div>
+                    </div>
+                  )}
+                  {category.tag === 'PATHFINDING' && (
+                    <div className="absolute left-4 right-4 bottom-24 h-px bg-cyan-500/20 dark:bg-cyan-400/40 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0">
+                      <div className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-cyan-500 dark:bg-cyan-300 shadow-[0_0_10px_cyan] dark:shadow-[0_0_15px_#67e8f9]" style={{ animation: 'path-solve 2.5s infinite ease-in-out' }}></div>
+                    </div>
+                  )}
+
+                  <div className="space-y-2.5 mb-6 pt-6 border-t border-slate-100 dark:border-white/5">
                     {category.algorithms.map((algo, i) => (
-                      <div key={i} className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-                        <Zap className="w-3 h-3 text-indigo-400 shrink-0" />
+                      <div key={i} className="flex items-center gap-2.5 text-sm text-slate-700 dark:text-slate-300 font-semibold">
+                        <Zap className="w-3.5 h-3.5 text-indigo-500 dark:text-indigo-400 shrink-0" />
                         <span>{algo}</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-xs font-bold text-indigo-400 pt-4 border-t border-white/5 group-hover:translate-x-1 transition-transform">
+                <div className="flex items-center justify-between text-sm font-bold text-indigo-600 dark:text-indigo-400 pt-5 border-t border-slate-100 dark:border-white/5 group-hover:translate-x-2 transition-transform">
                   <span>Launch Visualizer</span>
                   <ArrowRight className="w-4 h-4" />
                 </div>

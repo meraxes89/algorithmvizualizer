@@ -98,11 +98,7 @@ const TypewriterText = () => {
 const Home = () => {
   return (
     <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30">
-      {/* Aurora Mesh & Cyber Grid Background */}
-      <div className="bg-aurora">
-        <div className="bg-aurora-orb"></div>
-        <div className="bg-cyber-grid"></div>
-      </div>
+      {/* Ambient Background is now handled globally by DioramaWrapper */}
 
       <main className="max-w-7xl mx-auto px-6 pt-12 pb-24 relative z-10">
         
@@ -112,7 +108,7 @@ const Home = () => {
           {/* Left Content */}
           <div className="flex-1 max-w-2xl text-left">
             
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.15] font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight min-h-[140px] sm:min-h-[125px]">
+            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.15] font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight min-h-[140px] sm:min-h-[125px] translate-z-40">
               Visualize Algorithms.<br />
               Learn by <TypewriterText />
             </h1>
@@ -121,10 +117,10 @@ const Home = () => {
               Explore interactive visualizations of data structures and algorithms with frame-by-frame precision, 3D WebGL rendering, and multi-language execution.
             </p>
 
-            <div className="flex flex-wrap items-center gap-4 mb-12">
+            <div className="flex flex-wrap items-center gap-4 mb-12 translate-z-20 preserve-3d">
               <Link
                 to="/algorithms"
-                className="cyber-btn cyber-btn-primary px-7 py-3.5 text-sm font-bold rounded-2xl shadow-xl shadow-indigo-600/30 hover:scale-[1.02] transition-all"
+                className="btn-premium px-7 py-3.5 text-sm rounded-2xl"
               >
                 <span>Explore Algorithms</span>
                 <ArrowRight className="w-4 h-4" />
@@ -132,7 +128,7 @@ const Home = () => {
 
               <Link
                 to="/arena"
-                className="cyber-btn glass-card border border-amber-500/30 hover:border-amber-500/60 text-slate-800 dark:text-slate-100 px-6 py-3.5 text-sm font-bold rounded-2xl transition-all"
+                className="btn-secondary glass-card px-6 py-3.5 text-sm rounded-2xl"
               >
                 <Swords className="w-4 h-4 text-amber-400" />
                 <span>Battle Arena</span>
@@ -297,7 +293,7 @@ const Home = () => {
         </div>
 
         {/* FEATURE HIGHLIGHT CARDS */}
-        <div className="glass-card p-8 lg:p-10 border border-white/10 dark:border-indigo-500/20 mb-20">
+        <div className="glass-card p-8 lg:p-10 mb-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
             
             <div className="flex items-start gap-4">

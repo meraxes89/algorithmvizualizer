@@ -32,11 +32,8 @@ const SortingPage = () => {
 
   return (
     <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30 flex flex-col">
-      {/* Aurora Mesh Background */}
-      <div className="bg-aurora">
-        <div className="bg-aurora-orb"></div>
-        <div className="bg-cyber-grid"></div>
-      </div>
+      {/* Ambient Background */}
+      <div className="bg-ambient"></div>
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-8 flex flex-col relative z-10">
         
@@ -60,10 +57,10 @@ const SortingPage = () => {
               setIsCompareOpen(!isCompareOpen);
               if (isCompareOpen) setCompareAlgos(null);
             }}
-            className={`cyber-btn text-xs font-bold px-4 py-2 rounded-xl transition-all ${
+            className={`btn-premium text-xs px-4 py-2 rounded-xl transition-all ${
               isCompareOpen
-                ? 'cyber-btn-primary'
-                : 'glass-card border border-white/10 text-slate-300 hover:border-indigo-500/40'
+                ? ''
+                : 'btn-secondary'
             }`}
           >
             <Scale className="w-4 h-4 text-indigo-400" />
