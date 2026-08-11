@@ -750,7 +750,6 @@ const ArenaPage = () => {
                       </span>
                     )}
                   </div>
-
                   {/* Visualizer Renderer */}
                   {activeCategory === 'sorting' && (
                     <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
@@ -763,11 +762,13 @@ const ArenaPage = () => {
                         if (isSwapped) barColor = 'bg-rose-500';
                         else if (isComparing) barColor = 'bg-amber-400';
 
+                        const scaleY = (val / maxVal);
+
                         return (
                           <div
                             key={idx}
-                            style={{ height: `${(val / maxVal) * 100}%` }}
-                            className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
+                            style={{ transform: `scaleY(${scaleY})`, transformOrigin: 'bottom' }}
+                            className={`flex-1 h-full rounded-t-sm transition-all duration-75 ${barColor}`}
                           />
                         );
                       })}
@@ -785,11 +786,13 @@ const ArenaPage = () => {
                         if (isFound) barColor = 'bg-emerald-500 ring-2 ring-emerald-400';
                         else if (isComparing) barColor = 'bg-amber-400';
 
+                        const scaleY = (val / maxVal);
+
                         return (
                           <div
                             key={idx}
-                            style={{ height: `${(val / maxVal) * 100}%` }}
-                            className={`flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
+                            style={{ transform: `scaleY(${scaleY})`, transformOrigin: 'bottom' }}
+                            className={`flex-1 h-full rounded-t-sm transition-all duration-75 ${barColor}`}
                           />
                         );
                       })}
@@ -804,8 +807,8 @@ const ArenaPage = () => {
                             const key = `${r},${c}`;
                             const isStart = r === 1 && c === 1;
                             const isTarget = r === 6 && c === 10;
-                            const isVisited = runner.visitedList?.includes(key);
-                            const isPath = runner.pathList?.includes(key);
+                            const isVisited = runner.visitedSet ? runner.visitedSet.has(key) : runner.visitedList?.includes(key);
+                            const isPath = runner.pathSet ? runner.pathSet.has(key) : runner.pathList?.includes(key);
                             const isActive = runner.activeNode && runner.activeNode[0] === r && runner.activeNode[1] === c;
 
                             let cellStyle = 'bg-slate-200/50 dark:bg-slate-800/40 border-slate-300/30 dark:border-slate-800/30';

@@ -242,19 +242,22 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       'Insertion Sort': 'insertionSort',
       'Merge Sort': 'mergeSort',
       'Quick Sort': 'quickSort'
-    };
     const key = nameMap[name];
     return key ? algorithmDatabase.sorting[key] : null;
   };
 
-  const getBarColor = (index) => {
-    if (sortedIndices.includes(index)) return COLORS.SORTED || '#fb923c';
-    if (swappingIndices.includes(index)) return COLORS.SWAPPING || '#f43f5e';
-    if (comparingIndices.includes(index)) return COLORS.COMPARING || '#f472b6';
-    return COLORS.DEFAULT || '#a5b4fc';
-  };
+  const sortedSet = useMemo(() => new Set(sortedIndices), [sortedIndices]);
+  const swappingSet = useMemo(() => new Set(swappingIndices), [swappingIndices]);
+  const comparingSet = useMemo(() => new Set(comparingIndices), [comparingIndices]);
 
-  const maxValue = Math.max(...array, 1);
+  const getBarColor = useCallback((index) => {
+    if (sortedSet.has(index)) return COLORS.SORTED || '#fb923c';
+    if (swappingSet.has(index)) return COLORS.SWAPPING || '#f43f5e';
+    if (comparingSet.has(index)) return COLORS.COMPARING || '#f472b6';
+    return COLORS.DEFAULT || '#a5b4fc';
+  }, [sortedSet, swappingSet, comparingSet]);
+
+  const maxValue = useMemo(() => Math.max(...array, 1), [array]);
 
   // Gesture Controls for Mobile
   const bindGestures = useGesture({
@@ -279,49 +282,54 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
             <Layers className="w-5 h-5 text-indigo-500" />
             {algorithmInfo.name}
           </h2>
-          <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5 max-w-xl">
-            {algorithmInfo.description}
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {algorithmInfo.description || 'Watch elements rearrange in real-time.'}
           </p>
         </div>
 
-        {/* Telemetry & Info Badges */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
-            <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo.timeComplexity}</span>
+        {/* Telemetry Metrics Badges */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/50 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-300 text-xs font-mono font-bold">
+            <span>Size:</span>
+            <span className="text-indigo-900 dark:text-indigo-100">{array.length}</span>
           </div>
-          <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
-            <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo.spaceComplexity}</span>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-800/50 text-amber-700 dark:text-amber-300 text-xs font-mono font-bold">
+            <span>Comparing:</span>
+            <span className="text-amber-900 dark:text-amber-100">{comparingIndices.length}</span>
+          </div>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200/50 dark:border-rose-800/50 text-rose-700 dark:text-rose-300 text-xs font-mono font-bold">
+            <span>Swaps:</span>
+            <span className="text-rose-900 dark:text-rose-100">{swappingIndices.length}</span>
           </div>
         </div>
       </div>
 
       {/* Main Visualization Viewport */}
-      <div className="flex-1 w-full relative flex items-end justify-center gap-[2px] p-6 pb-32 overflow-hidden">
+      <div className="flex-1 w-full relative flex items-center justify-center p-4 sm:p-8">
         {is3DMode ? (
-          <div className="w-full h-full min-h-[450px]">
-            <Sorting3DVisualizer
-              array={array}
-              comparing={comparingIndices}
-              swapped={swappingIndices}
-            />
-          </div>
+          <Sorting3DVisualizer
+            array={array}
+            comparing={comparingIndices}
+            swapped={swappingIndices}
+            pivot={-1}
+          />
         ) : (
-          <TransformWrapper initialScale={1} minScale={0.5} maxScale={3} centerOnInit={true}>
+          <TransformWrapper initialScale={1} minScale={0.5} maxScale={4} centerOnInit>
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 {/* Floating 2D Zoom Widget */}
-                <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border border-slate-200 dark:border-zinc-800/80 p-1 rounded-xl shadow-md">
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md p-1 rounded-xl border border-slate-200/50 dark:border-zinc-800/80 shadow-md">
                   <button
                     onClick={() => zoomIn()}
                     className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
-                    title="Zoom In (+)"
+                    title="Zoom In"
                   >
                     <ZoomIn className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => zoomOut()}
                     className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
-                    title="Zoom Out (-)"
+                    title="Zoom Out"
                   >
                     <ZoomOut className="w-3.5 h-3.5" />
                   </button>
@@ -339,10 +347,10 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
                     {array.map((value, idx) => (
                       <div
                         key={idx}
-                        className="transition-all duration-75 rounded-t-sm shadow-sm"
+                        className="transition-all duration-75 rounded-t-sm shadow-sm flex-1 h-full"
                         style={{
-                          height: `${(value / maxValue) * 85}%`,
-                          width: `${100 / array.length}%`,
+                          transform: `scaleY(${(value / maxValue) * 0.85})`,
+                          transformOrigin: 'bottom',
                           backgroundColor: getBarColor(idx),
                           minWidth: '2px',
                         }}

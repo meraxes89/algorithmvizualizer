@@ -66,16 +66,14 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
     setIsSearching(false);
   };
 
-  const getBarColor = (index) => {
-    if (foundIndex === index) return '#10b981'; // emerald-500
-    if (currentIndex === index) return '#f43f5e'; // rose-500
-    if (searchRange[0] !== -1 && index >= searchRange[0] && index <= searchRange[1]) {
-      return '#34d399'; // emerald-400
-    }
-    return '#a7f3d0'; // emerald-200 (using a light green base)
-  };
+  const maxValue = React.useMemo(() => Math.max(...array, 100), [array]);
 
-  const maxValue = Math.max(...array, 1);
+  const getBarColor = (index) => {
+    if (index === foundIndex) return COLORS.SORTED || '#10b981';
+    if (index === currentIndex) return COLORS.SWAPPING || '#f43f5e';
+    if (searchRange[0] !== -1 && index >= searchRange[0] && index <= searchRange[1]) return COLORS.COMPARING || '#34d399';
+    return COLORS.DEFAULT || '#a7f3d0';
+  };
 
   return (
     <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-black rounded-3xl overflow-hidden border border-slate-200 dark:border-zinc-800/80">
@@ -87,42 +85,38 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
             <Search className="w-5 h-5 text-emerald-500" />
             {algorithmInfo.name}
           </h2>
-          <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5 max-w-xl">
-            {algorithmInfo.description}
+          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {algorithmInfo.description || 'Locate target values through optimized search space reduction.'}
           </p>
         </div>
 
-        {/* Telemetry & Search Result Float */}
-        <div className="flex flex-wrap items-center gap-2 text-xs">
-          <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
-            <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo.timeComplexity}</span>
-          </div>
-          <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
-            <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo.spaceComplexity}</span>
+        {/* Telemetry Metrics Badges */}
+        <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/50 dark:border-emerald-800/50 text-emerald-700 dark:text-emerald-300 text-xs font-mono font-bold">
+            <span>Size:</span>
+            <span className="text-emerald-900 dark:text-emerald-100">{array.length}</span>
           </div>
           {searchResult && (
-            <div className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border shadow-sm ${
-              searchResult.found 
-                ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/30' 
-                : 'bg-rose-50 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-200 dark:border-rose-500/30'
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-bold border ${
+              searchResult.found
+                ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
+                : 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
             }`}>
-              {searchResult.found
-                ? `Found @ idx ${searchResult.index} (${searchResult.time}ms)`
-                : `Not found (${searchResult.time}ms)`}
+              <span>{searchResult.found ? `Found at index ${searchResult.index}` : 'Not Found'}</span>
             </div>
           )}
         </div>
       </div>
 
       {/* Main Visualization Viewport */}
-      <div className="flex-1 w-full relative flex items-end justify-center gap-[4px] p-6 pb-32 overflow-hidden">
+      <div className="flex-1 w-full relative flex items-end justify-center gap-2 p-6 pb-32 overflow-hidden">
         {array.map((value, idx) => (
-          <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end">
+          <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end flex-1">
             <div
-              className="rounded-t-md transition-all duration-150 border border-black/5 shadow-sm"
+              className="rounded-t-md transition-all duration-150 border border-black/5 shadow-sm w-full h-full"
               style={{
-                height: `${(value / maxValue) * 80}%`,
-                width: `${Math.max(800 / array.length, 16)}px`,
+                transform: `scaleY(${(value / maxValue) * 0.8})`,
+                transformOrigin: 'bottom',
                 backgroundColor: getBarColor(idx),
                 minHeight: '24px',
               }}

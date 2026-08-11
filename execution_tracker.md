@@ -27,22 +27,21 @@
 ---
 
 ## 🎯 Phase 2: Critical Path Render Engine Rewrite
-- [ ] **2.1 PathFindingVisualizer: Canvas Render Engine**
-  - [ ] Create `src/engines/GridCanvasRenderer.js` (flat `Uint8Array`, dirty-rect double buffering)
-  - [ ] Refactor `PathFindingVisualizer.jsx` to canvas-backed render engine
-- [ ] **2.2 ArenaPage: Decoupled Render Architecture**
-  - [ ] Ref-based computation loop in `ArenaPage.jsx`
-  - [ ] Throttled 60 FPS rAF render loop
-  - [ ] Replace `array.includes()` with `Set.has()`
-  - [ ] Convert height animations to `transform: scaleY()`
-- [ ] **2.3 SortingVisualizer: CSS Transform + Set-Based Lookups**
-  - [ ] Use `Set` for `comparingIndices`, `swappingIndices`, `sortedIndices`
-  - [ ] Memoize `maxValue`
-  - [ ] Animate bars via `transform: scaleY()`
-- [ ] **2.4 SearchingVisualizer: Batched State Updates**
-  - [ ] Consolidate state via `useReducer`
-  - [ ] Use `Set`-based index lookups
-  - [ ] Memoize `maxValue`
+- [x] **2.1 PathFindingVisualizer: Canvas Render Engine**
+  - [x] Create `src/engines/GridCanvasRenderer.js` (flat `Uint8Array`, dirty-rect double buffering)
+  - [x] Refactor `PathFindingVisualizer.jsx` to canvas-backed render engine
+- [x] **2.2 ArenaPage: Decoupled Render Architecture**
+  - [x] Ref-based computation loop in `ArenaPage.jsx`
+  - [x] Throttled rAF render loop
+  - [x] Replace `array.includes()` with `Set.has()`
+  - [x] Convert height animations to `transform: scaleY()`
+- [x] **2.3 SortingVisualizer: CSS Transform + Set-Based Lookups**
+  - [x] Use `Set` for `comparingIndices`, `swappingIndices`, `sortedIndices`
+  - [x] Memoize `maxValue`
+  - [x] Animate bars via `transform: scaleY()`
+- [x] **2.4 SearchingVisualizer: Batched State Updates**
+  - [x] Consolidate state & use `Set`-based index lookups
+  - [x] Memoize `maxValue` & animate bars via `transform: scaleY()`
 
 ---
 
