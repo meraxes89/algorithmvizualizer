@@ -12,14 +12,14 @@
   - [ ] Core Visualizers & Controls
 - [x] **1.2 ThemeContext Provider Value Memoization**
   - [x] Memoize context object with `useMemo` & `useCallback` in `ThemeContext.jsx`
-- [ ] **1.3 Extract Memoized Atomic Render Units**
-  - [ ] `src/components/atoms/GridCell.jsx`
-  - [ ] `src/components/atoms/ArrayBar.jsx`
-  - [ ] `src/components/atoms/TreeNode.jsx`
-  - [ ] `src/components/atoms/GraphNode.jsx` & `GraphEdge.jsx`
-  - [ ] `src/components/atoms/HeapArrayItem.jsx`
-  - [ ] `src/components/atoms/DPTableCell.jsx`
-  - [ ] `src/components/atoms/TrieNode.jsx`
+- [x] **1.3 Extract Memoized Atomic Render Units**
+  - [x] `src/components/atoms/GridCell.jsx`
+  - [x] `src/components/atoms/ArrayBar.jsx`
+  - [x] `src/components/atoms/TreeNode.jsx`
+  - [x] `src/components/atoms/GraphNode.jsx` & `GraphEdge.jsx`
+  - [x] `src/components/atoms/HeapArrayItem.jsx`
+  - [x] `src/components/atoms/DPTableCell.jsx`
+  - [x] `src/components/atoms/TrieNode.jsx`
 - [ ] **1.4 Eliminate Inline Object Allocation Pandemic**
   - [ ] Hoist static `style={{}}` objects to module-level constants across all components
   - [ ] Use `useMemo` for dynamic style calculations
