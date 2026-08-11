@@ -65,11 +65,21 @@ const OnboardingTour = () => {
   useEffect(() => {
     if (isVisible) {
       updateTargetRect();
-      window.addEventListener('resize', updateTargetRect);
-      window.addEventListener('scroll', updateTargetRect, true);
+
+      let rafId = null;
+      const throttledUpdate = () => {
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(() => {
+          updateTargetRect();
+        });
+      };
+
+      window.addEventListener('resize', throttledUpdate, { passive: true });
+      window.addEventListener('scroll', throttledUpdate, { capture: true, passive: true });
       return () => {
-        window.removeEventListener('resize', updateTargetRect);
-        window.removeEventListener('scroll', updateTargetRect, true);
+        if (rafId) cancelAnimationFrame(rafId);
+        window.removeEventListener('resize', throttledUpdate);
+        window.removeEventListener('scroll', throttledUpdate, { capture: true });
       };
     }
   }, [currentStep, isVisible]);
@@ -213,4 +223,4 @@ const OnboardingTour = () => {
   );
 };
 
-export default OnboardingTour;
+export default React.memo(OnboardingTour);

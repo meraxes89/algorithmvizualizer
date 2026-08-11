@@ -77,20 +77,20 @@
 ---
 
 ## 🏎️ Phase 5: Event Handling & Animation Loop Engineering
-- [ ] **5.1 CustomCursor: Eliminate Layout Thrashing**
-  - [ ] Use `data-cursor` attribute instead of `getComputedStyle`
-  - [ ] Batch position updates with rAF
-- [ ] **5.2 DioramaWrapper: Proper RAF Management**
-  - [ ] Implement persistent rAF loop reading mouse position refs
-  - [ ] Cache window dimensions and media query checks
-- [ ] **5.3 TiltCard: Eliminate getBoundingClientRect in RAF**
-  - [ ] Cache card bounds on `mouseenter`
-- [ ] **5.4 MagneticButton: Fix Rules of Hooks Violation**
-  - [ ] Move `useTransform` calls to component top-level
-- [ ] **5.5 OnboardingTour: Throttle Scroll Listener**
-  - [ ] Wrap scroll listener in `requestAnimationFrame`
-- [ ] **5.6 CommandPalette & StepControls: Fix Event Listener Churn**
-  - [ ] Bind global keydown listeners once using `useRef` for mutable state
+- [x] **5.1 CustomCursor: Eliminate Layout Thrashing**
+  - [x] Use `data-cursor` attribute & eliminate `getComputedStyle`
+  - [x] Batch position updates with rAF
+- [x] **5.2 DioramaWrapper: Proper RAF Management**
+  - [x] Implement persistent rAF loop reading mouse position refs
+  - [x] Cache window dimensions and media query checks
+- [x] **5.3 TiltCard: Eliminate getBoundingClientRect in RAF**
+  - [x] Cache card bounds on `mouseenter`
+- [x] **5.4 MagneticButton: Fix Rules of Hooks Violation**
+  - [x] Move `useTransform` calls to component top-level
+- [x] **5.5 OnboardingTour: Throttle Scroll Listener**
+  - [x] Wrap scroll & resize listeners in `requestAnimationFrame`
+- [x] **5.6 CommandPalette & StepControls: Fix Event Listener Churn**
+  - [x] Bind global keydown listeners once using `useRef` for mutable state
 
 ---
 

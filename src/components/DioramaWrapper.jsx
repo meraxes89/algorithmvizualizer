@@ -2,7 +2,9 @@ import React, { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useScroll, useTransform, motion } from 'framer-motion';
 
-const DioramaWrapper = ({ children }) => {
+const DIORAMA_STYLE = { willChange: 'transform' };
+
+const DioramaWrapper = React.memo(({ children }) => {
   const wrapperRef = useRef(null);
   const location = useLocation();
   const rafId = useRef(null);
@@ -13,26 +15,35 @@ const DioramaWrapper = ({ children }) => {
   const foregroundY = useTransform(scrollY, [0, 1000], [0, -150]);
 
   useEffect(() => {
+    let winWidth = window.innerWidth;
+    let winHeight = window.innerHeight;
+    let isTouch = window.matchMedia('(hover: none)').matches;
+
+    const handleResize = () => {
+      winWidth = window.innerWidth;
+      winHeight = window.innerHeight;
+      isTouch = window.matchMedia('(hover: none)').matches;
+    };
+    window.addEventListener('resize', handleResize, { passive: true });
+
     const handleMouseMove = (e) => {
       if (!wrapperRef.current) return;
       if (rafId.current) cancelAnimationFrame(rafId.current);
       
-      rafId.current = requestAnimationFrame(() => {
-        // Update CSS variables for Cursor Glow
-        document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-        document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
+      const clientX = e.clientX;
+      const clientY = e.clientY;
 
-        // Only apply Diorama tilt on desktop
-        if (!window.matchMedia('(hover: none)').matches) {
-          // Calculate mouse position relative to center of screen (-1 to 1)
-          const x = (e.clientX / window.innerWidth - 0.5) * 2;
-          const y = (e.clientY / window.innerHeight - 0.5) * 2;
-          
-          // Very subtle tilt: Max 1.5 degrees
+      rafId.current = requestAnimationFrame(() => {
+        document.documentElement.style.setProperty('--mouse-x', `${clientX}px`);
+        document.documentElement.style.setProperty('--mouse-y', `${clientY}px`);
+
+        if (!isTouch && wrapperRef.current) {
+          const x = (clientX / winWidth - 0.5) * 2;
+          const y = (clientY / winHeight - 0.5) * 2;
           const rotateX = y * -1.5; 
           const rotateY = x * 1.5;
 
-          wrapperRef.current.style.transform = `perspective(2000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+          wrapperRef.current.style.transform = `perspective(2000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg)`;
         }
       });
     };
@@ -48,6 +59,7 @@ const DioramaWrapper = ({ children }) => {
     window.addEventListener('mouseleave', handleMouseLeave);
     
     return () => {
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseleave', handleMouseLeave);
       if (rafId.current) cancelAnimationFrame(rafId.current);
@@ -80,7 +92,7 @@ const DioramaWrapper = ({ children }) => {
       <div 
         ref={wrapperRef}
         className="w-full min-h-screen transition-transform duration-200 ease-out preserve-3d"
-        style={{ willChange: 'transform' }}
+        style={DIORAMA_STYLE}
       >
         <motion.div style={{ y: foregroundY }} className="w-full h-full preserve-3d">
           {children}
@@ -89,6 +101,6 @@ const DioramaWrapper = ({ children }) => {
 
     </div>
   );
-};
+});
 
 export default DioramaWrapper;
