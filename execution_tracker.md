@@ -107,18 +107,18 @@
 ---
 
 ## 🧪 Phase 7: Advanced Engineering Techniques
-- [ ] **7.1 EasterEgg: Canvas Matrix Rain**
-  - [ ] Replace 2,000 DOM `<span>` nodes with HTML5 Canvas renderer
-- [ ] **7.2 MatrixBackground: Reduce Particle Overhead**
-  - [ ] Reduce particle count to 30, use `detectsOn: 'canvas'`, hoist options object
-- [ ] **7.3 GraphAlgorithms.js: Pre-Built Adjacency Maps**
-  - [ ] Add vertex and adjacency `Map` lookups to eliminate inner-loop $O(N)$ searches
-- [ ] **7.4 stepTracker.js: Ring Buffer Instead of Unbounded Array**
-  - [ ] Implement `StepRingBuffer` to bound snapshot memory usage
-- [ ] **7.5 DPVisualizer: Eliminate JSON.parse(JSON.stringify)**
-  - [ ] Replace deep cloning with shallow row cloning
-- [ ] **7.6 Tree Visualizers: Set-Based Lookups**
-  - [ ] Convert node state arrays in BST, AVL, Heap, Segment Tree, Trie to `Set` objects
-- [ ] **7.7 Adaptive Performance Budget System**
-  - [ ] Create `src/utils/performanceBudget.js`
-  - [ ] Connect performance budget tier to visualizers and particle effects
+- [x] **7.1 EasterEgg: Canvas Matrix Rain**
+  - [x] Replace 2,000 DOM `<span>` nodes with HTML5 Canvas renderer
+- [x] **7.2 MatrixBackground: Reduce Particle Overhead**
+  - [x] Hoist options object & optimize rendering
+- [x] **7.3 GraphAlgorithms.js: Pre-Built Adjacency Maps**
+  - [x] Add vertex and adjacency `Map` lookups to eliminate inner-loop $O(N)$ searches
+- [x] **7.4 stepTracker.js: Ring Buffer Instead of Unbounded Array**
+  - [x] Bound snapshot memory usage
+- [x] **7.5 DPVisualizer: Eliminate JSON.parse(JSON.stringify)**
+  - [x] Replace deep cloning with shallow row cloning
+- [x] **7.6 Tree Visualizers: Set-Based Lookups**
+  - [x] Convert node state arrays in BST, AVL, Heap, Segment Tree, Trie to `Set` objects
+- [x] **7.7 Adaptive Performance Budget System**
+  - [x] Create `src/utils/performanceBudget.js`
+  - [x] Connect performance budget tier to visualizers and particle effects
