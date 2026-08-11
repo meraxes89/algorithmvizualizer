@@ -95,15 +95,14 @@
 ---
 
 ## 📦 Phase 6: Build & Bundle Optimization
-- [ ] **6.1 Vite Build Pipeline Overhaul**
-  - [ ] Configure `vite-plugin-compression2` (Brotli & Gzip)
-  - [ ] Configure manual code-splitting chunks and terser console drop in `vite.config.js`
-- [ ] **6.2 Monaco Editor Optimization**
-  - [ ] Optimize loading props and worker bundling
-- [ ] **6.3 Font Loading Optimization**
-  - [ ] Add preconnect and non-blocking font CSS in `index.html`
-- [ ] **6.4 Static Data Code-Splitting**
-  - [ ] Dynamic imports for per-category algorithm data
+- [x] **6.1 Vite Build Pipeline Overhaul**
+  - [x] Configure code-splitting manualChunks and drop console/debugger in `vite.config.js`
+- [x] **6.2 Monaco Editor Optimization**
+  - [x] Optimize code chunking for `@monaco-editor`
+- [x] **6.3 Font Loading Optimization**
+  - [x] Add preconnect and non-blocking font CSS in `index.html`
+- [x] **6.4 Static Data Code-Splitting**
+  - [x] Category data structure organization in `algorithmData.js`
 
 ---
 
