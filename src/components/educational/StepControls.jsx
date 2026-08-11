@@ -1,8 +1,14 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Play, Pause, SkipBack, SkipForward, RotateCcw } from 'lucide-react';
 import { SPEED_PRESETS } from '../../utils/animationHelpers';
 
-const StepControls = ({
+const SPEED_CHIPS = [
+  { label: '1x', val: SPEED_PRESETS.SLOW },
+  { label: '2x', val: SPEED_PRESETS.NORMAL },
+  { label: '4x', val: SPEED_PRESETS.FAST }
+];
+
+const StepControls = React.memo(({
   currentStep,
   totalSteps,
   isPlaying,
@@ -18,26 +24,29 @@ const StepControls = ({
   onSpeedChange,
   disabled = false
 }) => {
+  const propsRef = useRef({ disabled, isPlaying, onPause, onPlay, onNext, onPrevious, currentStep, totalSteps });
+  propsRef.current = { disabled, isPlaying, onPause, onPlay, onNext, onPrevious, currentStep, totalSteps };
+
   useEffect(() => {
     const handleKeyDown = (e) => {
+      const { disabled, isPlaying, onPause, onPlay, onNext, onPrevious, currentStep, totalSteps } = propsRef.current;
       if (disabled) return;
-      // Don't trigger if user is typing in an input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
 
       if (e.code === 'Space') {
         e.preventDefault();
-        isPlaying ? onPause() : onPlay();
+        isPlaying ? onPause?.() : onPlay?.();
       } else if (e.code === 'ArrowRight') {
         e.preventDefault();
-        if (currentStep < totalSteps) onNext();
+        if (currentStep < totalSteps) onNext?.();
       } else if (e.code === 'ArrowLeft') {
         e.preventDefault();
-        if (currentStep > 1) onPrevious();
+        if (currentStep > 1) onPrevious?.();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [disabled, isPlaying, onPause, onPlay, onNext, onPrevious, currentStep, totalSteps]);
+  }, []);
 
   const progress = totalSteps > 1 ? ((currentStep - 1) / (totalSteps - 1)) * 100 : 0;
 
@@ -132,11 +141,7 @@ const StepControls = ({
 
         {/* Speed Chips */}
         <div className="flex items-center gap-1 bg-slate-100 dark:bg-zinc-900 p-1 rounded-xl border border-slate-200/50 dark:border-zinc-800/50">
-          {[
-            { label: '1x', val: SPEED_PRESETS.SLOW },
-            { label: '2x', val: SPEED_PRESETS.NORMAL },
-            { label: '4x', val: SPEED_PRESETS.FAST }
-          ].map((sp) => (
+          {SPEED_CHIPS.map((sp) => (
             <button
               key={sp.label}
               onClick={() => onSpeedChange && onSpeedChange(sp.val)}
@@ -154,6 +159,6 @@ const StepControls = ({
       </div>
     </div>
   );
-};
+});
 
 export default StepControls;

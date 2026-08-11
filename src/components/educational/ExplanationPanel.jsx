@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { ChevronLeft, ChevronRight, X, BookOpen, Clock, Cpu, Zap, AlertTriangle, CheckCircle } from 'lucide-react';
 
-const ExplanationPanel = ({ algorithmInfo, isOpen, onClose }) => {
+const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
-  if (!isOpen) return null;
+  if (!isOpen || !algorithmInfo) return null;
 
   return (
     <div
@@ -173,6 +173,6 @@ const ExplanationPanel = ({ algorithmInfo, isOpen, onClose }) => {
       )}
     </div>
   );
-};
+});
 
 export default ExplanationPanel;

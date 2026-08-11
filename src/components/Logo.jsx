@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Logo = ({ className = 'w-8 h-8', showText = false, textClassName = 'text-slate-900 dark:text-white' }) => {
+const Logo = React.memo(({ className = 'w-8 h-8', showText = false, textClassName = 'text-slate-900 dark:text-white' }) => {
   return (
     <div className="flex items-center gap-3 select-none">
       <svg
@@ -78,6 +78,6 @@ const Logo = ({ className = 'w-8 h-8', showText = false, textClassName = 'text-s
       )}
     </div>
   );
-};
+});
 
 export default Logo;

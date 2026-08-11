@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { ArrowRight, Play, BarChart3 } from 'lucide-react';
 
-const ComparisonMode = ({ algorithms, onCompare, isOpen }) => {
+const ComparisonMode = React.memo(({ algorithms, onCompare, isOpen }) => {
   const [algo1, setAlgo1] = useState(algorithms[0]?.name || '');
   const [algo2, setAlgo2] = useState(algorithms[1]?.name || '');
 
@@ -70,6 +70,6 @@ const ComparisonMode = ({ algorithms, onCompare, isOpen }) => {
       )}
     </div>
   );
-};
+});
 
 export default ComparisonMode;

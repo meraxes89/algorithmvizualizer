@@ -1,14 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const OdometerCounter = ({ value = 0, className = '' }) => {
-  const [displayValue, setDisplayValue] = useState(value);
+const DIGIT_TRANSITION = { duration: 0.18, ease: 'easeOut' };
 
-  useEffect(() => {
-    setDisplayValue(value);
-  }, [value]);
-
-  const digits = String(displayValue).split('');
+const OdometerCounter = React.memo(({ value = 0, className = '' }) => {
+  const digits = useMemo(() => String(value).split(''), [value]);
 
   return (
     <span className={`inline-flex items-center overflow-hidden font-mono font-bold ${className}`}>
@@ -19,7 +15,7 @@ const OdometerCounter = ({ value = 0, className = '' }) => {
             initial={{ y: -12, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 12, opacity: 0 }}
-            transition={{ duration: 0.18, ease: 'easeOut' }}
+            transition={DIGIT_TRANSITION}
             className="inline-block"
           >
             {digit}
@@ -28,6 +24,6 @@ const OdometerCounter = ({ value = 0, className = '' }) => {
       </AnimatePresence>
     </span>
   );
-};
+});
 
 export default OdometerCounter;

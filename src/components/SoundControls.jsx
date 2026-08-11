@@ -1,27 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { Volume2, VolumeX, Settings2, Sliders } from 'lucide-react';
 import soundEngine from '../utils/soundEngine';
 
-const SoundControls = () => {
+const SOUND_PROFILES = [
+  { id: 'marimba', name: 'Marimba' },
+  { id: 'synth', name: 'Synth' },
+  { id: 'arcade', name: '8-Bit' },
+  { id: 'sine', name: 'Pure Sine' },
+];
+
+const SoundControls = React.memo(() => {
   const [enabled, setEnabled] = useState(soundEngine.isEnabled);
   const [profile, setProfile] = useState(soundEngine.soundProfile);
   const [showOptions, setShowOptions] = useState(false);
 
-  const handleToggle = () => {
+  const handleToggle = useCallback(() => {
     const newState = soundEngine.toggle();
     setEnabled(newState);
     if (newState) {
       soundEngine.playSuccess();
     }
-  };
+  }, []);
 
-  const handleProfileChange = (p) => {
+  const handleProfileChange = useCallback((p) => {
     setProfile(p);
     soundEngine.setProfile(p);
-    if (enabled) {
+    if (soundEngine.isEnabled) {
       soundEngine.playNote(50, 0, 100, 0.15, 'swap');
     }
-  };
+  }, []);
 
   return (
     <div className="relative inline-flex items-center gap-2">
@@ -54,12 +61,7 @@ const SoundControls = () => {
             Instrument Timbre
           </div>
           <div className="grid grid-cols-2 gap-1.5">
-            {[
-              { id: 'marimba', name: 'Marimba' },
-              { id: 'synth', name: 'Synth' },
-              { id: 'arcade', name: '8-Bit' },
-              { id: 'sine', name: 'Pure Sine' },
-            ].map((p) => (
+            {SOUND_PROFILES.map((p) => (
               <button
                 key={p.id}
                 onClick={() => handleProfileChange(p.id)}
@@ -77,6 +79,6 @@ const SoundControls = () => {
       )}
     </div>
   );
-};
+});
 
 export default SoundControls;

@@ -1,16 +1,21 @@
 import React, { useRef } from 'react';
 import { motion, useSpring, useTransform, useMotionValue } from 'framer-motion';
 
-const MagneticButton = ({ children, className = '' }) => {
+const SPRING_CONFIG = { damping: 15, stiffness: 150, mass: 0.1 };
+const WHILE_TAP_CONFIG = { scale: 0.92, transition: { type: "spring", stiffness: 400, damping: 10 } };
+
+const MagneticButton = React.memo(({ children, className = '' }) => {
   const ref = useRef(null);
   
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
   // Apply spring physics for elastic bounce
-  const springConfig = { damping: 15, stiffness: 150, mass: 0.1 };
-  const springX = useSpring(x, springConfig);
-  const springY = useSpring(y, springConfig);
+  const springX = useSpring(x, SPRING_CONFIG);
+  const springY = useSpring(y, SPRING_CONFIG);
+
+  const innerX = useTransform(springX, (val) => val * 0.5);
+  const innerY = useTransform(springY, (val) => val * 0.5);
 
   const handleMouseMove = (e) => {
     if (!ref.current) return;
@@ -36,18 +41,13 @@ const MagneticButton = ({ children, className = '' }) => {
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{ x: springX, y: springY }}
-      whileTap={{ scale: 0.92, transition: { type: "spring", stiffness: 400, damping: 10 } }}
+      whileTap={WHILE_TAP_CONFIG}
     >
-      <motion.div
-        style={{
-          x: useTransform(springX, (val) => val * 0.5),
-          y: useTransform(springY, (val) => val * 0.5),
-        }}
-      >
+      <motion.div style={{ x: innerX, y: innerY }}>
         {children}
       </motion.div>
     </motion.div>
   );
-};
+});
 
 export default MagneticButton;

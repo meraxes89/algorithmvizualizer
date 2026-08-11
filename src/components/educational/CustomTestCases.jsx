@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Upload, Download, Shuffle, FileText, AlertCircle, X } from 'lucide-react';
 
-const CustomTestCases = ({ onApplyTest, isOpen, onClose }) => {
+const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
   const [inputType, setInputType] = useState('manual');
   const [manualInput, setManualInput] = useState('');
   const [jsonInput, setJsonInput] = useState('');
@@ -248,6 +248,6 @@ const CustomTestCases = ({ onApplyTest, isOpen, onClose }) => {
       )}
     </div>
   );
-};
+});
 
 export default CustomTestCases;

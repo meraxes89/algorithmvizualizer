@@ -3,20 +3,36 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Copy, Download, Code2, X } from 'lucide-react';
 
-const CodeViewer = ({ codeSnippets, isOpen, onClose }) => {
+const LANGUAGES = [
+  { id: 'cpp', name: 'C++'},
+  { id: 'java', name: 'Java'},
+  { id: 'python', name: 'Python' },
+  { id: 'javascript', name: 'JavaScript' },
+];
+
+const CODE_STYLE = {
+  borderRadius: '8px',
+  fontSize: '14px',
+  lineHeight: '1.6',
+  padding: '20px',
+  margin: 0,
+  backgroundColor: '#1e1e1e',
+  minHeight: '200px',
+};
+
+const LINE_NUMBER_STYLE = {
+  color: '#858585',
+  fontSize: '13px',
+  paddingRight: '15px',
+};
+
+const CodeViewer = React.memo(({ codeSnippets, isOpen, onClose }) => {
   const [selectedLanguage, setSelectedLanguage] = useState('cpp');
   const [copied, setCopied] = useState(false);
 
   if (!isOpen) return null;
 
   const currentCode = codeSnippets?.[selectedLanguage] || '// No code available for this language';
-
-  const languages = [
-    { id: 'cpp', name: 'C++'},
-    { id: 'java', name: 'Java'},
-    { id: 'python', name: 'Python' },
-    { id: 'javascript', name: 'JavaScript' },
-  ];
 
   const handleCopy = () => {
     navigator.clipboard.writeText(currentCode);
@@ -52,7 +68,7 @@ const CodeViewer = ({ codeSnippets, isOpen, onClose }) => {
         <div className="flex items-center gap-3">
           {/* Language Selector */}
           <div className="flex gap-2">
-            {languages.map((lang) => (
+            {LANGUAGES.map((lang) => (
               <button
                 key={lang.id}
                 onClick={() => setSelectedLanguage(lang.id)}
@@ -62,7 +78,7 @@ const CodeViewer = ({ codeSnippets, isOpen, onClose }) => {
                     : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                 }`}
               >
-                {lang.icon} {lang.name}
+                {lang.name}
               </button>
             ))}
           </div>
@@ -101,21 +117,9 @@ const CodeViewer = ({ codeSnippets, isOpen, onClose }) => {
             <SyntaxHighlighter
               language={selectedLanguage}
               style={vscDarkPlus}
-              customStyle={{
-                borderRadius: '8px',
-                fontSize: '14px',
-                lineHeight: '1.6',
-                padding: '20px',
-                margin: 0,
-                backgroundColor: '#1e1e1e',
-                minHeight: '200px',
-              }}
+              customStyle={CODE_STYLE}
               showLineNumbers
-              lineNumberStyle={{
-                color: '#858585',
-                fontSize: '13px',
-                paddingRight: '15px',
-              }}
+              lineNumberStyle={LINE_NUMBER_STYLE}
             >
               {currentCode}
             </SyntaxHighlighter>
@@ -131,6 +135,6 @@ const CodeViewer = ({ codeSnippets, isOpen, onClose }) => {
       )}
     </div>
   );
-};
+});
 
 export default CodeViewer;

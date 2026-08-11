@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, MousePointer2, ArrowRight, ToggleLeft, ToggleRight } from 'lucide-react';
 
-const InteractiveGraphBuilder = ({ onGraphChange, isOpen }) => {
+const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [isDirected, setIsDirected] = useState(false);
@@ -313,6 +313,6 @@ const InteractiveGraphBuilder = ({ onGraphChange, isOpen }) => {
       </div>
     </div>
   );
-};
+});
 
 export default InteractiveGraphBuilder;

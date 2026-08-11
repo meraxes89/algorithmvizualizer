@@ -1,29 +1,31 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 
-const EasterEgg = () => {
-  const [inputSequence, setInputSequence] = useState([]);
+const EasterEgg = React.memo(() => {
   const [matrixActive, setMatrixActive] = useState(false);
+  const matrixActiveRef = useRef(false);
+  matrixActiveRef.current = matrixActive;
 
   useEffect(() => {
+    let inputSeq = [];
+
     const handleKeyDown = (e) => {
       const key = e.key;
-      setInputSequence(prev => {
-        const newSeq = [...prev, key].slice(-10);
-        
-        if (newSeq.join('').toLowerCase() === KONAMI_CODE.join('').toLowerCase()) {
-          if (!matrixActive) triggerMatrix();
-          return [];
+      inputSeq = [...inputSeq, key].slice(-10);
+
+      if (inputSeq.join('').toLowerCase() === KONAMI_CODE.join('').toLowerCase()) {
+        if (!matrixActiveRef.current) {
+          triggerMatrix();
         }
-        return newSeq;
-      });
+        inputSeq = [];
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [matrixActive]);
+  }, []);
 
   const triggerMatrix = () => {
     setMatrixActive(true);
@@ -46,22 +48,22 @@ const EasterEgg = () => {
               key={i}
               className="text-emerald-500 font-mono text-sm leading-4 opacity-80"
               style={{
-                marginLeft: `${Math.random() * 2}%`,
+                marginLeft: `${(i % 5) * 0.4}%`,
                 writingMode: 'vertical-rl',
                 textOrientation: 'upright'
               }}
               initial={{ y: -1000 }}
               animate={{ y: '100vh' }}
               transition={{
-                duration: Math.random() * 2 + 2,
+                duration: (i % 3) + 2,
                 repeat: Infinity,
                 ease: "linear",
-                delay: Math.random() * 2
+                delay: (i % 4) * 0.5
               }}
             >
               {Array.from({ length: 40 }).map((_, j) => (
-                <span key={j} style={{ opacity: Math.random() > 0.8 ? 1 : 0.4 }}>
-                  {String.fromCharCode(0x30A0 + Math.random() * 96)}
+                <span key={j} style={{ opacity: (i + j) % 5 === 0 ? 1 : 0.4 }}>
+                  {String.fromCharCode(0x30A0 + ((i + j) % 96))}
                 </span>
               ))}
             </motion.div>
@@ -70,6 +72,6 @@ const EasterEgg = () => {
       )}
     </AnimatePresence>
   );
-};
+});
 
 export default EasterEgg;
