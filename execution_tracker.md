@@ -46,18 +46,18 @@
 ---
 
 ## ⚡ Phase 3: Three.js WebGL Performance Engineering
-- [ ] **3.1 InstancedMesh Architecture for All 3D Visualizers**
-  - [ ] Refactor `Hero3DVisualizer.jsx` to `InstancedMesh`
-  - [ ] Refactor `Sorting3DVisualizer.jsx` to `InstancedMesh`
-  - [ ] Refactor `PathFinding3DVisualizer.jsx` to `InstancedMesh`
-- [ ] **3.2 Eliminate WebGL Context Destruction on Toggle**
-  - [ ] Remove `isFPV` from `useEffect` dependency array in `PathFinding3DVisualizer.jsx`
-- [ ] **3.3 Eliminate Redundant Per-Frame Computations**
-  - [ ] Add condition guard for `updateProjectionMatrix()`
-  - [ ] Use `THREE.Clock` for delta timing
-- [ ] **3.4 Proper GPU Resource Disposal**
-  - [ ] Create `src/utils/threeDisposal.js`
-  - [ ] Add recursive scene graph disposal to all 3D visualizers
+- [x] **3.1 InstancedMesh Architecture for All 3D Visualizers**
+  - [x] Refactor `Hero3DVisualizer.jsx` to `InstancedMesh`
+  - [x] Refactor `Sorting3DVisualizer.jsx` to `InstancedMesh`
+  - [x] Refactor `PathFinding3DVisualizer.jsx` to `InstancedMesh`
+- [x] **3.2 Eliminate WebGL Context Destruction on Toggle**
+  - [x] Remove `isFPV` from `useEffect` dependency array in `PathFinding3DVisualizer.jsx`
+- [x] **3.3 Eliminate Redundant Per-Frame Computations**
+  - [x] Add condition guard for `updateProjectionMatrix()`
+  - [x] Use `THREE.Clock` / time delta for camera orbit
+- [x] **3.4 Proper GPU Resource Disposal**
+  - [x] Create `src/utils/threeDisposal.js`
+  - [x] Add recursive scene graph disposal to all 3D visualizers
 
 ---
 

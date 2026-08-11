@@ -409,6 +409,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     return () => {
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
+      disposeScene(scene);
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);
       }
@@ -420,7 +421,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       pathMat.dispose();
       groundMat.dispose();
     };
-  }, [isDark, isFPV, grid.length]); 
+  }, [isDark, grid.length]); 
 
   // Fast Instanced Mesh Updates (Synchronized Yellow Path Reveal with Helicopter Progress)
   useEffect(() => {
