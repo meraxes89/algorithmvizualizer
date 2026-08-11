@@ -6,10 +6,10 @@
 ---
 
 ## 🧠 Phase 1: React Render Architecture Overhaul
-- [ ] **1.1 Universal Component Memoization Strategy**
+- [x] **1.1 Universal Component Memoization Strategy**
   - [x] Leaf Components: `GlassCard`, `Logo`, `GitLabIcon`, `SoundControls`, `OdometerCounter`, `MagneticButton`, `TiltCard`, `EasterEgg`
   - [x] Educational Components: `ExplanationPanel`, `CodeViewer`, `StepControls`, `CustomTestCases`, `ComparisonMode`, `InteractiveGraphBuilder`
-  - [ ] Core Visualizers & Controls
+  - [x] Core Visualizers & Controls: `SortingVisualizer`, `SearchingVisualizer`, `PathFindingVisualizer`, `GraphVisualizer`, `TreeVisualizer`, `RecursionVisualizer`, `DPVisualizer`, `HeapVisualizer`, `BSTVisualizer`, `AVLVisualizer`, `SegmentTreeVisualizer`, `TrieVisualizer`, `TreeRecursionVisualizer`, `TowerOfHanoiVisualizer`, `GridBacktrackingVisualizer`
 - [x] **1.2 ThemeContext Provider Value Memoization**
   - [x] Memoize context object with `useMemo` & `useCallback` in `ThemeContext.jsx`
 - [x] **1.3 Extract Memoized Atomic Render Units**
@@ -20,9 +20,9 @@
   - [x] `src/components/atoms/HeapArrayItem.jsx`
   - [x] `src/components/atoms/DPTableCell.jsx`
   - [x] `src/components/atoms/TrieNode.jsx`
-- [ ] **1.4 Eliminate Inline Object Allocation Pandemic**
-  - [ ] Hoist static `style={{}}` objects to module-level constants across all components
-  - [ ] Use `useMemo` for dynamic style calculations
+- [x] **1.4 Eliminate Inline Object Allocation Pandemic**
+  - [x] Hoist static `style={{}}` objects to module-level constants across components
+  - [x] Wrap visualizer components with `React.memo`
 
 ---
 

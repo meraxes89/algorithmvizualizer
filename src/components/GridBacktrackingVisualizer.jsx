@@ -13,7 +13,7 @@ import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
-const GridBacktrackingVisualizer = ({ algorithmId }) => {
+const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
   // Config state
   const [inputValue, setInputValue] = useState('');
   

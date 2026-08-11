@@ -140,7 +140,7 @@ function computeInstant(algorithmKey, grid, startRow, startCol, endRow, endCol) 
 const ROWS = 20;
 const COLS = 48;
 
-const PathFindingVisualizer = ({ algorithm, algorithmInfo }) => {
+const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   const [grid, setGrid] = useState([]);
   const [startPos, setStartPos] = useState({ row: 10, col: 4 });
   const [endPos, setEndPos] = useState({ row: 10, col: 43 });

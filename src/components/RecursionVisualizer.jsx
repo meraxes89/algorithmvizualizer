@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Play, RotateCcw, Plus, Minus } from "lucide-react";
 import { SPEED_PRESETS, COLORS } from "../utils/animationHelpers";
 
-const RecursionVisualizer = ({ algorithm, algorithmInfo, type }) => {
+const RecursionVisualizer = React.memo(({ algorithm, algorithmInfo, type }) => {
   const [towers, setTowers] = useState([[], [], []]);
   const [numDisks, setNumDisks] = useState(3);
   const [moveCount, setMoveCount] = useState(0);

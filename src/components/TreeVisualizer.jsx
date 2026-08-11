@@ -46,7 +46,7 @@ const generateTree = (depth = 3) => {
   return { root, nodes, edges };
 };
 
-const TreeVisualizer = ({ algorithm, algorithmInfo }) => {
+const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   const [treeData, setTreeData] = useState({ root: null, nodes: [], edges: [] });
   const [activeNode, setActiveNode] = useState(null);
   const [visitedNodes, setVisitedNodes] = useState([]);

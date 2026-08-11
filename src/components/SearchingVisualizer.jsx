@@ -6,7 +6,7 @@ import CodeViewer from './educational/CodeViewer';
 import CustomTestCases from './educational/CustomTestCases';
 import { algorithmDatabase } from '../data/algorithmData';
 
-const SearchingVisualizer = ({ algorithm, algorithmInfo }) => {
+const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   const [array, setArray] = useState([]);
   const [target, setTarget] = useState(0);
   const [currentIndex, setCurrentIndex] = useState(-1);

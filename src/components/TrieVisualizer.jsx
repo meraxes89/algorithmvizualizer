@@ -16,7 +16,7 @@ import {
 /*  TrieVisualizer – interactive Prefix Tree playground               */
 /* ------------------------------------------------------------------ */
 
-const TrieVisualizer = () => {
+const TrieVisualizer = React.memo(() => {
   // Tree state
   const [trieRoot, setTrieRoot] = useState(null);
   const [treeData, setTreeData] = useState({ nodes: [], edges: [] });

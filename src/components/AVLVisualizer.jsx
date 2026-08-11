@@ -14,7 +14,7 @@ import {
 /*  AVLVisualizer – fully interactive AVL tree playground             */
 /* ------------------------------------------------------------------ */
 
-const AVLVisualizer = () => {
+const AVLVisualizer = React.memo(() => {
   // Tree state
   const [avlRoot, setAvlRoot] = useState(null);
   const [treeData, setTreeData] = useState({ nodes: [], edges: [] });

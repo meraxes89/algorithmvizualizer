@@ -12,7 +12,7 @@ import {
 /*  HeapVisualizer – interactive Max/Min Heap playground              */
 /* ------------------------------------------------------------------ */
 
-const HeapVisualizer = () => {
+const HeapVisualizer = React.memo(() => {
   // State
   const [heapArray, setHeapArray] = useState([]);
   const [treeData, setTreeData] = useState({ nodes: [], edges: [] });

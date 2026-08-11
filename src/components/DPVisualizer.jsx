@@ -144,7 +144,7 @@ const DP_INFO = {
   }
 };
 
-const DPVisualizer = ({ algorithmType = 'knapsack' }) => {
+const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
   const [activeCell, setActiveCell] = useState([-1, -1]);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);

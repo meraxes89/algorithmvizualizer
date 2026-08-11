@@ -15,7 +15,7 @@ import {
 /*  SegmentTreeVisualizer                                             */
 /* ------------------------------------------------------------------ */
 
-const SegmentTreeVisualizer = () => {
+const SegmentTreeVisualizer = React.memo(() => {
   // Tree state
   const [baseArray, setBaseArray] = useState([]);
   const [segRoot, setSegRoot] = useState(null);

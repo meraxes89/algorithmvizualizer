@@ -8,7 +8,7 @@ import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
-const TowerOfHanoiVisualizer = ({ algorithmId }) => {
+const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
   // Config state
   const [inputValue, setInputValue] = useState('3'); // Default 3 disks
   

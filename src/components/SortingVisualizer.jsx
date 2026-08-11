@@ -16,7 +16,7 @@ import MemoryStackInspector from './MemoryStackInspector';
 import { toast } from './Toast';
 import { useGesture } from '@use-gesture/react';
 
-const SortingVisualizer = ({ algorithm, algorithmInfo }) => {
+const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   const [array, setArray] = useState([]);
   const [comparingIndices, setComparingIndices] = useState([]);
   const [swappingIndices, setSwappingIndices] = useState([]);

@@ -14,7 +14,7 @@ import {
 /*  BSTVisualizer – fully interactive BST playground                  */
 /* ------------------------------------------------------------------ */
 
-const BSTVisualizer = () => {
+const BSTVisualizer = React.memo(() => {
   // Tree state
   const [bstRoot, setBstRoot] = useState(null);
   const [treeData, setTreeData] = useState({ nodes: [], edges: [] });

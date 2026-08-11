@@ -133,7 +133,7 @@ function computeTreeLayout(trace, svgWidth = 1100, svgHeight = 500) {
 /*  Component                                                         */
 /* ------------------------------------------------------------------ */
 
-const TreeRecursionVisualizer = ({ algorithmId }) => {
+const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
   // Config state
   const [inputValue, setInputValue] = useState('');
   
