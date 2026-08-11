@@ -331,6 +331,6 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
       </div>
     </div>
   );
-};
+});
 
 export default GridBacktrackingVisualizer;

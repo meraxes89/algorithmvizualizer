@@ -607,6 +607,6 @@ const AVLVisualizer = React.memo(() => {
       </div>
     </div>
   );
-};
+});
 
 export default AVLVisualizer;

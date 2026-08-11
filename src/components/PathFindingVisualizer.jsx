@@ -655,6 +655,6 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       `}</style>
     </div>
   );
-};
+});
 
 export default PathFindingVisualizer;

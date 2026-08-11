@@ -300,6 +300,6 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       />
     </div>
   );
-};
+});
 
 export default TreeVisualizer;

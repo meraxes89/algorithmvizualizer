@@ -270,6 +270,6 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       )}
     </div>
   );
-};
+});
 
 export default SearchingVisualizer;

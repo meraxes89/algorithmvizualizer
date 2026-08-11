@@ -981,6 +981,6 @@ const GraphVisualizer = React.memo(({ algorithm: legacyAlgo, algorithmInfo }) =>
       )}
     </div>
   );
-};
+});
 
 export default GraphVisualizer;

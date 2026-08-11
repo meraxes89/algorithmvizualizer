@@ -368,6 +368,6 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
       )}
     </div>
   );
-};
+});
 
 export default DPVisualizer;

@@ -612,6 +612,6 @@ const TrieVisualizer = React.memo(() => {
       </div>
     </div>
   );
-};
+});
 
 export default TrieVisualizer;

@@ -285,6 +285,6 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
       </div>
     </div>
   );
-};
+});
 
 export default TowerOfHanoiVisualizer;

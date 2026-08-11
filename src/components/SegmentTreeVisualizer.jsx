@@ -600,6 +600,6 @@ const SegmentTreeVisualizer = React.memo(() => {
       </div>
     </div>
   );
-};
+});
 
 export default SegmentTreeVisualizer;

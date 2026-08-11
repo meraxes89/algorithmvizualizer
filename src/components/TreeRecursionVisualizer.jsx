@@ -571,6 +571,6 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
       </div>
     </div>
   );
-};
+});
 
 export default TreeRecursionVisualizer;

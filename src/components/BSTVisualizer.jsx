@@ -557,6 +557,6 @@ const BSTVisualizer = React.memo(() => {
       </div>
     </div>
   );
-};
+});
 
 export default BSTVisualizer;

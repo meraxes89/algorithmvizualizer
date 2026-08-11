@@ -242,6 +242,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       'Insertion Sort': 'insertionSort',
       'Merge Sort': 'mergeSort',
       'Quick Sort': 'quickSort'
+    };
     const key = nameMap[name];
     return key ? algorithmDatabase.sorting[key] : null;
   };
@@ -546,6 +547,6 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       )}
     </div>
   );
-};
+});
 
 export default SortingVisualizer;

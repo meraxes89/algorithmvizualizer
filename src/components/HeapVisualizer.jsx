@@ -519,6 +519,6 @@ const HeapVisualizer = React.memo(() => {
       </div>
     </div>
   );
-};
+});
 
 export default HeapVisualizer;

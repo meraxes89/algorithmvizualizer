@@ -297,6 +297,6 @@ const RecursionVisualizer = React.memo(({ algorithm, algorithmInfo, type }) => {
       </div>
     </div>
   );
-};
+});
 
 export default RecursionVisualizer;
