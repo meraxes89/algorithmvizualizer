@@ -23,22 +23,22 @@ const CustomCursor = () => {
 
     const handleMouseOver = (e) => {
       const target = e.target;
+      if (!target) return;
       
-      // Determine what we're hovering over
+      const tagName = target.tagName ? target.tagName.toLowerCase() : '';
       if (
-        target.tagName.toLowerCase() === 'button' ||
-        target.tagName.toLowerCase() === 'a' ||
+        tagName === 'button' ||
+        tagName === 'a' ||
         target.closest('button') ||
         target.closest('a') ||
         target.getAttribute('role') === 'button' ||
-        window.getComputedStyle(target).cursor === 'pointer'
+        target.hasAttribute('data-cursor-pointer')
       ) {
         setCursorVariant('pointer');
       } else if (
-        target.tagName.toLowerCase() === 'input' ||
-        target.tagName.toLowerCase() === 'textarea' ||
-        target.closest('.monaco-editor') ||
-        window.getComputedStyle(target).cursor === 'text'
+        tagName === 'input' ||
+        tagName === 'textarea' ||
+        target.closest('.monaco-editor')
       ) {
         setCursorVariant('text');
       } else {

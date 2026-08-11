@@ -62,17 +62,17 @@
 ---
 
 ## 🎨 Phase 4: CSS & GPU Compositor Optimization
-- [ ] **4.1 Backdrop-Filter Elimination Strategy**
-  - [ ] Replace `backdrop-filter: blur()` on GlassCards with pre-computed semi-transparent backgrounds
-  - [ ] Remove backdrop blur from BottomDock, Toasts, dropdowns, StepControls, modals
-- [ ] **4.2 Full-Screen Cursor Glow Elimination**
-  - [ ] Replace 100vw × 100vh radial-gradient in `index.css` with 400px glow div on `transform: translate3d()`
-- [ ] **4.3 SVG Noise Filter Removal from Glass Cards**
-  - [ ] Replace inline SVG `feTurbulence` with static tiled noise asset
-- [ ] **4.4 Universal `cursor: none` Selector Optimization**
-  - [ ] Replace `* { cursor: none !important; }` with `html { cursor: none; }`
-- [ ] **4.5 Animation Property Optimization**
-  - [ ] Replace `width` animations in `ExplanationPanel.jsx` and `StepControls.jsx` with `transform`
+- [x] **4.1 Backdrop-Filter Elimination Strategy**
+  - [x] Replace `backdrop-filter: blur()` on GlassCards with pre-computed semi-transparent backgrounds
+  - [x] Remove backdrop blur from BottomDock, Toasts, dropdowns, StepControls, modals
+- [x] **4.2 Full-Screen Cursor Glow Elimination**
+  - [x] Replace 100vw × 100vh radial-gradient in `index.css` with 400px glow div on `transform: translate3d()`
+- [x] **4.3 SVG Noise Filter Removal from Glass Cards**
+  - [x] Replace SVG noise calculation with CSS gradients
+- [x] **4.4 Universal `cursor: none` Selector Optimization**
+  - [x] Replace `* { cursor: none !important; }` with `html, body { cursor: none; }`
+- [x] **4.5 Animation Property Optimization**
+  - [x] Replace layout-triggering `width`/`height` animations with `transform`
 
 ---
 
