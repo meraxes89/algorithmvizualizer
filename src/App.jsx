@@ -109,7 +109,40 @@ const ScrollToTop = () => {
   return null;
 };
 
+const ROUTE_WARMERS = [
+  () => import('./pages/CategoriesPage'),
+  () => import('./pages/SortingPage'),
+  () => import('./pages/SearchingPage'),
+  () => import('./pages/PathFindingPage'),
+  () => import('./pages/GraphPage'),
+  () => import('./pages/RecursionAlgorithms'),
+  () => import('./pages/TreeAlgorithms'),
+  () => import('./pages/DPPage'),
+  () => import('./pages/PlaygroundPage'),
+  () => import('./pages/ArenaPage'),
+  () => import('./pages/QuizPage'),
+];
+
+const useRouteWarmup = () => {
+  useEffect(() => {
+    const warm = () => {
+      ROUTE_WARMERS.forEach((load) => {
+        load().catch(() => {});
+      });
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      const id = window.requestIdleCallback(warm, { timeout: 4000 });
+      return () => window.cancelIdleCallback(id);
+    }
+    const t = setTimeout(warm, 2500);
+    return () => clearTimeout(t);
+  }, []);
+};
+
 function App() {
+  useRouteWarmup();
+
   return (
     <ThemeProvider>
       <Router>

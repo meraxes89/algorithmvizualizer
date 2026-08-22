@@ -136,10 +136,7 @@ const TiltCard = React.memo(({ children, className = '', breathingDelay = 0 }) =
   }, []);
 
   return (
-    <div 
-      className={`animate-breathe relative ${className}`}
-      style={{ '--breathe-duration': `${6 + breathingDelay}s`, animationDelay: `${breathingDelay}s` }}
-    >
+    <div className={`relative ${className}`}>
       <div
         ref={cardRef}
         onMouseEnter={handleMouseEnter}

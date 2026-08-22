@@ -126,22 +126,8 @@ code, kbd, samp, pre, .font-mono {
 }
 
 /* ============================================
-   PREMIUM AMBIENT BACKGROUND (REPLACES AURORA)
+   AMBIENT BACKGROUND (static — zero per-frame GPU cost)
    ============================================ */
-@keyframes mesh-drift-1 {
-  0% { transform: translate(0%, 0%) scale(1); }
-  33% { transform: translate(10%, -10%) scale(1.1); }
-  66% { transform: translate(-10%, 10%) scale(0.9); }
-  100% { transform: translate(0%, 0%) scale(1); }
-}
-
-@keyframes mesh-drift-2 {
-  0% { transform: translate(0%, 0%) scale(1); }
-  33% { transform: translate(-10%, 10%) scale(0.9); }
-  66% { transform: translate(10%, -10%) scale(1.1); }
-  100% { transform: translate(0%, 0%) scale(1); }
-}
-
 .bg-ambient {
   position: fixed;
   inset: 0;
@@ -151,41 +137,23 @@ code, kbd, samp, pre, .font-mono {
   overflow: hidden;
 }
 
-.bg-ambient::before, .bg-ambient::after {
+.bg-ambient::before,
+.bg-ambient::after {
   content: '';
   position: absolute;
-  width: 120vw;
-  height: 120vh;
-  top: -10vh;
-  left: -10vw;
-  filter: blur(90px);
-  will-change: transform;
+  inset: -10%;
 }
 
 .bg-ambient::before {
-  background: 
-    radial-gradient(circle at 20% 30%, var(--mesh-color-1, rgba(99, 102, 241, 0.15)), transparent 50%),
-    radial-gradient(circle at 80% 80%, var(--mesh-color-2, rgba(168, 85, 247, 0.15)), transparent 50%);
-  animation: mesh-drift-1 18s ease-in-out infinite;
+  background:
+    radial-gradient(circle at 20% 30%, var(--mesh-color-1), transparent 50%),
+    radial-gradient(circle at 80% 80%, var(--mesh-color-2), transparent 50%);
 }
 
 .bg-ambient::after {
-  background: 
-    radial-gradient(circle at 80% 20%, var(--mesh-color-3, rgba(6, 182, 212, 0.15)), transparent 50%),
-    radial-gradient(circle at 20% 80%, var(--mesh-color-4, rgba(244, 63, 94, 0.15)), transparent 50%);
-  animation: mesh-drift-2 22s ease-in-out infinite reverse;
-}
-
-.dark .bg-ambient::before {
-  background: 
-    radial-gradient(circle at 20% 30%, var(--mesh-color-1, rgba(99, 102, 241, 0.2)), transparent 50%),
-    radial-gradient(circle at 80% 80%, var(--mesh-color-2, rgba(168, 85, 247, 0.2)), transparent 50%);
-}
-
-.dark .bg-ambient::after {
-  background: 
-    radial-gradient(circle at 80% 20%, var(--mesh-color-3, rgba(6, 182, 212, 0.2)), transparent 50%),
-    radial-gradient(circle at 20% 80%, var(--mesh-color-4, rgba(244, 63, 94, 0.2)), transparent 50%);
+  background:
+    radial-gradient(circle at 80% 20%, var(--mesh-color-3), transparent 50%),
+    radial-gradient(circle at 20% 80%, var(--mesh-color-4), transparent 50%);
 }
 
 .cursor-glow {
@@ -204,20 +172,7 @@ code, kbd, samp, pre, .font-mono {
 /* ============================================
    ULTRA-PREMIUM KINETIC ANIMATIONS
    ============================================ */
-@keyframes breathe {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(-3px) scale(1.002); }
-}
 
-@keyframes meshRotate {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-
-.animate-breathe {
-  animation: breathe var(--breathe-duration, 6s) ease-in-out infinite alternate;
-  will-change: transform;
-}
 
 .premium-border-mesh {
   position: absolute;
@@ -233,9 +188,14 @@ code, kbd, samp, pre, .font-mono {
     transparent 100%
   );
   animation: meshRotate 10s linear infinite;
+  animation-play-state: paused;
   mask-image: linear-gradient(black, black);
   -webkit-mask-image: -webkit-linear-gradient(black, black);
   will-change: transform;
+}
+
+.group:hover .premium-border-mesh {
+  animation-play-state: running;
 }
 
 .dark .premium-border-mesh {
@@ -271,8 +231,6 @@ code, kbd, samp, pre, .font-mono {
   position: relative;
   background: linear-gradient(180deg, var(--paper-2) 0%, var(--paper-1) 100%);
   border-radius: 20px;
-  backdrop-filter: blur(14px) saturate(140%);
-  -webkit-backdrop-filter: blur(14px) saturate(140%);
   box-shadow: 
     0 1px 2px rgba(33, 27, 20, 0.04),
     0 8px 24px -12px rgba(33, 27, 20, 0.10),

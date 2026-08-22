@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Box, Camera, Video, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { disposeScene } from '../../utils/threeDisposal';
 
 const PathFinding3DVisualizer = ({ grid = [] }) => {
   const { isDark } = useTheme();
