@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Swords, Trophy, CheckCircle2, Search as SearchIcon, Network, BarChart2 } from 'lucide-react';
 import SoundControls from '../components/SoundControls';
 import soundEngine from '../utils/soundEngine';
@@ -421,20 +421,24 @@ const ArenaPage = () => {
   const [raceHistory, setRaceHistory] = useState([]);
   const [commentary, setCommentary] = useState("Waiting for the race to begin...");
 
+  const runnersRef = useRef({});
   const [runners, setRunners] = useState({});
+  const winnerRef = useRef(null);
   const [searchTarget, setSearchTarget] = useState(45);
 
   const initCategory = (cat = activeCategory) => {
     setIsRunning(false);
     setWinner(null);
+    winnerRef.current = null;
     setRaceHistory([]);
     setCommentary(`Welcome to the ${cat} arena! Select your settings and start the race.`);
 
+    let initial = {};
+
     if (cat === 'sorting') {
       const arr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 85) + 15);
-      const initialRunners = {};
       Object.keys(SORTING_ALGORITHMS).forEach(key => {
-        initialRunners[key] = {
+        initial[key] = {
           array: [...arr],
           comparing: [],
           swapped: [],
@@ -444,15 +448,13 @@ const ArenaPage = () => {
           generator: SORTING_ALGORITHMS[key].generator(arr)
         };
       });
-      setRunners(initialRunners);
     } else if (cat === 'searching') {
       const arr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 90) + 10).sort((a, b) => a - b);
       const target = arr[Math.floor(Math.random() * arr.length)];
       setSearchTarget(target);
 
-      const initialRunners = {};
       Object.keys(SEARCHING_ALGORITHMS).forEach(key => {
-        initialRunners[key] = {
+        initial[key] = {
           array: [...arr],
           comparing: [],
           comps: 0,
@@ -461,11 +463,9 @@ const ArenaPage = () => {
           generator: SEARCHING_ALGORITHMS[key].generator(arr, target)
         };
       });
-      setRunners(initialRunners);
     } else if (cat === 'pathfinding') {
-      const initialRunners = {};
       Object.keys(PATHFINDING_ALGORITHMS).forEach(key => {
-        initialRunners[key] = {
+        initial[key] = {
           visitedCount: 0,
           activeNode: null,
           steps: 0,
@@ -473,8 +473,10 @@ const ArenaPage = () => {
           generator: PATHFINDING_ALGORITHMS[key].generator(10, 15)
         };
       });
-      setRunners(initialRunners);
     }
+
+    runnersRef.current = initial;
+    setRunners({ ...initial });
   };
 
   useEffect(() => {
@@ -485,111 +487,91 @@ const ArenaPage = () => {
     let intervalId = null;
     if (isRunning) {
       intervalId = setInterval(() => {
-        setRunners(prev => {
-          let updated = { ...prev };
-          let activeCount = 0;
-          let newlyFinished = [];
+        const current = runnersRef.current;
+        let activeCount = 0;
+        let newlyFinished = [];
 
-          Object.keys(updated).forEach(key => {
-            const runner = updated[key];
-            if (!runner.finished) {
-              const res = runner.generator.next();
-              if (res.done || res.value.finished) {
-                updated[key] = {
-                  ...runner,
-                  ...res.value,
-                  finished: true
-                };
-                newlyFinished.push(key);
-              } else {
-                activeCount++;
-                updated[key] = {
-                  ...runner,
-                  ...res.value
-                };
-                
-                const val1 = res.value.array ? res.value.array[res.value.comparing?.[0] || 0] : (res.value.visitedCount || res.value.comps || 50);
-                const idx = res.value.comparing?.[0] || 0;
-                const len = res.value.array?.length || 100;
-                const algoName = SORTING_ALGORITHMS[key]?.name || SEARCHING_ALGORITHMS[key]?.name || PATHFINDING_ALGORITHMS[key]?.name || '';
+        Object.keys(current).forEach(key => {
+          const runner = current[key];
+          if (runner.finished) return;
 
-                soundEngine.playCompare(val1 || 50, 10, 100, {
-                  algorithm: algoName,
-                  index: idx,
-                  arrayLength: len
-                });
-              }
-            }
-          });
+          const res = runner.generator.next();
+          if (res.done || res.value.finished) {
+            current[key] = {
+              ...runner,
+              ...res.value,
+              finished: true
+            };
+            newlyFinished.push(key);
+          } else {
+            activeCount++;
+            current[key] = {
+              ...runner,
+              ...res.value
+            };
 
-          // Update race history for charts
-          setRaceHistory(history => {
-            const newPoint = { time: history.length };
-            Object.keys(updated).forEach(key => {
-              newPoint[key] = updated[key].comps || updated[key].steps || 0;
-            });
-            const next = [...history, newPoint];
-            return next.length > RACE_HISTORY_CAP ? next.slice(next.length - RACE_HISTORY_CAP) : next;
-          });
+            const val1 = res.value.array ? res.value.array[res.value.comparing?.[0] || 0] : (res.value.visitedCount || res.value.comps || 50);
+            const idx = res.value.comparing?.[0] || 0;
+            const len = res.value.array?.length || 100;
+            const algoName = SORTING_ALGORITHMS[key]?.name || SEARCHING_ALGORITHMS[key]?.name || PATHFINDING_ALGORITHMS[key]?.name || '';
 
-          // Update commentary
-          if (activeCount > 0 && Math.random() > 0.8) {
-            const activeKeys = Object.keys(updated).filter(k => !updated[k].finished);
-            if (activeKeys.length > 0) {
-              const leader = activeKeys.reduce((min, curr) => 
-                (updated[curr].comps || updated[curr].steps || 0) < (updated[min].comps || updated[min].steps || 0) ? curr : min
-              );
-              const activeDict = activeCategory === 'sorting' ? SORTING_ALGORITHMS : activeCategory === 'searching' ? SEARCHING_ALGORITHMS : PATHFINDING_ALGORITHMS;
-              const leaderName = activeDict[leader]?.name;
-              
-              const phrases = [
-                `${leaderName} is making quick work of this!`,
-                `${leaderName} takes an early lead!`,
-                `Look at ${leaderName} go! Very efficient.`,
-                `${leaderName} is pulling ahead in operations!`,
-                `It's a tight race, but ${leaderName} seems to be optimizing well!`
-              ];
-              setCommentary(phrases[Math.floor(Math.random() * phrases.length)]);
-            }
-          }
-
-          if (newlyFinished.length > 0) {
-            setWinner(prevWinner => {
-              if (!prevWinner) {
-                let name = '';
-                let colorStr = '';
-                if (activeCategory === 'sorting') {
-                  name = SORTING_ALGORITHMS[newlyFinished[0]]?.name;
-                  colorStr = SORTING_ALGORITHMS[newlyFinished[0]]?.color;
-                } else if (activeCategory === 'searching') {
-                  name = SEARCHING_ALGORITHMS[newlyFinished[0]]?.name;
-                  colorStr = SEARCHING_ALGORITHMS[newlyFinished[0]]?.color;
-                } else if (activeCategory === 'pathfinding') {
-                  name = PATHFINDING_ALGORITHMS[newlyFinished[0]]?.name;
-                  colorStr = PATHFINDING_ALGORITHMS[newlyFinished[0]]?.color;
-                }
-                triggerVictoryConfetti(getColorsFromTailwind(colorStr));
-                setCommentary(`🎉 ${name} wins the race! What an incredible performance!`);
-                toast.success(`${name} wins the race!`);
-                return name;
-              }
-              return prevWinner;
+            soundEngine.playCompare(val1 || 50, 10, 100, {
+              algorithm: algoName,
+              index: idx,
+              arrayLength: len
             });
           }
-
-          if (activeCount === 0) {
-            setIsRunning(false);
-          }
-
-          return updated;
         });
-      }, 100 - speed);
+
+        setRaceHistory(history => {
+          const newPoint = { time: history.length };
+          Object.keys(current).forEach(key => {
+            newPoint[key] = current[key].comps || current[key].steps || 0;
+          });
+          const next = [...history, newPoint];
+          return next.length > RACE_HISTORY_CAP ? next.slice(next.length - RACE_HISTORY_CAP) : next;
+        });
+
+        if (activeCount > 0 && Math.random() > 0.8) {
+          const activeKeys = Object.keys(current).filter(k => !current[k].finished);
+          if (activeKeys.length > 0) {
+            const leader = activeKeys.reduce((min, curr) =>
+              (current[curr].comps || current[curr].steps || 0) < (current[min].comps || current[min].steps || 0) ? curr : min
+            );
+            const leaderName = getActiveDict()[leader]?.name;
+
+            const phrases = [
+              `${leaderName} is making quick work of this!`,
+              `${leaderName} takes an early lead!`,
+              `Look at ${leaderName} go! Very efficient.`,
+              `${leaderName} is pulling ahead in operations!`,
+              `It's a tight race, but ${leaderName} seems to be optimizing well!`
+            ];
+            setCommentary(phrases[Math.floor(Math.random() * phrases.length)]);
+          }
+        }
+
+        if (newlyFinished.length > 0 && !winnerRef.current) {
+          winnerRef.current = newlyFinished[0];
+          const champ = getActiveDict()[winnerRef.current];
+          triggerVictoryConfetti(getColorsFromTailwind(champ?.color));
+          setCommentary(`🎉 ${champ?.name} wins the race! What an incredible performance!`);
+          toast.success(`${champ?.name} wins the race!`);
+          setWinner(champ?.name);
+        }
+
+        if (activeCount === 0) {
+          setIsRunning(false);
+        }
+
+        setRunners({ ...current });
+      }, Math.max(33, 100 - speed));
     }
     return () => clearInterval(intervalId);
-  }, [isRunning, speed, activeCategory]);
+  }, [isRunning, speed]);
 
   const toggleRun = () => {
-    if (Object.values(runners).every(r => r.finished)) {
+    if (Object.values(runnersRef.current).every(r => r.finished)) {
       initCategory(activeCategory);
     }
     setIsRunning(!isRunning);
