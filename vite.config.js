@@ -1,14 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
   server: {
     host: true,
   },
-  esbuild: {
-    drop: ['console', 'debugger'],
-  },
+  esbuild: mode === 'production' ? { drop: ['console', 'debugger'] } : {},
   build: {
     chunkSizeWarningLimit: 1000,
     target: 'esnext',
@@ -16,29 +14,20 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('@monaco-editor') || id.includes('monaco-editor')) {
-              return 'monaco';
-            }
-            if (id.includes('three')) {
-              return 'three';
-            }
-            if (id.includes('framer-motion')) {
-              return 'framer-motion';
-            }
-            if (id.includes('recharts')) {
-              return 'recharts';
-            }
-            if (id.includes('lucide-react')) {
-              return 'lucide';
-            }
-            if (id.includes('react-syntax-highlighter') || id.includes('prismjs')) {
-              return 'syntax-highlighter';
-            }
-            return 'vendor';
+          if (!id.includes('node_modules')) return undefined;
+          if (id.includes('@monaco-editor')) return 'monaco';
+          if (id.includes('/three/')) return 'three';
+          if (
+            id.includes('framer-motion') ||
+            id.includes('/motion-dom/') ||
+            id.includes('/motion-utils/')
+          ) {
+            return 'framer-motion';
           }
+          if (id.includes('lucide-react')) return 'lucide';
+          return undefined;
         },
       },
     },
   },
-});
+}));

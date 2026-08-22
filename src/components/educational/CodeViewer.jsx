@@ -1,6 +1,17 @@
 import React, { useState } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { PrismLight as SyntaxHighlighter } from 'react-syntax-highlighter';
+import clike from 'react-syntax-highlighter/dist/esm/languages/prism/clike';
+import cpp from 'react-syntax-highlighter/dist/esm/languages/prism/cpp';
+import java from 'react-syntax-highlighter/dist/esm/languages/prism/java';
+import python from 'react-syntax-highlighter/dist/esm/languages/prism/python';
+import javascript from 'react-syntax-highlighter/dist/esm/languages/prism/javascript';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
+SyntaxHighlighter.registerLanguage('clike', clike);
+SyntaxHighlighter.registerLanguage('cpp', cpp);
+SyntaxHighlighter.registerLanguage('java', java);
+SyntaxHighlighter.registerLanguage('python', python);
+SyntaxHighlighter.registerLanguage('javascript', javascript);
 import { Copy, Download, Code2, X } from 'lucide-react';
 
 const LANGUAGES = [

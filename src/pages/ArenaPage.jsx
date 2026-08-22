@@ -4,9 +4,19 @@ import SoundControls from '../components/SoundControls';
 import soundEngine from '../utils/soundEngine';
 import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
 import { useTheme } from '../context/ThemeContext';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
+import RaceChart from '../components/RaceChart';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '../components/Toast';
+
+const RACE_HISTORY_CAP = 300;
+
+const strokeColorFor = (color = '') =>
+  color.includes('blue') || color.includes('indigo') ? '#6366f1' :
+  color.includes('purple') ? '#a855f7' :
+  color.includes('emerald') ? '#10b981' :
+  color.includes('amber') || color.includes('orange') ? '#f59e0b' :
+  color.includes('cyan') ? '#06b6d4' :
+  color.includes('rose') ? '#f43f5e' : '#94a3b8';
 
 // ----------------------------------------------------
 // 1. SORTING ALGORITHMS
@@ -518,7 +528,8 @@ const ArenaPage = () => {
             Object.keys(updated).forEach(key => {
               newPoint[key] = updated[key].comps || updated[key].steps || 0;
             });
-            return [...history, newPoint];
+            const next = [...history, newPoint];
+            return next.length > RACE_HISTORY_CAP ? next.slice(next.length - RACE_HISTORY_CAP) : next;
           });
 
           // Update commentary
@@ -863,42 +874,15 @@ const ArenaPage = () => {
               Live Operations Race
             </h3>
             <div className="flex-1 w-full min-h-0">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={raceHistory} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke={isDark ? '#334155' : '#e2e8f0'} vertical={false} />
-                  <XAxis dataKey="time" hide />
-                  <YAxis stroke={isDark ? '#94a3b8' : '#64748b'} fontSize={10} tickLine={false} axisLine={false} />
-                  <RechartsTooltip 
-                    contentStyle={{ backgroundColor: isDark ? '#0f172a' : '#ffffff', borderColor: isDark ? '#1e293b' : '#e2e8f0', borderRadius: '12px', fontSize: '12px' }}
-                    itemStyle={{ padding: '2px 0' }}
-                  />
-                  <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '10px' }} iconType="circle" />
-                  
-                  {Object.keys(getActiveDict()).map((key) => {
-                    const algInfo = getActiveDict()[key];
-                    // Extract a representative color from the gradient string
-                    const strokeColor = algInfo.color.includes('blue') || algInfo.color.includes('indigo') ? '#6366f1' :
-                                        algInfo.color.includes('purple') ? '#a855f7' :
-                                        algInfo.color.includes('emerald') ? '#10b981' :
-                                        algInfo.color.includes('amber') || algInfo.color.includes('orange') ? '#f59e0b' :
-                                        algInfo.color.includes('cyan') ? '#06b6d4' :
-                                        algInfo.color.includes('rose') ? '#f43f5e' : '#94a3b8';
-                    
-                    return (
-                      <Line 
-                        key={key} 
-                        type="monotone" 
-                        dataKey={key} 
-                        name={algInfo.name} 
-                        stroke={strokeColor} 
-                        strokeWidth={2}
-                        dot={false}
-                        isAnimationActive={false}
-                      />
-                    );
-                  })}
-                </LineChart>
-              </ResponsiveContainer>
+              <RaceChart
+                history={raceHistory}
+                gridColor={isDark ? '#334155' : '#e2e8f0'}
+                series={Object.entries(getActiveDict()).map(([key, algInfo]) => ({
+                  key,
+                  name: algInfo.name,
+                  color: strokeColorFor(algInfo.color)
+                }))}
+              />
             </div>
           </div>
           

@@ -1,4 +1,4 @@
-import React, { lazy, Suspense } from 'react';
+import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -10,6 +10,8 @@ import CustomCursor from './components/CustomCursor';
 import OnboardingTour from './components/OnboardingTour';
 import ToastContainer from './components/Toast';
 import EasterEgg from './components/EasterEgg';
+import ErrorBoundary from './components/ErrorBoundary';
+import NotFoundPage from './pages/NotFoundPage';
 
 // Lazy load pages for huge performance boost (Code Splitting)
 const Home = lazy(() => import('./pages/Home'));
@@ -90,10 +92,21 @@ const AnimatedRoutes = () => {
           <Route path="/playground" element={<PageWrapper><PlaygroundPage /></PageWrapper>} />
           <Route path="/arena" element={<PageWrapper><ArenaPage /></PageWrapper>} />
           <Route path="/quiz" element={<PageWrapper><QuizPage /></PageWrapper>} />
+          <Route path="*" element={<PageWrapper><NotFoundPage /></PageWrapper>} />
         </Routes>
       </Suspense>
     </AnimatePresence>
   );
+};
+
+const ScrollToTop = () => {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+
+  return null;
 };
 
 function App() {
@@ -102,10 +115,13 @@ function App() {
       <Router>
         <AccentColorManager />
         <CustomCursor />
+        <ScrollToTop />
         <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
           <Navbar />
           <DioramaWrapper>
-            <AnimatedRoutes />
+            <ErrorBoundary>
+              <AnimatedRoutes />
+            </ErrorBoundary>
           </DioramaWrapper>
           <OnboardingTour />
           <ToastContainer />
