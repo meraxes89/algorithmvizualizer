@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { motion, useSpring, useTransform, useMotionValue } from 'framer-motion';
 
 const SPRING_CONFIG = { damping: 15, stiffness: 150, mass: 0.1 };
@@ -6,6 +6,7 @@ const WHILE_TAP_CONFIG = { scale: 0.92, transition: { type: "spring", stiffness:
 
 const MagneticButton = React.memo(({ children, className = '' }) => {
   const ref = useRef(null);
+  const boundsRef = useRef(null);
   
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -17,12 +18,29 @@ const MagneticButton = React.memo(({ children, className = '' }) => {
   const innerX = useTransform(springX, (val) => val * 0.5);
   const innerY = useTransform(springY, (val) => val * 0.5);
 
+  useEffect(() => {
+    const invalidateBounds = () => {
+      boundsRef.current = null;
+    };
+    window.addEventListener('scroll', invalidateBounds, { passive: true });
+    window.addEventListener('resize', invalidateBounds, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', invalidateBounds);
+      window.removeEventListener('resize', invalidateBounds);
+    };
+  }, []);
+
   const handleMouseMove = (e) => {
-    if (!ref.current) return;
+    let rect = boundsRef.current;
+    if (!rect && ref.current) {
+      rect = ref.current.getBoundingClientRect();
+      boundsRef.current = rect;
+    }
+    if (!rect) return;
+
     const { clientX, clientY } = e;
-    const { height, width, left, top } = ref.current.getBoundingClientRect();
-    const centerX = left + width / 2;
-    const centerY = top + height / 2;
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
     
     // Apply pull if hovered
     x.set((clientX - centerX) * 0.3);
@@ -30,6 +48,7 @@ const MagneticButton = React.memo(({ children, className = '' }) => {
   };
 
   const handleMouseLeave = () => {
+    boundsRef.current = null;
     x.set(0);
     y.set(0);
   };

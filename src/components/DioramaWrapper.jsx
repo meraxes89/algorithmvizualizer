@@ -34,6 +34,8 @@ const DioramaWrapper = React.memo(({ children }) => {
       const clientY = e.clientY;
 
       rafId.current = requestAnimationFrame(() => {
+        if (document.hidden) return;
+
         document.documentElement.style.setProperty('--mouse-x', `${clientX}px`);
         document.documentElement.style.setProperty('--mouse-y', `${clientY}px`);
 
@@ -55,13 +57,25 @@ const DioramaWrapper = React.memo(({ children }) => {
       }
     };
 
+    const handleVisibility = () => {
+      if (document.hidden) {
+        document.documentElement.setAttribute('data-tab-hidden', '');
+      } else {
+        document.documentElement.removeAttribute('data-tab-hidden');
+      }
+    };
+
+    if (document.hidden) handleVisibility();
+
     window.addEventListener('mousemove', handleMouseMove, { passive: true });
     window.addEventListener('mouseleave', handleMouseLeave);
+    document.addEventListener('visibilitychange', handleVisibility);
     
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('mouseleave', handleMouseLeave);
+      document.removeEventListener('visibilitychange', handleVisibility);
       if (rafId.current) cancelAnimationFrame(rafId.current);
     };
   }, []);

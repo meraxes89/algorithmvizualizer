@@ -245,6 +245,7 @@ code, kbd, samp, pre, .font-mono {
   overflow: hidden;
   background-clip: padding-box;
   border: 1px solid transparent;
+  contain: paint;
 }
 
 /* Noise Texture Overlay */
@@ -471,3 +472,27 @@ input[type="range"]::-webkit-slider-thumb:hover {
   z-index: 10;
 }
 
+
+/* ============================================
+   MOTION DISCIPLINE (REDUCED MOTION + TAB HIDDEN)
+   ============================================ */
+html[data-tab-hidden] .bg-ambient::before,
+html[data-tab-hidden] .bg-ambient::after,
+html[data-tab-hidden] .premium-border-mesh,
+html[data-tab-hidden] .animate-breathe,
+html[data-tab-hidden] .animate-pulse {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,66 +1,62 @@
-import React, { createContext, useContext, useEffect, useState, useCallback, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback, useMemo } from 'react';
 
 const ThemeContext = createContext();
 
-export const ThemeProvider = ({ children }) => {
-  const [isDark, setIsDark] = useState(() => {
+const readInitialDark = () => {
+  try {
+    if (document.documentElement.classList.contains('dark')) return true;
     const saved = localStorage.getItem('av-theme');
     if (saved) return saved === 'dark';
-    return false;
-  });
+  } catch (e) {}
+  return false;
+};
+
+export const ThemeProvider = ({ children }) => {
+  const [isDark, setIsDark] = useState(readInitialDark);
+  const isDarkRef = useRef(isDark);
 
   useEffect(() => {
-    const root = document.documentElement;
-    if (isDark) {
-      root.classList.add('dark');
-      localStorage.setItem('av-theme', 'dark');
-    } else {
-      root.classList.remove('dark');
-      localStorage.setItem('av-theme', 'light');
-    }
+    isDarkRef.current = isDark;
+    document.documentElement.classList.toggle('dark', isDark);
+    try {
+      localStorage.setItem('av-theme', isDark ? 'dark' : 'light');
+    } catch (e) {}
   }, [isDark]);
 
   const toggleTheme = useCallback((e) => {
-    setIsDark((prevIsDark) => {
-      const isDarkNew = !prevIsDark;
+    const next = !isDarkRef.current;
+    isDarkRef.current = next;
+    setIsDark(next);
 
-      if (!document.startViewTransition || !e) {
-        return isDarkNew;
-      }
+    if (!e || !document.startViewTransition) return;
 
-      const x = e.clientX;
-      const y = e.clientY;
-      const endRadius = Math.hypot(
-        Math.max(x, window.innerWidth - x),
-        Math.max(y, window.innerHeight - y)
+    const { clientX: x, clientY: y } = e;
+    const endRadius = Math.hypot(
+      Math.max(x, window.innerWidth - x),
+      Math.max(y, window.innerHeight - y)
+    );
+
+    const transition = document.startViewTransition();
+
+    transition.ready.then(() => {
+      const clipPath = [
+        `circle(0px at ${x}px ${y}px)`,
+        `circle(${endRadius}px at ${x}px ${y}px)`
+      ];
+
+      document.documentElement.animate(
+        {
+          clipPath: next ? [...clipPath].reverse() : clipPath
+        },
+        {
+          duration: 600,
+          easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
+          pseudoElement: next
+            ? '::view-transition-old(root)'
+            : '::view-transition-new(root)'
+        }
       );
-
-      const transition = document.startViewTransition(() => {
-        setIsDark(isDarkNew);
-      });
-
-      transition.ready.then(() => {
-        const clipPath = [
-          `circle(0px at ${x}px ${y}px)`,
-          `circle(${endRadius}px at ${x}px ${y}px)`
-        ];
-
-        document.documentElement.animate(
-          {
-            clipPath: isDarkNew ? [...clipPath].reverse() : clipPath
-          },
-          {
-            duration: 600,
-            easing: 'cubic-bezier(0.25, 1, 0.5, 1)',
-            pseudoElement: isDarkNew
-              ? '::view-transition-old(root)'
-              : '::view-transition-new(root)'
-          }
-        );
-      });
-
-      return prevIsDark;
-    });
+    }).catch(() => {});
   }, []);
 
   const value = useMemo(() => ({ isDark, toggleTheme }), [isDark, toggleTheme]);
