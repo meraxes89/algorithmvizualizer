@@ -540,3 +540,50 @@ html[data-tab-hidden] .animate-pulse {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ============================================
+   PAPER STUDIO — HOMEPAGE MOTION SYSTEM
+   ============================================ */
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 36s linear infinite;
+  will-change: transform;
+}
+
+html[data-tab-hidden] .animate-marquee {
+  animation-play-state: paused !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-marquee {
+    animation: none !important;
+  }
+}
+
+.spotlight-card {
+  position: relative;
+}
+
+.spotlight-overlay {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  background: radial-gradient(
+    340px circle at var(--sx, 50%) var(--sy, 50%),
+    var(--accent-soft),
+    transparent 65%
+  );
+}
+
+.spotlight-card:hover .spotlight-overlay {
+  opacity: 1;
+}

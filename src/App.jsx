@@ -116,7 +116,7 @@ function App() {
         <AccentColorManager />
         <CustomCursor />
         <ScrollToTop />
-        <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 selection:bg-indigo-500/30 font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
+        <div className="min-h-screen bg-paper text-ink selection:bg-accent-soft font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
           <Navbar />
           <DioramaWrapper>
             <ErrorBoundary>

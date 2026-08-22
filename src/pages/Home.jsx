@@ -1,435 +1,396 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Star,
   ArrowRight,
-  PlayCircle,
-  Code2,
-  BarChart2,
-  Activity,
-  Bookmark,
-  Share2,
+  ArrowUpRight,
+  Swords,
   Network,
   Search,
-  List,
-  Layers,
+  ListTree,
+  BarChart3,
+  PlayCircle,
+  Code2,
   Cpu,
-  Swords,
-  Trophy,
-  Box
+  GitBranch,
 } from 'lucide-react';
 import GitLabIcon from '../components/GitLabIcon';
 import Logo from '../components/Logo';
-import TiltCard from '../components/TiltCard';
-import Hero3DVisualizer from '../components/3D/Hero3DVisualizer';
-import MagneticButton from '../components/MagneticButton';
+import LiveSortCanvas from '../components/home/LiveSortCanvas';
+import MicroViz from '../components/home/MicroViz';
+import SpotlightCard from '../components/home/SpotlightCard';
 
-const TYPEWRITER_PHRASES = [
-  { 
-    text: "Watching.", 
-    color: "text-indigo-600 dark:text-indigo-400", 
-    font: "font-cursive font-bold text-4xl sm:text-5xl lg:text-[3.8rem]" 
+const EASE = [0.22, 1, 0.36, 1];
+
+const HEADLINE = [
+  { text: 'Watch', italic: false },
+  { text: 'algorithms', italic: true },
+  { text: 'think.', italic: false },
+];
+
+const TICKER_ITEMS = [
+  'Quick Sort', 'Dijkstra', 'A*', 'BFS', 'DFS', 'Merge Sort', 'Binary Search',
+  'AVL Trees', 'Trie', 'Segment Tree', 'N-Queens', 'Tower of Hanoi',
+  'Floyd–Warshall', 'Kadane', 'Longest Common Subsequence', 'Heap Sort',
+];
+
+const LAB_CARDS = [
+  {
+    to: '/sorting',
+    icon: BarChart3,
+    tag: 'Sorting',
+    title: 'Sorting Suites',
+    desc: 'Nine algorithms racing through the same array — bars, sound and every comparison on screen.',
+    complexity: 'O(n²) → O(n log n)',
+    viz: 'bars',
   },
-  { 
-    text: "Step-by-Step Execution.", 
-    color: "text-emerald-600 dark:text-emerald-400", 
-    font: "font-pixel tracking-wider text-xl sm:text-2xl lg:text-[2.2rem]" 
+  {
+    to: '/pathfinding',
+    icon: Network,
+    tag: 'Pathfinding',
+    title: 'Maze Runners',
+    desc: 'Drop walls, weight terrain, then watch Dijkstra, A* and BFS negotiate the grid in real time.',
+    complexity: 'O((V+E) log V)',
+    viz: 'flood',
+    wide: true,
   },
-  { 
-    text: "Interactive 3D Rendering.", 
-    color: "text-cyan-500 dark:text-cyan-400", 
-    font: "font-orbitron font-extrabold tracking-widest text-2xl sm:text-3xl lg:text-[2.6rem]" 
+  {
+    to: '/graph',
+    icon: GitBranch,
+    tag: 'Graphs',
+    title: 'Graph Traversals',
+    desc: 'Build any graph by hand and watch BFS and DFS sweep it node by node.',
+    complexity: 'O(V + E)',
+    viz: 'graph',
   },
-  { 
-    text: "Building Intuition.", 
-    color: "text-rose-600 dark:text-rose-400", 
-    font: "font-serif-italic italic font-bold text-3xl sm:text-4xl lg:text-[3.2rem]" 
-  },
-  { 
-    text: "Mastering Code Logic.", 
-    color: "text-amber-600 dark:text-amber-400", 
-    font: "font-mono font-bold tracking-tight text-2xl sm:text-3xl lg:text-[2.8rem]" 
+  {
+    to: '/searching',
+    icon: Search,
+    tag: 'Searching',
+    title: 'Search Mechanics',
+    desc: 'Linear scans versus logarithmic bisection — see the gap open up live.',
+    complexity: 'O(log n)',
+    viz: 'binary',
   },
 ];
 
-const TypewriterText = () => {
-  const [phraseIndex, setPhraseIndex] = useState(0);
-  const [currentText, setCurrentText] = useState('');
-  const [isDeleting, setIsDeleting] = useState(false);
+const FEATURES = [
+  {
+    icon: PlayCircle,
+    title: 'Frame-perfect control',
+    desc: 'Pause, step, rewind or scrub any algorithm at your own pace.',
+  },
+  {
+    icon: Code2,
+    title: 'Real code, real time',
+    desc: 'Every visualization is paired with C++, Java, Python and JS source that tracks execution.',
+  },
+  {
+    icon: Swords,
+    title: 'Battle Arena',
+    desc: 'Race algorithms head-to-head on identical input and watch the leader board shift.',
+  },
+  {
+    icon: Cpu,
+    title: 'In-browser execution',
+    desc: 'Write and run code instantly in the Monaco playground — no setup, no installs.',
+  },
+];
 
-  useEffect(() => {
-    const targetPhrase = TYPEWRITER_PHRASES[phraseIndex].text;
-    let typingSpeed = isDeleting ? 35 : 65;
-
-    if (!isDeleting && currentText === targetPhrase) {
-      typingSpeed = 2200;
-      const timeout = setTimeout(() => setIsDeleting(true), typingSpeed);
-      return () => clearTimeout(timeout);
-    } else if (isDeleting && currentText === '') {
-      setIsDeleting(false);
-      setPhraseIndex((prev) => (prev + 1) % TYPEWRITER_PHRASES.length);
-      typingSpeed = 300;
-      const timeout = setTimeout(() => {}, typingSpeed);
-      return () => clearTimeout(timeout);
-    }
-
-    const timer = setTimeout(() => {
-      setCurrentText(
-        isDeleting
-          ? targetPhrase.substring(0, currentText.length - 1)
-          : targetPhrase.substring(0, currentText.length + 1)
-      );
-    }, typingSpeed);
-
-    return () => clearTimeout(timer);
-  }, [currentText, isDeleting, phraseIndex]);
-
-  const currentPhrase = TYPEWRITER_PHRASES[phraseIndex];
-
-  return (
-    <span className="inline">
-      <span className={`${currentPhrase.color} ${currentPhrase.font} transition-all duration-300`}>
-        {currentText}
-      </span>
-      <span className="inline-block w-[3px] h-[0.8em] bg-current ml-1.5 rounded-full animate-pulse align-middle" />
-    </span>
-  );
+const reveal = {
+  hidden: { y: '110%' },
+  visible: (i) => ({
+    y: '0%',
+    transition: { duration: 0.9, ease: EASE, delay: 0.15 + i * 0.12 },
+  }),
 };
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 24 },
+  visible: (i = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.7, ease: EASE, delay: i * 0.08 },
+  }),
+};
+
+const KineticHeadline = () => (
+  <h1 className="font-display text-[2.9rem] leading-[1.05] sm:text-6xl lg:text-[4.4rem] font-bold text-ink mb-7 tracking-tight">
+    {HEADLINE.map((word, i) => (
+      <span key={word.text} className="inline-block overflow-hidden align-bottom pb-1 -mb-1 mr-[0.24em] last:mr-0">
+        <motion.span
+          className={`inline-block ${word.italic ? 'italic text-accent' : ''}`}
+          variants={reveal}
+          initial="hidden"
+          animate="visible"
+          custom={i}
+        >
+          {word.text}
+        </motion.span>
+      </span>
+    ))}
+  </h1>
+);
 
 const Home = () => {
   return (
-    <div className="relative min-h-screen text-slate-900 dark:text-white font-sans selection:bg-indigo-500/30">
-      {/* Ambient Background is now handled globally by DioramaWrapper */}
+    <div className="relative min-h-screen">
+      <main className="max-w-7xl mx-auto px-6 pt-10 lg:pt-16 pb-20 relative z-10">
 
-      <main className="max-w-7xl mx-auto px-6 pt-12 pb-24 relative z-10">
-        
-        {/* HERO SECTION */}
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-12 lg:gap-16 mb-28">
-          
-          {/* Left Content */}
-          <div className="flex-1 max-w-2xl text-left">
-            
-            <h1 className="text-4xl sm:text-5xl lg:text-[3.5rem] leading-[1.15] font-extrabold text-slate-900 dark:text-white mb-6 tracking-tight min-h-[140px] sm:min-h-[125px] translate-z-40">
-              Visualize Algorithms.<br />
-              Learn by <TypewriterText />
-            </h1>
-
-            <p className="text-lg text-slate-600 dark:text-slate-300 leading-relaxed mb-10 max-w-xl">
-              Explore interactive visualizations of data structures and algorithms with frame-by-frame precision, 3D WebGL rendering, and multi-language execution.
-            </p>
-
-            <div className="flex flex-wrap items-center gap-4 mb-12 translate-z-20 preserve-3d">
-              <MagneticButton>
-                <Link
-                  to="/algorithms"
-                  className="btn-premium px-7 py-3.5 text-sm rounded-2xl flex items-center gap-2"
-                >
-                  <span>Explore Algorithms</span>
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
-              </MagneticButton>
-
-              <MagneticButton>
-                <Link
-                  to="/arena"
-                  className="btn-secondary glass-card px-6 py-3.5 text-sm rounded-2xl flex items-center gap-2"
-                >
-                  <Swords className="w-4 h-4 text-amber-400" />
-                  <span>Battle Arena</span>
-                </Link>
-              </MagneticButton>
-            </div>
-
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-6 border-t border-slate-200/80 dark:border-white/10 text-xs font-medium text-slate-600 dark:text-slate-300">
-              <div className="flex items-center gap-2">
-                <Box className="w-4 h-4 text-cyan-400 shrink-0" />
-                <span>60 FPS WebGL</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-purple-400 shrink-0" />
-                <span>Code Inspector</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Cpu className="w-4 h-4 text-emerald-400 shrink-0" />
-                <span>Client WASM</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Layers className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>Call Stack Trace</span>
-              </div>
-            </div>
-
-          </div>
-
-          {/* Right Content: 3D Stage matching theme */}
-          <div id="tour-visualizer" className="flex-1 w-full max-w-xl">
-            <Hero3DVisualizer />
-          </div>
-
-        </div>
-
-        {/* POPULAR ALGORITHMS GRID */}
-        <motion.div 
-          className="mb-28"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-100px" }}
-          variants={{
-            hidden: { opacity: 0 },
-            visible: { opacity: 1, transition: { staggerChildren: 0.15 } }
-          }}
-        >
-          <div className="flex items-center justify-between mb-10">
-            <motion.div variants={{ hidden: { opacity: 0, x: -30 }, visible: { opacity: 1, x: 0 } }}>
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white mb-1 tracking-tight">
-                Popular Algorithms
-              </h2>
-              <p className="text-sm text-slate-500 dark:text-slate-400">
-                Explore real-time visualizers across core computer science domains.
-              </p>
+        {/* ── HERO ─────────────────────────────────────── */}
+        <section className="grid lg:grid-cols-12 gap-12 lg:gap-10 items-center mb-24">
+          <div className="lg:col-span-6">
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: EASE }}
+              className="inline-flex items-center gap-2 rounded-full border border-line-strong bg-paper-1 px-4 py-1.5 mb-8"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-accent animate-pulse" />
+              <span className="text-[11px] font-mono font-semibold tracking-[0.18em] uppercase text-ink-2">
+                The Algorithm Studio
+              </span>
             </motion.div>
-            <motion.div variants={{ hidden: { opacity: 0, x: 30 }, visible: { opacity: 1, x: 0 } }}>
+
+            <KineticHeadline />
+
+            <motion.p
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE, delay: 0.55 }}
+              className="text-lg text-ink-2 leading-relaxed mb-10 max-w-xl"
+            >
+              A studio-grade laboratory where sorting, searching, graphs and trees
+              unfold step by step — rendered at 60&nbsp;fps, annotated with real code,
+              and scored with sound.
+            </motion.p>
+
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE, delay: 0.68 }}
+              className="flex flex-wrap items-center gap-4 mb-12"
+            >
+              <Link to="/algorithms" className="btn-premium px-7 py-3.5 rounded-2xl text-sm">
+                <span>Enter the studio</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
               <Link
-                to="/algorithms"
-                className="text-xs font-bold text-indigo-500 hover:text-indigo-400 flex items-center gap-1.5 bg-indigo-500/10 px-4 py-2 rounded-xl border border-indigo-500/20 transition-all hover:border-indigo-500/40"
+                to="/arena"
+                className="btn-secondary px-6 py-3.5 rounded-2xl text-sm items-center inline-flex"
               >
-                <span>View All Categories</span>
-                <ArrowRight className="w-3.5 h-3.5" />
+                <Swords className="w-4 h-4 text-accent" />
+                <span>Battle Arena</span>
               </Link>
             </motion.div>
+
+            <motion.dl
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.8, delay: 0.85 }}
+              className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-8 border-t border-line-subtle"
+            >
+              {[
+                ['30+', 'Visualizers'],
+                ['6', 'Domains'],
+                ['60 fps', 'Rendering'],
+                ['0', 'Setup needed'],
+              ].map(([v, l]) => (
+                <div key={l}>
+                  <dt className="font-display text-2xl font-bold text-ink tabular-nums">{v}</dt>
+                  <dd className="text-[11px] font-mono uppercase tracking-[0.14em] text-ink-3 mt-1">{l}</dd>
+                </div>
+              ))}
+            </motion.dl>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            
-            {/* Quick Sort */}
-            <motion.div variants={{ hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }}>
-              <TiltCard className="rounded-2xl h-full">
-                <Link to="/sorting" className="block glass-card p-6 h-full flex flex-col justify-between group">
-                  <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="w-11 h-11 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-500 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <List className="w-5 h-5" />
-                      </div>
-                      <span className="bg-indigo-500/10 text-indigo-400 text-[10px] font-extrabold px-3 py-1 rounded-full border border-indigo-500/20">
-                        SORTING
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2 group-hover:text-indigo-400 transition-colors">
-                      Quick Sort
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                      Divide-and-conquer partition sorting with 3D bars and step highlights.
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-400 group-hover:text-indigo-400 transition-colors pt-4 border-t border-white/5">
-                    <span className="text-[11px] font-mono font-semibold text-slate-500 dark:text-slate-400">Avg. O(n log n)</span>
-                    <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-              </TiltCard>
-            </motion.div>
+          {/* Hero visual */}
+          <motion.div
+            initial={{ opacity: 0, y: 32, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 0.9, ease: EASE, delay: 0.35 }}
+            className="lg:col-span-6 w-full max-w-xl lg:max-w-none lg:justify-self-end w-full"
+          >
+            <SpotlightCard className="glass-card p-0 overflow-hidden">
+              <div className="relative z-[2] flex items-center justify-between px-5 py-3.5 border-b border-line-subtle">
+                <div className="flex items-center gap-3">
+                  <span className="w-2 h-2 rounded-full bg-accent" />
+                  <span className="text-xs font-mono font-semibold tracking-wider text-ink-2">
+                    insertion_sort.live
+                  </span>
+                </div>
+                <span className="text-[10px] font-mono uppercase tracking-widest text-ink-3">
+                  click to shuffle
+                </span>
+              </div>
+              <div className="relative z-[2] h-52 sm:h-60 px-5 py-4">
+                <LiveSortCanvas />
+              </div>
+              <div className="relative z-[2] flex items-center justify-between px-5 py-3 border-t border-line-subtle text-[10px] font-mono text-ink-3">
+                <span>n = 44</span>
+                <span>O(n²) worst · O(n) best</span>
+                <span className="text-accent">sorted ✓</span>
+              </div>
+            </SpotlightCard>
+          </motion.div>
+        </section>
 
-            {/* Merge Sort */}
-            <motion.div variants={{ hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }}>
-              <TiltCard className="rounded-2xl h-full">
-                <Link to="/sorting" className="block glass-card p-6 h-full flex flex-col justify-between group">
-                  <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Share2 className="w-5 h-5" />
-                      </div>
-                      <span className="bg-purple-500/10 text-purple-400 text-[10px] font-extrabold px-3 py-1 rounded-full border border-purple-500/20">
-                        SORTING
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2 group-hover:text-purple-400 transition-colors">
-                      Merge Sort
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                      Guaranteed O(n log n) stable sorting using recursive sub-array division.
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-400 group-hover:text-purple-400 transition-colors pt-4 border-t border-white/5">
-                    <span className="text-[11px] font-mono font-semibold text-slate-500 dark:text-slate-400">O(n log n)</span>
-                    <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-              </TiltCard>
-            </motion.div>
-
-            {/* Dijkstra's Search */}
-            <motion.div variants={{ hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }}>
-              <TiltCard className="rounded-2xl h-full">
-                <Link to="/pathfinding" className="block glass-card p-6 h-full flex flex-col justify-between group">
-                  <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="w-11 h-11 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Network className="w-5 h-5" />
-                      </div>
-                      <span className="bg-cyan-500/10 text-cyan-400 text-[10px] font-extrabold px-3 py-1 rounded-full border border-cyan-500/20">
-                        PATHFINDING
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2 group-hover:text-cyan-400 transition-colors">
-                      Dijkstra's Algorithm
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                      Shortest-path graph traversal with 3D NYC skyscraper drone camera mode.
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-400 group-hover:text-cyan-400 transition-colors pt-4 border-t border-white/5">
-                    <span className="text-[11px] font-mono font-semibold text-slate-500 dark:text-slate-400">O((V + E) log V)</span>
-                    <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-              </TiltCard>
-            </motion.div>
-
-            {/* Binary Search */}
-            <motion.div variants={{ hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 100 } } }}>
-              <TiltCard className="rounded-2xl h-full">
-                <Link to="/searching" className="block glass-card p-6 h-full flex flex-col justify-between group">
-                  <div>
-                    <div className="flex justify-between items-start mb-4">
-                      <div className="w-11 h-11 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Search className="w-5 h-5" />
-                      </div>
-                      <span className="bg-emerald-500/10 text-emerald-400 text-[10px] font-extrabold px-3 py-1 rounded-full border border-emerald-500/20">
-                        SEARCHING
-                      </span>
-                    </div>
-                    <h3 className="font-bold text-lg text-slate-900 dark:text-white mb-2 group-hover:text-emerald-400 transition-colors">
-                      Binary Search
-                    </h3>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
-                      Logarithmic range trimming on sorted arrays with dynamic bounds tracking.
-                    </p>
-                  </div>
-                  <div className="flex items-center justify-between text-slate-400 group-hover:text-emerald-400 transition-colors pt-4 border-t border-white/5">
-                    <span className="text-[11px] font-mono font-semibold text-slate-500 dark:text-slate-400">O(log n)</span>
-                    <ArrowRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </Link>
-              </TiltCard>
-            </motion.div>
-
+        {/* ── TICKER ───────────────────────────────────── */}
+        <section className="border-y border-line-subtle py-4 mb-24 overflow-hidden -mx-6 px-6" aria-hidden="true">
+          <div className="flex w-max animate-marquee">
+            {[0, 1].map((copy) => (
+              <div key={copy} className="flex shrink-0 items-center">
+                {TICKER_ITEMS.map((item) => (
+                  <span key={`${copy}-${item}`} className="flex items-center text-sm font-mono text-ink-3 whitespace-nowrap">
+                    <span className="px-5">{item}</span>
+                    <span className="text-accent">✦</span>
+                  </span>
+                ))}
+              </div>
+            ))}
           </div>
-        </motion.div>
+        </section>
 
-        {/* FEATURE HIGHLIGHT CARDS */}
-        <motion.div 
-          className="glass-card p-8 lg:p-10 mb-20"
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
-          variants={{
-            hidden: { opacity: 0, scale: 0.95 },
-            visible: { opacity: 1, scale: 1, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }
-          }}
+        {/* ── LAB BENTO ────────────────────────────────── */}
+        <section className="mb-28">
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: '-80px' }}
+            className="flex items-end justify-between mb-10"
+          >
+            <div>
+              <p className="text-[11px] font-mono font-semibold tracking-[0.2em] uppercase text-accent mb-3">
+                01 — The Laboratory
+              </p>
+              <h2 className="font-display text-3xl sm:text-4xl font-bold text-ink tracking-tight">
+                Pick an instrument.
+              </h2>
+            </div>
+            <Link
+              to="/algorithms"
+              className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold text-accent hover:text-accent-strong transition-colors group"
+            >
+              All categories
+              <ArrowUpRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            </Link>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {LAB_CARDS.map((card, i) => (
+              <motion.div
+                key={card.to}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: '-60px' }}
+                transition={{ duration: 0.65, ease: EASE, delay: i * 0.09 }}
+                className={card.wide ? 'lg:col-span-2' : ''}
+              >
+                <SpotlightCard className="glass-card p-0 h-full block group">
+                  <Link to={card.to} className="relative z-[2] flex flex-col h-full">
+                    <div className="p-6 pb-4 flex-1">
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="w-10 h-10 rounded-xl bg-accent-soft border border-line-subtle text-accent flex items-center justify-center">
+                          <card.icon className="w-[18px] h-[18px]" />
+                        </div>
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-[0.16em] text-ink-3 border border-line-subtle rounded-full px-3 py-1">
+                          {card.tag}
+                        </span>
+                      </div>
+                      <h3 className="font-display text-xl font-bold text-ink mb-2 group-hover:text-accent transition-colors">
+                        {card.title}
+                      </h3>
+                      <p className="text-[13px] text-ink-2 leading-relaxed mb-4">
+                        {card.desc}
+                      </p>
+                      <span className="text-[11px] font-mono font-semibold text-ink-3">{card.complexity}</span>
+                    </div>
+                    <div className={`h-28 mt-auto border-t border-line-subtle relative overflow-hidden ${card.wide ? 'h-36' : ''}`}>
+                      <MicroViz variant={card.viz} />
+                    </div>
+                  </Link>
+                </SpotlightCard>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        {/* ── FEATURES ─────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="glass-card p-8 lg:p-10 mb-28"
         >
+          <p className="text-[11px] font-mono font-semibold tracking-[0.2em] uppercase text-accent mb-3">
+            02 — Craft details
+          </p>
+          <h2 className="font-display text-3xl sm:text-4xl font-bold text-ink tracking-tight mb-10">
+            Engineered like an instrument.
+          </h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            
-            <motion.div 
-              className="flex items-start gap-4"
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              transition={{ delay: 0.2 }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center shrink-0">
-                <PlayCircle className="w-6 h-6" />
+            {FEATURES.map((f) => (
+              <div key={f.title} className="flex items-start gap-4">
+                <div className="w-11 h-11 rounded-xl bg-accent-soft border border-line-subtle text-accent flex items-center justify-center shrink-0">
+                  <f.icon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h4 className="font-semibold text-[15px] text-ink mb-1.5">{f.title}</h4>
+                  <p className="text-[13px] text-ink-2 leading-relaxed">{f.desc}</p>
+                </div>
               </div>
-              <div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white mb-1">
-                  Step-by-Step Control
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Pause, step forward, rewind, or scrub speeds at 60 FPS precision.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="flex items-start gap-4"
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              transition={{ delay: 0.3 }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center shrink-0">
-                <Code2 className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white mb-1">
-                  Real Code & Logic
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Inspect source code and line-by-line step updates in real time.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="flex items-start gap-4"
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              transition={{ delay: 0.4 }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center shrink-0">
-                <Swords className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white mb-1">
-                  Algorithm Battle Arena
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Race algorithms side-by-side on identical input data in real time.
-                </p>
-              </div>
-            </motion.div>
-
-            <motion.div 
-              className="flex items-start gap-4"
-              variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-              transition={{ delay: 0.5 }}
-            >
-              <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
-                <Cpu className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="font-bold text-base text-slate-900 dark:text-white mb-1">
-                  Client WASM Editor
-                </h4>
-                <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed">
-                  Run C++, Python, Java, and JS code directly in Monaco Editor playground.
-                </p>
-              </div>
-            </motion.div>
-
+            ))}
           </div>
-        </motion.div>
+        </motion.section>
 
+        {/* ── CTA ──────────────────────────────────────── */}
+        <motion.section
+          initial={{ opacity: 0, y: 28 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.7, ease: EASE }}
+          className="text-center mb-8"
+        >
+          <h2 className="font-display text-3xl sm:text-5xl font-bold text-ink tracking-tight mb-4">
+            Ready to see <em className="italic text-accent">logic</em> move?
+          </h2>
+          <p className="text-ink-2 mb-8 max-w-md mx-auto">
+            No accounts. No installs. One click between you and watching Dijkstra think.
+          </p>
+          <Link to="/algorithms" className="btn-premium px-8 py-4 rounded-2xl text-sm">
+            Start exploring
+            <ArrowRight className="w-4 h-4" />
+          </Link>
+        </motion.section>
       </main>
 
-      {/* FOOTER */}
-      <footer className="w-full relative z-10 bg-slate-100/80 dark:bg-black/60 backdrop-blur-2xl border-t border-slate-200/80 dark:border-white/10 px-8 py-12 transition-colors duration-300">
+      {/* ── FOOTER ─────────────────────────────────────── */}
+      <footer className="w-full relative z-10 border-t border-line-subtle bg-paper-1/70 backdrop-blur-xl px-8 py-12">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-3">
             <Logo className="w-8 h-8" />
-            <span className="font-bold text-sm text-slate-800 dark:text-slate-200">Algorithm Visualizer</span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-indigo-500/10 dark:bg-indigo-500/20 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 dark:border-indigo-500/30">
-              v1.0.0
+            <span className="font-semibold text-sm text-ink">Algorithm Visualizer</span>
+            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-accent-soft text-accent border border-line-subtle">
+              flagship
             </span>
           </div>
 
-          <div className="flex items-center gap-6 text-xs text-slate-600 dark:text-slate-400 font-medium">
+          <div className="flex items-center gap-6 text-xs text-ink-2 font-medium">
             <a
               href="https://gitlab.com/sireenyadav/algorithmvizualizer"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              className="flex items-center gap-1.5 hover:text-accent transition-colors"
             >
-              <GitLabIcon className="w-4 h-4 text-indigo-500" />
+              <GitLabIcon className="w-4 h-4" />
               GitLab Repository
             </a>
-            <span>•</span>
-            <p className="m-0">Designed & Engineered by <strong className="text-slate-800 dark:text-slate-200">Sireen Yadav</strong></p>
+            <span className="text-ink-3">•</span>
+            <p className="m-0">
+              Designed &amp; engineered by{' '}
+              <strong className="text-ink">Sireen Yadav</strong> · {new Date().getFullYear()}
+            </p>
           </div>
         </div>
       </footer>
