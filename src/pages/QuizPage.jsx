@@ -127,9 +127,9 @@ const QuizPage = () => {
         </div>
 
         {/* Progress Bar */}
-        <div className="w-full bg-slate-800/60 border border-white/10 rounded-full h-2.5 mb-8 overflow-hidden">
+        <div className="w-full bg-line-subtle border border-line-subtle rounded-full h-2.5 mb-8 overflow-hidden">
           <div
-            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-full transition-all duration-300"
+            className="bg-accent h-full transition-all duration-300"
             style={{ width: `${((currentIdx + 1) / QUIZ_QUESTIONS.length) * 100}%` }}
           />
         </div>
@@ -150,13 +150,13 @@ const QuizPage = () => {
               {currentQ.options.map((opt, idx) => {
                 const isPicked = selectedOption === idx;
                 const isCorrect = idx === currentQ.correct;
-                let btnStyle = "glass-card text-slate-300 border-white/10 hover:border-purple-500/40";
+                let btnStyle = "glass-card text-ink-2 hover:border-accent/40 hover:text-ink";
 
                 if (selectedOption !== null) {
                   if (isCorrect) {
-                    btnStyle = "bg-emerald-500/20 border-emerald-500 text-emerald-300 shadow-lg shadow-emerald-500/20";
+                    btnStyle = "bg-emerald-500/20 border-emerald-500 text-emerald-600 dark:text-emerald-300 shadow-lg shadow-emerald-500/20";
                   } else if (isPicked) {
-                    btnStyle = "bg-rose-500/20 border-rose-500 text-rose-300 shadow-lg shadow-rose-500/20";
+                    btnStyle = "bg-rose-500/20 border-rose-500 text-rose-600 dark:text-rose-300 shadow-lg shadow-rose-500/20";
                   }
                 }
 
@@ -177,8 +177,8 @@ const QuizPage = () => {
 
             {/* Explanation box when option selected */}
             {selectedOption !== null && (
-              <div className="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 text-xs text-slate-300 mb-6 leading-relaxed">
-                <strong className="text-purple-400 block mb-1">Explanation:</strong>
+              <div className="p-4 rounded-2xl bg-accent-soft border border-accent/30 text-xs text-ink-2 mb-6 leading-relaxed">
+                <strong className="text-accent block mb-1">Explanation:</strong>
                 {currentQ.explanation}
               </div>
             )}

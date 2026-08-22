@@ -140,7 +140,7 @@ function computeInstant(algorithmKey, grid, startRow, startCol, endRow, endCol) 
 const ROWS = 20;
 const COLS = 48;
 
-const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
+const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmKey: algorithmKeyProp }) => {
   const [grid, setGrid] = useState([]);
   const [startPos, setStartPos] = useState({ row: 10, col: 4 });
   const [endPos, setEndPos] = useState({ row: 10, col: 43 });
@@ -153,9 +153,10 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   const [selectedMazeType, setSelectedMazeType] = useState('dfs'); // 'dfs' | 'recursive_division' | 'prims'
   const [stats, setStats] = useState(null);
   const animationRef = useRef(null);
-  const algorithmKey = algorithmInfo?.name?.toLowerCase().includes('a*') ? 'astar'
-    : algorithmInfo?.name?.toLowerCase().includes('bfs') ? 'bfs'
-    : algorithmInfo?.name?.toLowerCase().includes('dfs') ? 'dfs' : 'dijkstra';
+  const algorithmKey = algorithmKeyProp
+    || (algorithmInfo?.name?.toLowerCase().includes('a*') ? 'astar'
+    : ['bfs', 'breadth'].some((s) => algorithmInfo?.name?.toLowerCase().includes(s)) ? 'bfs'
+    : ['dfs', 'depth'].some((s) => algorithmInfo?.name?.toLowerCase().includes(s)) ? 'dfs' : 'dijkstra');
 
   // Build fresh base grid (walls only, no path/visited)
   const buildBaseGrid = useCallback(() => {

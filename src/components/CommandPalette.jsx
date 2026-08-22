@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Command, ArrowRight, X, Sparkles, Terminal, Swords, HelpCircle, List, Compass, Network, Share2, GitBranch } from 'lucide-react';
 
@@ -32,10 +32,10 @@ const CommandPalette = ({ isOpen, onClose }) => {
   const inputRef = useRef(null);
   const navigate = useNavigate();
 
-  const filteredItems = SEARCH_ITEMS.filter((item) =>
+  const filteredItems = useMemo(() => SEARCH_ITEMS.filter((item) =>
     item.title.toLowerCase().includes(query.toLowerCase()) ||
     item.category.toLowerCase().includes(query.toLowerCase())
-  );
+  ), [query]);
 
   useEffect(() => {
     if (isOpen) {
@@ -48,12 +48,6 @@ const CommandPalette = ({ isOpen, onClose }) => {
 
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-        e.preventDefault();
-        if (isOpen) onClose();
-        else setQuery('');
-      }
-
       if (!isOpen) return;
 
       if (e.key === 'Escape') {
@@ -80,8 +74,14 @@ const CommandPalette = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-black/60 dark:bg-black/80 backdrop-blur-xl flex items-start justify-center pt-16 sm:pt-24 px-4 transition-all">
-      <div className="w-full max-w-xl bg-[#faf7f2] dark:bg-zinc-950 border border-white/80 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-black/10 dark:ring-white/10 flex flex-col max-h-[80vh]">
+    <div
+      className="fixed inset-0 z-[100] bg-black/60 dark:bg-black/80 backdrop-blur-xl flex items-start justify-center pt-16 sm:pt-24 px-4 transition-all"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-xl bg-[#faf7f2] dark:bg-zinc-950 border border-white/80 dark:border-zinc-800 rounded-2xl shadow-2xl overflow-hidden ring-1 ring-black/10 dark:ring-white/10 flex flex-col max-h-[80vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Search Header Input */}
         <div className="flex items-center gap-3 px-4 py-3.5 border-b border-stone-200/80 dark:border-zinc-800/80">
           <Search className="w-5 h-5 text-stone-400 shrink-0" />

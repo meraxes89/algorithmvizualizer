@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { ChevronDown, Search, Moon, Sun, Menu, X, Swords, Trophy } from 'lucide-react';
 import GitLabIcon from './GitLabIcon';
 import { useTheme } from '../context/ThemeContext';
@@ -13,12 +13,9 @@ const Navbar = () => {
   const [isCmdPaletteOpen, setIsCmdPaletteOpen] = useState(false);
   const { isDark, toggleTheme } = useTheme();
 
-  const navigate = useNavigate();
-
-  // Handle Cmd/Ctrl + K shortcut
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
         setIsCmdPaletteOpen((prev) => !prev);
       }

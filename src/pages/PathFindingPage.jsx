@@ -9,10 +9,10 @@ import { dfs, dfsInfo } from '../algorithms/pathfinding/dfs';
 
 const PathFindingPage = () => {
   const algorithms = [
-    { name: 'A* Search', algorithm: astar, info: astarInfo },
-    { name: "Dijkstra's Algorithm", algorithm: dijkstra, info: dijkstraInfo },
-    { name: 'Breadth-First Search', algorithm: bfs, info: bfsInfo },
-    { name: 'Depth-First Search', algorithm: dfs, info: dfsInfo },
+    { name: 'A* Search', key: 'astar', algorithm: astar, info: astarInfo },
+    { name: "Dijkstra's Algorithm", key: 'dijkstra', algorithm: dijkstra, info: dijkstraInfo },
+    { name: 'Breadth-First Search', key: 'bfs', algorithm: bfs, info: bfsInfo },
+    { name: 'Depth-First Search', key: 'dfs', algorithm: dfs, info: dfsInfo },
   ];
 
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(algorithms[0]);
@@ -55,6 +55,7 @@ const PathFindingPage = () => {
         <div className="flex-1 min-h-[600px] w-full bg-white dark:bg-black border border-slate-200 dark:border-zinc-800/80 rounded-3xl shadow-sm overflow-hidden flex flex-col">
           <PathFindingVisualizer
             algorithm={selectedAlgorithm.algorithm}
+            algorithmKey={selectedAlgorithm.key}
             algorithmInfo={selectedAlgorithm.info}
           />
         </div>

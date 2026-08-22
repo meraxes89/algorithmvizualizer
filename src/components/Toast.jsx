@@ -15,22 +15,33 @@ const dispatchToast = (message, type) => {
   window.dispatchEvent(event);
 };
 
+const MAX_TOASTS = 5;
+
 const ToastContainer = () => {
   const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
+    const timers = new Set();
+
     const handleAddToast = (event) => {
       const newToast = event.detail;
-      setToasts(prev => [...prev, newToast]);
-      
-      // Auto dismiss
-      setTimeout(() => {
+      setToasts(prev => {
+        const next = [...prev, newToast];
+        return next.length > MAX_TOASTS ? next.slice(next.length - MAX_TOASTS) : next;
+      });
+
+      const timerId = setTimeout(() => {
+        timers.delete(timerId);
         setToasts(prev => prev.filter(t => t.id !== newToast.id));
       }, 4000);
+      timers.add(timerId);
     };
 
     window.addEventListener('add-toast', handleAddToast);
-    return () => window.removeEventListener('add-toast', handleAddToast);
+    return () => {
+      window.removeEventListener('add-toast', handleAddToast);
+      timers.forEach(clearTimeout);
+    };
   }, []);
 
   const removeToast = (id) => {
