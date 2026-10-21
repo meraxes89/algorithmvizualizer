@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, RotateCcw, Trash2, ArrowLeft, Terminal, Keyboard, Cpu, CheckCircle2, AlertCircle, Settings, X, Globe, Server, Cloud, FileCode, Plus, Upload, Code, Folder, File, ChevronRight, ChevronDown, Trash, Edit2, FolderPlus, FilePlus, ChevronsLeft, MoreVertical } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Play, RotateCcw, Trash2, Code2, Terminal, Keyboard, Cpu, CheckCircle2, AlertCircle, Settings, X, Globe, Server, Cloud, FileCode, Plus, Upload, Code, Folder, File, ChevronRight, ChevronDown, Trash, Edit2, FolderPlus, FilePlus, ChevronsLeft, MoreVertical } from 'lucide-react';
 import Editor from '@monaco-editor/react';
+import PageShell from '../components/ui/PageShell';
 import { useTheme } from '../context/ThemeContext';
 import { LANGUAGES, WANDBOX_COMPILERS, LANGUAGE_ICONS } from '../editor/languages';
 import { runJSInBrowser, runPythonInBrowser, runOnWandbox, runOnCodeX, runOnPiston } from '../editor/executors';
@@ -200,103 +200,77 @@ const PlaygroundPage = () => {
   }, [isRunning, handleRun]);
 
   return (
-    <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-white font-sans flex flex-col transition-colors duration-200">
-
-      <main className="flex-1 flex flex-col p-4 md:p-6 max-w-[1600px] w-full mx-auto gap-4 pb-24">
-        {/* Navigation & Header Toolbar */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-200 dark:border-slate-800">
-          <div className="flex items-center gap-4">
-            <Link to="/algorithms" className="p-2 border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors shadow-sm bg-white dark:bg-slate-900">
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100 tracking-tight">Playground</h1>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Write, run, and test your code in multiple languages</p>
-            </div>
-          </div>
-
-          {/* Action Toolbar */}
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Language Dropdown */}
-            <div className="relative">
-              <select
-                value={selectedLang}
-                onChange={(e) => handleLanguageChange(e.target.value)}
-                className="appearance-none bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-lg pl-4 pr-10 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors shadow-sm cursor-pointer outline-none focus:ring-2 focus:ring-indigo-500/20"
-              >
-                {Object.keys(LANGUAGES).map((key) => (
-                  <option key={key} value={key}>
-                    {LANGUAGES[key].name} {WANDBOX_COMPILERS[key] ? `(${WANDBOX_COMPILERS[key]})` : ''}
-                  </option>
-                ))}
-              </select>
-              <ChevronDown className="w-4 h-4 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-            </div>
-
-            {/* Run Button */}
-            <button
-              onClick={handleRun}
-              disabled={isRunning}
-              title="Run program (Ctrl+Enter)"
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-bold text-white shadow-sm transition-all ml-2 ${
-                isRunning
-                  ? 'bg-indigo-400 dark:bg-indigo-600 cursor-not-allowed opacity-80'
-                  : 'bg-indigo-600 hover:bg-indigo-700 active:scale-[0.98]'
-              }`}
-            >
-              <Play className={`w-4 h-4 ${isRunning ? 'animate-pulse' : 'fill-current'}`} />
-              {isRunning ? 'Running...' : 'Run'}
-              <kbd className={`hidden sm:inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-mono border ${
-                isRunning
-                  ? 'bg-indigo-300/30 border-indigo-300/40 text-indigo-100'
-                  : 'bg-indigo-500/40 border-indigo-400/50 text-indigo-100'
-              }`}>⌃↵</kbd>
-            </button>
-
-            {/* Reset Button */}
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors shadow-sm ml-1"
-            >
-              <RotateCcw className="w-4 h-4 text-slate-400" />
-              Reset
-            </button>
-
-            {/* Clear Button */}
-            <button
-              onClick={handleClear}
-              className="flex items-center gap-1.5 px-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg text-sm font-medium transition-colors shadow-sm"
-            >
-              <Trash2 className="w-4 h-4 text-slate-400" />
-              Clear
-            </button>
-
-            {/* Settings (Subtle) */}
-            <button
-              onClick={() => setShowSettings(true)}
-              className="p-2 border bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-400 hover:text-slate-600 dark:text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 rounded-lg transition-colors shadow-sm ml-2"
-              title="Settings"
-            >
-              <Settings className="w-4 h-4" />
-            </button>
-          </div>
+    <PageShell
+      title="Playground"
+      subtitle="Write, run, and test your code in multiple languages"
+      icon={Code2}
+      layoutKey="PLAYGROUND"
+      width="wide"
+      stage={false}
+      actions={
+        <button
+          onClick={handleRun}
+          disabled={isRunning}
+          title="Run program (Ctrl+Enter)"
+          className={`btn-premium px-5 py-2 text-xs ${
+            isRunning ? 'cursor-not-allowed opacity-70' : 'active:scale-[0.98]'
+          }`}
+        >
+          <Play className={`w-3.5 h-3.5 ${isRunning ? 'animate-pulse' : 'fill-current'}`} />
+          {isRunning ? 'Running...' : 'Run'}
+          <kbd className="hidden items-center rounded border border-paper-0/25 bg-paper-0/10 px-1.5 py-0.5 font-mono text-[10px] sm:inline-flex">⌃↵</kbd>
+        </button>
+      }
+    >
+      <div className="mb-4 flex flex-wrap items-center gap-2">
+        <div className="relative">
+          <select
+            value={selectedLang}
+            onChange={(e) => handleLanguageChange(e.target.value)}
+            className="cursor-pointer appearance-none rounded-xl border border-line-subtle bg-paper-1/60 py-2 pl-3 pr-9 text-xs font-semibold text-ink-2 outline-none transition-colors hover:border-line-strong focus:border-accent"
+          >
+            {Object.keys(LANGUAGES).map((key) => (
+              <option key={key} value={key}>
+                {LANGUAGES[key].name} {WANDBOX_COMPILERS[key] ? `(${WANDBOX_COMPILERS[key]})` : ''}
+              </option>
+            ))}
+          </select>
+          <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
         </div>
 
+        <button onClick={handleReset} className="btn-secondary px-3 py-2 text-xs">
+          <RotateCcw className="h-3.5 w-3.5 text-ink-3" />
+          Reset
+        </button>
+        <button onClick={handleClear} className="btn-secondary px-3 py-2 text-xs">
+          <Trash2 className="h-3.5 w-3.5 text-ink-3" />
+          Clear
+        </button>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="inline-flex items-center justify-center rounded-xl border border-line-subtle bg-paper-1/60 p-2 text-ink-3 transition-colors hover:border-line-strong hover:text-accent"
+          title="Settings"
+        >
+          <Settings className="h-4 w-4" />
+        </button>
+        <span className="ml-auto hidden text-[11px] text-ink-3 sm:block">Ctrl/⌘ + Enter to run</span>
+      </div>
+
         {/* Workspace Layout - 3 Columns */}
-        <div className="flex gap-4 h-[calc(100vh-220px)] min-h-[600px]">
+        <div className="flex gap-4 h-[calc(100vh-380px)] min-h-[560px]">
           
           {/* Left Column: Files Sidebar */}
-          <div className={`flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden transition-all duration-300 ${
+          <div className={`flex flex-col bg-paper-1/60 border border-line-subtle rounded-2xl shadow-sm overflow-hidden transition-all duration-300 ${
             isSidebarOpen ? 'w-52 min-w-[13rem]' : 'w-10 min-w-[2.5rem]'
           }`}>
             {isSidebarOpen ? (
               <>
-                <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-                  <span className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">FILES</span>
-                  <div className="flex items-center gap-1 text-slate-400">
-                    <button onClick={() => createItem('file')} className="p-1 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="New File"><FilePlus className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => createItem('folder')} className="p-1 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="New Folder"><FolderPlus className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:text-slate-600 dark:hover:text-slate-200 transition-colors" title="Hide Files">
+                <div className="flex items-center justify-between px-4 py-3 border-b border-line-subtle">
+                  <span className="text-xs font-bold uppercase tracking-wider text-ink-2">FILES</span>
+                  <div className="flex items-center gap-1 text-ink-3">
+                    <button onClick={() => createItem('file')} className="p-1 hover:text-ink dark:hover:text-ink transition-colors" title="New File"><FilePlus className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => createItem('folder')} className="p-1 hover:text-ink dark:hover:text-ink transition-colors" title="New Folder"><FolderPlus className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setIsSidebarOpen(false)} className="p-1 hover:text-ink dark:hover:text-ink transition-colors" title="Hide Files">
                       <ChevronsLeft className="w-3.5 h-3.5" />
                     </button>
                   </div>
@@ -316,13 +290,13 @@ const PlaygroundPage = () => {
                         onClick={() => { if (!isFolder) setActiveFilePath(item.path); }}
                         className={`flex items-center justify-between px-3 py-1.5 mb-1 rounded-lg border cursor-pointer transition-colors ${
                           isActive && !isFolder
-                            ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-800/50'
-                            : 'border-transparent text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            ? 'bg-accent-soft text-accent border-accent/20'
+                            : 'border-transparent text-ink-2 hover:bg-paper-0/70 dark:hover:bg-paper-0/50'
                         }`}
                         style={{ paddingLeft: `${0.75 + depth * 1}rem` }}
                       >
                         <div className="flex items-center gap-2 truncate">
-                          {isFolder ? <Folder className="w-4 h-4 text-slate-400 shrink-0" /> : <FileCode className="w-4 h-4 shrink-0" />}
+                          {isFolder ? <Folder className="w-4 h-4 text-ink-3 shrink-0" /> : <FileCode className="w-4 h-4 shrink-0" />}
                           <span className="text-sm font-semibold truncate" title={item.path}>{name}</span>
                         </div>
                         <div className={`flex items-center gap-1 transition-opacity ${isActive ? 'opacity-100' : 'opacity-0 hover:opacity-100'}`}>
@@ -336,7 +310,7 @@ const PlaygroundPage = () => {
                             </button>
                           )}
                         </div>
-                        {isActive && !isFolder && <div className="w-1.5 h-1.5 rounded-full bg-indigo-500 shrink-0 ml-2"></div>}
+                        {isActive && !isFolder && <div className="w-1.5 h-1.5 rounded-full bg-accent shrink-0 ml-2"></div>}
                       </div>
                     );
                   })}
@@ -346,7 +320,7 @@ const PlaygroundPage = () => {
               /* Collapsed sidebar — show only a toggle button */
               <button
                 onClick={() => setIsSidebarOpen(true)}
-                className="flex flex-col items-center justify-start gap-2 w-full h-full pt-3 text-slate-400 hover:text-indigo-500 dark:hover:text-indigo-400 transition-colors"
+                className="flex flex-col items-center justify-start gap-2 w-full h-full pt-3 text-ink-3 hover:text-accent dark:hover:text-accent transition-colors"
                 title="Show Files"
               >
                 <ChevronRight className="w-4 h-4" />
@@ -356,16 +330,16 @@ const PlaygroundPage = () => {
           </div>
 
           {/* Middle Column: Editor */}
-          <div className="flex-1 flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden min-h-[400px]">
-              <div className="flex items-center justify-between px-0 border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50">
+          <div className="flex-1 flex flex-col bg-paper-1/60 border border-line-subtle rounded-2xl shadow-sm overflow-hidden min-h-[400px]">
+              <div className="flex items-center justify-between px-0 border-b border-line-subtle bg-paper-0/40 dark:bg-paper-0/40">
               {/* Active file tab */}
-              <div className="flex items-center gap-3 px-4 py-2.5 bg-white dark:bg-slate-900 border-r border-slate-200 dark:border-slate-800 border-t-2 border-t-indigo-500 text-sm font-medium text-slate-700 dark:text-slate-200">
+              <div className="flex items-center gap-3 px-4 py-2.5 bg-paper-1/60 border-r border-line-subtle border-t-2 border-t-accent text-sm font-medium text-ink-2 dark:text-ink-2">
                 {activeFilePath.split('/').pop()}
-                <X className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 cursor-pointer" />
+                <X className="w-3.5 h-3.5 text-ink-3 hover:text-ink dark:hover:text-ink cursor-pointer" />
               </div>
             </div>
 
-            <div className="flex-1 min-h-0 relative w-full overflow-hidden bg-white dark:bg-[#1e1e1e]">
+            <div className="flex-1 min-h-0 relative w-full overflow-hidden bg-paper-1 dark:bg-[#1e1e1e]">
               <Editor
                 height="100%"
                 language={LANGUAGES[selectedLang].monacoLang}
@@ -373,10 +347,10 @@ const PlaygroundPage = () => {
                 value={activeCode}
                 onChange={(val) => setCode(val || '')}
                 loading={
-                  <div className="absolute inset-0 flex items-center justify-center bg-white dark:bg-[#1e1e1e]">
+                  <div className="absolute inset-0 flex items-center justify-center bg-paper-1 dark:bg-[#1e1e1e]">
                     <div className="flex flex-col items-center gap-3">
-                      <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-                      <span className="text-sm font-medium text-slate-500">Loading Editor...</span>
+                      <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
+                      <span className="text-sm font-medium text-ink-3">Loading Editor...</span>
                     </div>
                   </div>
                 }
@@ -423,7 +397,7 @@ const PlaygroundPage = () => {
             </div>
             
             {/* Editor Status Bar */}
-            <div className="flex items-center justify-between px-4 py-1.5 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 text-[11px] font-medium text-slate-500 dark:text-slate-400">
+            <div className="flex items-center justify-between px-4 py-1.5 border-t border-line-subtle bg-paper-0/50 dark:bg-paper-0/40 text-[11px] font-medium text-ink-3">
               <div className="flex items-center gap-3">
                 <button title="Shortcuts"><Keyboard className="w-3.5 h-3.5" /></button>
               </div>
@@ -444,12 +418,12 @@ const PlaygroundPage = () => {
           <div className="flex flex-col gap-4 w-[340px] min-w-[280px]">
             
             {/* Input Window */}
-            <div className="flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex-1 min-h-[150px]">
-              <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 dark:border-slate-800">
-                <Terminal className="w-4 h-4 text-slate-400" />
-                <span className="text-xs font-bold uppercase tracking-wider text-slate-600 dark:text-slate-300">Custom Input (stdin)</span>
+            <div className="flex flex-col bg-paper-1/60 border border-line-subtle rounded-2xl shadow-sm overflow-hidden flex-1 min-h-[150px]">
+              <div className="flex items-center gap-2 px-4 py-3 border-b border-line-subtle">
+                <Terminal className="w-4 h-4 text-ink-3" />
+                <span className="text-xs font-bold uppercase tracking-wider text-ink-2 dark:text-ink-3">Custom Input (stdin)</span>
                 {selectedLang === 'javascript' && jsExecutionMode === 'browser' && (
-                  <span className="text-[10px] bg-slate-100 dark:bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded ml-auto">Not supported locally</span>
+                  <span className="text-[10px] bg-paper-0/70 dark:bg-paper-2/60 text-ink-3 px-1.5 py-0.5 rounded ml-auto">Not supported locally</span>
                 )}
               </div>
               <textarea
@@ -461,74 +435,72 @@ const PlaygroundPage = () => {
                     ? "Local JavaScript execution runs immediately in browser memory and does not accept stdin streams."
                     : "Input for the program (optional)"
                 }
-                className="flex-1 w-full bg-transparent px-4 py-3 text-sm font-mono outline-none resize-none placeholder:text-slate-400/60 dark:placeholder:text-slate-500 text-slate-700 dark:text-slate-200 disabled:cursor-not-allowed"
+                className="flex-1 w-full bg-transparent px-4 py-3 text-sm font-mono outline-none resize-none placeholder:text-ink-3/60 dark:placeholder:text-ink-3 text-ink-2 dark:text-ink-2 disabled:cursor-not-allowed"
               />
             </div>
 
             {/* Output Window */}
-            <div className="flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex-[1.5] min-h-[250px]">
-              <div className="flex items-center justify-between px-4 py-2.5 border-b border-slate-200 dark:border-slate-800">
-                <div className="flex items-center gap-2 text-slate-700 dark:text-slate-300">
-                  <span className="font-mono font-bold text-slate-400">{'>_'}</span>
+            <div className="flex flex-col bg-paper-1/60 border border-line-subtle rounded-2xl shadow-sm overflow-hidden flex-[1.5] min-h-[250px]">
+              <div className="flex items-center justify-between px-4 py-2.5 border-b border-line-subtle">
+                <div className="flex items-center gap-2 text-ink-2">
+                  <span className="font-mono font-bold text-ink-3">{'>_'}</span>
                   <span className="text-xs font-bold uppercase tracking-wider">Output</span>
                 </div>
                 <div className="flex items-center gap-2">
                   {runStats && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold ${runStats.success ? 'text-emerald-600 bg-emerald-50 dark:bg-emerald-950/30' : 'text-rose-600 bg-rose-50 dark:bg-rose-950/30'}`}>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold ${runStats.success ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-700 dark:text-rose-400'}`}>
                       {runStats.success ? 'Success' : `Error (${runStats.stage})`}
                     </span>
                   )}
                   {runStats && runStats.timeMs !== undefined && (
-                    <span className="text-[10px] text-slate-400 bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded font-mono">
+                    <span className="text-[10px] text-ink-3 bg-paper-0/70 dark:bg-paper-2/60 px-1.5 py-0.5 rounded font-mono">
                       {runStats.timeMs}ms
                     </span>
                   )}
-                  <button onClick={() => { setOutput(''); setError(''); }} className="flex items-center gap-1 text-[11px] font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 ml-2 transition-colors border border-slate-200 dark:border-slate-700 px-2 py-0.5 rounded">
+                  <button onClick={() => { setOutput(''); setError(''); }} className="flex items-center gap-1 text-[11px] font-semibold text-ink-3 hover:text-ink-2 dark:hover:text-ink-3 ml-2 transition-colors border border-line-subtle px-2 py-0.5 rounded">
                     <RotateCcw className="w-3 h-3" /> Clear
                   </button>
                 </div>
               </div>
 
-              <div className="flex-1 bg-white dark:bg-slate-900 p-4 font-mono text-sm overflow-auto text-slate-700 dark:text-slate-300 select-text select-all">
+              <div className="flex-1 bg-paper-1/60 p-4 font-mono text-sm overflow-auto text-ink-2 select-text select-all">
                 {isRunning && (
-                  <div className="flex items-center gap-2 text-indigo-500 py-1">
+                  <div className="flex items-center gap-2 text-accent py-1">
                     <Cpu className="w-4 h-4 animate-spin" />
                     <span>Executing...</span>
                   </div>
                 )}
 
                 {!isRunning && !output && !error && (
-                  <span className="text-slate-400 italic">Program output will appear here...</span>
+                  <span className="text-ink-3 italic">Program output will appear here...</span>
                 )}
 
                 {error && (
-                  <div className="text-rose-500 font-medium whitespace-pre-wrap mb-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                  <div className="text-rose-600 dark:text-rose-400 font-medium whitespace-pre-wrap mb-4 pb-4 border-b border-line-subtle">
                     {error}
                   </div>
                 )}
 
                 {output && (
-                  <pre className="whitespace-pre-wrap font-mono text-slate-800 dark:text-slate-200">{output}</pre>
+                  <pre className="whitespace-pre-wrap font-mono text-ink dark:text-ink-2">{output}</pre>
                 )}
               </div>
             </div>
           </div>
         </div>
-      </main>
-
       {/* Settings Modal */}
       {showSettings && (
-        <div className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-paper-1 border border-line-subtle rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-in fade-in zoom-in duration-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50">
-              <div className="flex items-center gap-2 text-slate-800 dark:text-white">
-                <Settings className="w-5 h-5 text-indigo-500" />
+            <div className="flex items-center justify-between px-6 py-4 border-b border-line-subtle bg-paper-0/50 dark:bg-paper-0/40">
+              <div className="flex items-center gap-2 text-ink dark:text-ink">
+                <Settings className="w-5 h-5 text-accent" />
                 <h3 className="font-bold text-base">Playground Settings</h3>
               </div>
               <button
                 onClick={() => setShowSettings(false)}
-                className="p-1 text-slate-400 hover:text-slate-600 dark:hover:text-white rounded-lg transition-colors"
+                className="p-1 text-ink-3 hover:text-ink dark:hover:text-ink rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -538,17 +510,17 @@ const PlaygroundPage = () => {
             <div className="p-6 flex flex-col gap-5">
               {/* Execution Engine Selector */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-ink-3 uppercase tracking-wider mb-2">
                   Compilation & Execution Engine
                 </label>
-                <div className="grid grid-cols-3 gap-1.5 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
+                <div className="grid grid-cols-3 gap-1.5 bg-paper-0/70 p-1 rounded-lg">
                   <button
                     type="button"
                     onClick={() => setExecutionEngine('wandbox')}
                     className={`py-1.5 text-xs font-bold rounded-md transition-all ${
                       executionEngine === 'wandbox'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        ? 'bg-paper-1 text-accent shadow-sm'
+                        : 'text-ink-3 hover:text-ink-2 dark:hover:text-ink'
                     }`}
                   >
                     Wandbox ✓
@@ -558,8 +530,8 @@ const PlaygroundPage = () => {
                     onClick={() => setExecutionEngine('codex')}
                     className={`py-1.5 text-xs font-bold rounded-md transition-all ${
                       executionEngine === 'codex'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        ? 'bg-paper-1 text-accent shadow-sm'
+                        : 'text-ink-3 hover:text-ink-2 dark:hover:text-ink'
                     }`}
                   >
                     CodeX
@@ -569,32 +541,32 @@ const PlaygroundPage = () => {
                     onClick={() => setExecutionEngine('piston')}
                     className={`py-1.5 text-xs font-bold rounded-md transition-all ${
                       executionEngine === 'piston'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        ? 'bg-paper-1 text-accent shadow-sm'
+                        : 'text-ink-3 hover:text-ink-2 dark:hover:text-ink'
                     }`}
                   >
                     Piston
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">
-                  <strong className="text-slate-300">Wandbox</strong> (recommended) — free, no auth, supports all 5 languages + stdin.
-                  <strong className="text-slate-300"> CodeX</strong> — fallback cloud. <strong className="text-slate-300">Piston</strong> — self-hosted Docker.
+                <p className="text-[11px] text-ink-3 mt-1">
+                  <strong className="text-ink-3">Wandbox</strong> (recommended) — free, no auth, supports all 5 languages + stdin.
+                  <strong className="text-ink-3"> CodeX</strong> — fallback cloud. <strong className="text-ink-3">Piston</strong> — self-hosted Docker.
                 </p>
               </div>
 
               {/* JS Mode Toggle */}
               <div>
-                <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-bold text-ink-3 uppercase tracking-wider mb-2">
                   JavaScript Execution Mode
                 </label>
-                <div className="grid grid-cols-2 gap-2 bg-slate-100 dark:bg-slate-900 p-1 rounded-lg">
+                <div className="grid grid-cols-2 gap-2 bg-paper-0/70 p-1 rounded-lg">
                   <button
                     type="button"
                     onClick={() => setJsExecutionMode('browser')}
                     className={`py-1.5 text-xs font-bold rounded-md transition-all ${
                       jsExecutionMode === 'browser'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        ? 'bg-paper-1 text-accent shadow-sm'
+                        : 'text-ink-3 hover:text-ink-2 dark:hover:text-ink'
                     }`}
                   >
                     Local Browser (Free)
@@ -604,24 +576,24 @@ const PlaygroundPage = () => {
                     onClick={() => setJsExecutionMode('server')}
                     className={`py-1.5 text-xs font-bold rounded-md transition-all ${
                       jsExecutionMode === 'server'
-                        ? 'bg-white dark:bg-slate-800 text-indigo-600 dark:text-white shadow-sm'
-                        : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+                        ? 'bg-paper-1 text-accent shadow-sm'
+                        : 'text-ink-3 hover:text-ink-2 dark:hover:text-ink'
                     }`}
                   >
                     Remote Engine
                   </button>
                 </div>
-                <p className="text-[11px] text-slate-400 mt-1">
+                <p className="text-[11px] text-ink-3 mt-1">
                   Local browser runs immediately inside the browser memory. Remote engine executes on the selected compiler engine above.
                 </p>
               </div>
 
               {/* Piston Settings (Only if piston engine is selected) */}
               {executionEngine === 'piston' && (
-                <div className="border-t border-slate-200 dark:border-slate-700 pt-4 flex flex-col gap-4 animate-in slide-in-from-top-2 duration-150">
+                <div className="border-t border-line-subtle pt-4 flex flex-col gap-4 animate-in slide-in-from-top-2 duration-150">
                   {/* Endpoint URL */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-ink-3 uppercase tracking-wider mb-1.5">
                       Piston API Endpoint
                     </label>
                     <input
@@ -629,16 +601,16 @@ const PlaygroundPage = () => {
                       value={pistonEndpoint}
                       onChange={(e) => setPistonEndpoint(e.target.value)}
                       placeholder="http://localhost:2000/api/v2/execute"
-                      className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-paper-0/70 border border-line-subtle rounded-lg px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
                     />
-                    <p className="text-[11px] text-slate-400 mt-1">
+                    <p className="text-[11px] text-ink-3 mt-1">
                       Start your self-hosted server using Docker Compose to handle requests at this local address.
                     </p>
                   </div>
 
                   {/* API Token */}
                   <div>
-                    <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">
+                    <label className="block text-xs font-bold text-ink-3 uppercase tracking-wider mb-1.5">
                       Authorization Token (Optional)
                     </label>
                     <input
@@ -646,7 +618,7 @@ const PlaygroundPage = () => {
                       value={pistonToken}
                       onChange={(e) => setPistonToken(e.target.value)}
                       placeholder="Bearer or access token"
-                      className="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-800 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                      className="w-full bg-paper-0/70 border border-line-subtle rounded-lg px-3 py-2 text-sm text-ink outline-none focus:ring-2 focus:ring-accent/20 focus:border-accent"
                     />
                   </div>
                 </div>
@@ -654,11 +626,11 @@ const PlaygroundPage = () => {
             </div>
 
             {/* Modal Footer */}
-            <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900/50 flex items-center justify-between">
+            <div className="px-6 py-4 border-t border-line-subtle bg-paper-0/50 dark:bg-paper-0/40 flex items-center justify-between">
               <button
                 type="button"
                 onClick={resetSettings}
-                className="text-xs text-slate-500 hover:text-slate-800 dark:hover:text-white font-medium"
+                className="text-xs text-ink-3 hover:text-ink dark:hover:text-ink font-medium"
               >
                 Reset to Default
               </button>
@@ -666,14 +638,14 @@ const PlaygroundPage = () => {
                 <button
                   type="button"
                   onClick={() => setShowSettings(false)}
-                  className="px-3.5 py-1.5 border border-slate-200 dark:border-slate-700 rounded-lg text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  className="px-3.5 py-1.5 border border-line-subtle rounded-lg text-xs font-semibold text-ink-2 dark:text-ink-3 hover:bg-paper-0/70 dark:hover:bg-paper-0/50 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={saveSettings}
-                  className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-bold shadow-md shadow-indigo-600/10 transition-colors"
+                  className="px-4 py-1.5 bg-ink hover:bg-accent text-paper-0 rounded-lg text-xs font-bold shadow-md shadow-accent/10 transition-colors"
                 >
                   Save Settings
                 </button>
@@ -682,7 +654,7 @@ const PlaygroundPage = () => {
           </div>
         </div>
       )}
-    </div>
+    </PageShell>
   );
 };
 
