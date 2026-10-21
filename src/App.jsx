@@ -118,20 +118,37 @@ const ROUTE_WARMERS = [
   () => import('./pages/QuizPage'),
 ];
 
+const canWarmRoutes = () => {
+  if (typeof navigator === 'undefined') return false;
+  const connection =
+    navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (connection?.saveData) return false;
+  if (connection?.effectiveType && /(^|-)2g$/.test(connection.effectiveType)) return false;
+  return true;
+};
+
 const useRouteWarmup = () => {
   useEffect(() => {
+    if (!canWarmRoutes()) return;
+
+    const timers = [];
     const warm = () => {
-      ROUTE_WARMERS.forEach((load) => {
-        load().catch(() => {});
+      ROUTE_WARMERS.forEach((load, index) => {
+        timers.push(setTimeout(() => load().catch(() => {}), index * 300));
       });
     };
 
+    let idleId;
     if (typeof window.requestIdleCallback === 'function') {
-      const id = window.requestIdleCallback(warm, { timeout: 4000 });
-      return () => window.cancelIdleCallback(id);
+      idleId = window.requestIdleCallback(warm, { timeout: 4000 });
+    } else {
+      timers.push(setTimeout(warm, 2500));
     }
-    const t = setTimeout(warm, 2500);
-    return () => clearTimeout(t);
+
+    return () => {
+      if (idleId) window.cancelIdleCallback(idleId);
+      timers.forEach(clearTimeout);
+    };
   }, []);
 };
 

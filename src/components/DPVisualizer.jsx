@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
 import { Play, Pause, RotateCcw, Shuffle, BookOpen, Code2 } from 'lucide-react';
 import ExplanationPanel from './educational/ExplanationPanel';
-import CodeViewer from './educational/CodeViewer';
+const CodeViewer = lazy(() => import('./educational/CodeViewer'));
 import { triggerVictoryConfetti } from '../utils/confettiHelper';
 
 const DP_INFO = {
@@ -359,11 +359,13 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
 
       {showCodeViewer && (
         <div className="fixed bottom-0 right-0 h-3/4 w-[500px] bg-white dark:bg-slate-900 border-t border-l border-slate-200 dark:border-slate-700 z-50 shadow-2xl rounded-tl-2xl overflow-hidden">
-          <CodeViewer
-            codeSnippets={info.codeSnippets}
-            isOpen={showCodeViewer}
-            onClose={() => setShowCodeViewer(false)}
-          />
+          <Suspense fallback={<div className="flex h-full items-center justify-center text-xs font-semibold text-ink-3">Loading source…</div>}>
+            <CodeViewer
+              codeSnippets={info.codeSnippets}
+              isOpen={showCodeViewer}
+              onClose={() => setShowCodeViewer(false)}
+            />
+          </Suspense>
         </div>
       )}
     </div>

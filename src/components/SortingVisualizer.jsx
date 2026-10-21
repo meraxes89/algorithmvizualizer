@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward, Box, Layers, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { generateRandomArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import StepControls from './educational/StepControls';
 import ExplanationPanel from './educational/ExplanationPanel';
-import CodeViewer from './educational/CodeViewer';
+const CodeViewer = lazy(() => import('./educational/CodeViewer'));
 import CustomTestCases from './educational/CustomTestCases';
 import { algorithmDatabase } from '../data/algorithmData';
 import { soundEngine } from '../utils/soundEngine';
 import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
 import { startFaviconAnimation, stopFaviconAnimation } from '../utils/animatedFavicon';
 import SoundControls from './SoundControls';
-import Sorting3DVisualizer from './3D/Sorting3DVisualizer';
+const Sorting3DVisualizer = lazy(() => import('./3D/Sorting3DVisualizer'));
 import MemoryStackInspector from './MemoryStackInspector';
 import { toast } from './Toast';
 import { useGesture } from '@use-gesture/react';
@@ -308,12 +308,14 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       {/* Main Visualization Viewport */}
       <div className="flex-1 w-full relative flex items-center justify-center p-4 sm:p-8">
         {is3DMode ? (
-          <Sorting3DVisualizer
-            array={array}
-            comparing={comparingIndices}
-            swapped={swappingIndices}
-            pivot={-1}
-          />
+          <Suspense fallback={<div className="flex h-full items-center justify-center text-xs font-semibold text-ink-3">Loading 3D view…</div>}>
+            <Sorting3DVisualizer
+              array={array}
+              comparing={comparingIndices}
+              swapped={swappingIndices}
+              pivot={-1}
+            />
+          </Suspense>
         ) : (
           <TransformWrapper initialScale={1} minScale={0.5} maxScale={4} centerOnInit>
             {({ zoomIn, zoomOut, resetTransform }) => (
@@ -525,11 +527,13 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
             <div className="absolute top-2 right-2 z-50">
               <button onClick={() => setShowCodeViewer(false)} className="bg-paper-0 dark:bg-paper-2/70 text-ink-3 hover:text-ink p-1.5 rounded-full"><BookOpen size={14} /></button>
             </div>
-             <CodeViewer
-              codeSnippets={getAlgorithmData(algorithmInfo.name)?.codeSnippets}
-              isOpen={showCodeViewer}
-              onClose={() => setShowCodeViewer(false)}
-            />
+            <Suspense fallback={<div className="flex h-full items-center justify-center text-xs font-semibold text-ink-3">Loading source…</div>}>
+              <CodeViewer
+                codeSnippets={getAlgorithmData(algorithmInfo.name)?.codeSnippets}
+                isOpen={showCodeViewer}
+                onClose={() => setShowCodeViewer(false)}
+              />
+            </Suspense>
           </div>
         </div>
       )}

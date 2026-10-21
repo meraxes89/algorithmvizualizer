@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, lazy, Suspense } from 'react';
 import { Trees } from 'lucide-react';
-import TreeVisualizer from '../components/TreeVisualizer';
-import BSTVisualizer from '../components/BSTVisualizer';
-import AVLVisualizer from '../components/AVLVisualizer';
-import HeapVisualizer from '../components/HeapVisualizer';
-import TrieVisualizer from '../components/TrieVisualizer';
-import SegmentTreeVisualizer from '../components/SegmentTreeVisualizer';
+const TreeVisualizer = lazy(() => import('../components/TreeVisualizer'));
+const BSTVisualizer = lazy(() => import('../components/BSTVisualizer'));
+const AVLVisualizer = lazy(() => import('../components/AVLVisualizer'));
+const HeapVisualizer = lazy(() => import('../components/HeapVisualizer'));
+const TrieVisualizer = lazy(() => import('../components/TrieVisualizer'));
+const SegmentTreeVisualizer = lazy(() => import('../components/SegmentTreeVisualizer'));
 import { preOrderTraversal, inOrderTraversal, postOrderTraversal, levelOrderTraversal } from '../algorithms/trees/traversals';
 import { algorithmData } from '../data/treeAlgorithms';
 import PageShell from '../components/ui/PageShell';
@@ -64,22 +64,30 @@ const TreeAlgorithms = () => {
         </div>
       }
     >
-      {selectedCategory.isBST ? (
-        <BSTVisualizer />
-      ) : selectedCategory.isAVL ? (
-        <AVLVisualizer />
-      ) : selectedCategory.isHeap ? (
-        <HeapVisualizer />
-      ) : selectedCategory.isTrie ? (
-        <TrieVisualizer />
-      ) : selectedCategory.isSegmentTree ? (
-        <SegmentTreeVisualizer />
-      ) : (
-        <TreeVisualizer
-          algorithm={selectedAlgorithm?.fn}
-          algorithmInfo={selectedAlgorithm?.info}
-        />
-      )}
+      <Suspense
+        fallback={
+          <div className="flex min-h-[420px] items-center justify-center text-xs font-semibold text-ink-3">
+            Growing tree…
+          </div>
+        }
+      >
+        {selectedCategory.isBST ? (
+          <BSTVisualizer />
+        ) : selectedCategory.isAVL ? (
+          <AVLVisualizer />
+        ) : selectedCategory.isHeap ? (
+          <HeapVisualizer />
+        ) : selectedCategory.isTrie ? (
+          <TrieVisualizer />
+        ) : selectedCategory.isSegmentTree ? (
+          <SegmentTreeVisualizer />
+        ) : (
+          <TreeVisualizer
+            algorithm={selectedAlgorithm?.fn}
+            algorithmInfo={selectedAlgorithm?.info}
+          />
+        )}
+      </Suspense>
     </PageShell>
   );
 };

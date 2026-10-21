@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { Play, RotateCcw, Eraser, Zap, Box, Grid, Sparkles, ChevronDown, Activity, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { createInitialGrid, resetGrid, SPEED_PRESETS } from '../utils/animationHelpers';
 import { getNodesInShortestPathOrder } from '../algorithms/pathfinding/dijkstra';
 import { generateComplexMaze } from '../algorithms/pathfinding/mazeGenerator';
-import PathFinding3DVisualizer from './3D/PathFinding3DVisualizer';
+const PathFinding3DVisualizer = lazy(() => import('./3D/PathFinding3DVisualizer'));
 import SoundControls from './SoundControls';
 import soundEngine from '../utils/soundEngine';
 import OdometerCounter from './OdometerCounter';
@@ -150,7 +150,7 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
   const [isVisualizing, setIsVisualizing] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(null); // 'start' | 'end' | null
-  const [is3DMode, setIs3DMode] = useState(true);
+  const [is3DMode, setIs3DMode] = useState(false);
   const [liveMode, setLiveMode] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
   const [selectedMazeType, setSelectedMazeType] = useState('dfs'); // 'dfs' | 'recursive_division' | 'prims'
