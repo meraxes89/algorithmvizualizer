@@ -1,4 +1,6 @@
 /** @type {import('tailwindcss').Config} */
+import tailwindcssAnimate from 'tailwindcss-animate';
+
 export default {
   darkMode: 'class',
   content: [
@@ -67,6 +69,7 @@ export default {
     },
   },
   plugins: [
+    tailwindcssAnimate,
     function ({ addUtilities }) {
       addUtilities({
         '.translate-z-0': { transform: 'translateZ(0px)' },
