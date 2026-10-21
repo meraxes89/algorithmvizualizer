@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Pause, RotateCcw, FastForward, Settings, MessageSquare, List } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Pause, RotateCcw, FastForward, Settings } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   runNQueensTrace,

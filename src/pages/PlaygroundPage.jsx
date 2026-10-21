@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, RotateCcw, Trash2, Code2, Terminal, Keyboard, Cpu, CheckCircle2, AlertCircle, Settings, X, Globe, Server, Cloud, FileCode, Plus, Upload, Code, Folder, File, ChevronRight, ChevronDown, Trash, Edit2, FolderPlus, FilePlus, ChevronsLeft, MoreVertical } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Play, RotateCcw, Trash2, Code2, Terminal, Keyboard, Cpu, Settings, X, FileCode, Code, Folder, File, ChevronRight, ChevronDown, FolderPlus, FilePlus, ChevronsLeft } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import PageShell from '../components/ui/PageShell';
 import { useTheme } from '../context/ThemeContext';
-import { LANGUAGES, WANDBOX_COMPILERS, LANGUAGE_ICONS } from '../editor/languages';
+import { LANGUAGES, WANDBOX_COMPILERS } from '../editor/languages';
 import { runJSInBrowser, runPythonInBrowser, runOnWandbox, runOnCodeX, runOnPiston } from '../editor/executors';
 import { registerCompletions } from '../editor/completions';
-
 
 const PlaygroundPage = () => {
   const { isDark } = useTheme();

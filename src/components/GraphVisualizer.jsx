@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, ArrowRight, Plus, Trash2, HelpCircle, Shuffle, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
+import { Play, Pause, RotateCcw, Trash2, HelpCircle, Shuffle, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
 import { COLORS } from '../utils/animationHelpers';
 import * as GraphAlgos from '../utils/GraphAlgorithms';
 import InteractiveGraphBuilder from './educational/InteractiveGraphBuilder';

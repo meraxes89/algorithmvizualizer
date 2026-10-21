@@ -1,4 +1,4 @@
-import React, { useState, lazy, Suspense } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Trees } from 'lucide-react';
 const TreeVisualizer = lazy(() => import('../components/TreeVisualizer'));
 const BSTVisualizer = lazy(() => import('../components/BSTVisualizer'));

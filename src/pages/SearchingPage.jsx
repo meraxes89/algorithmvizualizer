@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
 import SearchingVisualizer from '../components/SearchingVisualizer';
 import PageShell from '../components/ui/PageShell';

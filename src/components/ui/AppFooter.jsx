@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const AppFooter = () => (
   <footer className="border-t border-line-subtle bg-paper-1/60 px-6 py-8 mt-auto">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronDown, Search, Moon, Sun, Menu, X, Swords, Trophy } from 'lucide-react';
 import GitLabIcon from './GitLabIcon';

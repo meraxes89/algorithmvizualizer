@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Download, Shuffle, FileText, AlertCircle, X } from 'lucide-react';
+import { Upload, Shuffle, FileText, AlertCircle, X } from 'lucide-react';
 
 const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
   const [inputType, setInputType] = useState('manual');

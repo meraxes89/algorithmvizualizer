@@ -1,6 +1,6 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Command, ArrowRight, X, Sparkles, Terminal, Swords, HelpCircle, List, Compass, Network, Share2, GitBranch } from 'lucide-react';
+import { Search, ArrowRight, X, Sparkles, Terminal, Swords, HelpCircle, List, Compass, Network, Share2, GitBranch } from 'lucide-react';
 
 const SEARCH_ITEMS = [
   { title: 'Quick Sort', category: 'Sorting', path: '/sorting', icon: List },

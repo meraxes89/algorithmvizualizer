@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Play, RotateCcw, Search, Shuffle, Settings, BookOpen, Code2, FileText } from 'lucide-react';
+import { Search, Shuffle, BookOpen, Code2, FileText } from 'lucide-react';
 import { generateSortedArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import ExplanationPanel from './educational/ExplanationPanel';
 const CodeViewer = lazy(() => import('./educational/CodeViewer'));

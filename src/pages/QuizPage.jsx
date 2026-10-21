@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { CheckCircle2, XCircle, Award, RefreshCw, Flame, ArrowRight, Trophy } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import PageShell from '../components/ui/PageShell';

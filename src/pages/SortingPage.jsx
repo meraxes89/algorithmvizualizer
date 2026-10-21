@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Scale, Sparkles, Layers } from 'lucide-react';
 import SortingVisualizer from '../components/SortingVisualizer';
 import ComparisonMode from '../components/educational/ComparisonMode';

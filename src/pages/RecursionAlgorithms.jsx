@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Boxes } from 'lucide-react';
 import TreeRecursionVisualizer from '../components/TreeRecursionVisualizer';
 import GridBacktrackingVisualizer from '../components/GridBacktrackingVisualizer';

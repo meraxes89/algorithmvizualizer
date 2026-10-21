@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { Play, RotateCcw, Settings, BookOpen } from 'lucide-react';
 import { SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import ExplanationPanel from './educational/ExplanationPanel';
-import { algorithmDatabase } from '../data/algorithmData';
 
 // Helper to generate a complete binary tree with coordinates
 const generateTree = (depth = 3) => {

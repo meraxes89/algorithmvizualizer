@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Plus, Trash2, Search, Shuffle, RotateCcw, Settings, ChevronDown, ChevronUp, BarChart3, MessageSquare } from 'lucide-react';
+import { Plus, Trash2, Search, Shuffle, RotateCcw, Settings, BarChart3, MessageSquare } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   generateRandomBST,

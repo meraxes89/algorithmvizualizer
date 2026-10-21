@@ -1,12 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
-import { Play, RotateCcw, Eraser, Zap, Box, Grid, Sparkles, ChevronDown, Activity, ZoomIn, ZoomOut } from 'lucide-react';
+import React, { useState, useEffect, useRef, useCallback, lazy } from 'react';
+import { Play, RotateCcw, Eraser, Box, Grid, Sparkles, Activity, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { createInitialGrid, resetGrid, SPEED_PRESETS } from '../utils/animationHelpers';
-import { getNodesInShortestPathOrder } from '../algorithms/pathfinding/dijkstra';
+import { createInitialGrid, SPEED_PRESETS } from '../utils/animationHelpers';
 import { generateComplexMaze } from '../algorithms/pathfinding/mazeGenerator';
 const PathFinding3DVisualizer = lazy(() => import('./3D/PathFinding3DVisualizer'));
 import SoundControls from './SoundControls';
-import soundEngine from '../utils/soundEngine';
 import OdometerCounter from './OdometerCounter';
 import GridCanvas from './pathfinding/GridCanvas';
 

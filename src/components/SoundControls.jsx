@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { Volume2, VolumeX, Settings2, Sliders } from 'lucide-react';
+import { Volume2, VolumeX, Sliders } from 'lucide-react';
 import soundEngine from '../utils/soundEngine';
 
 const SOUND_PROFILES = [

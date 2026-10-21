@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward, Box, Layers, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import React, { useState, useEffect, lazy, Suspense } from 'react';
+import { Play, Shuffle, Settings, BookOpen, Code2, FileText, Box, Layers, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { generateRandomArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import StepControls from './educational/StepControls';
@@ -12,7 +12,6 @@ import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confetti
 import { startFaviconAnimation, stopFaviconAnimation } from '../utils/animatedFavicon';
 import SoundControls from './SoundControls';
 const Sorting3DVisualizer = lazy(() => import('./3D/Sorting3DVisualizer'));
-import MemoryStackInspector from './MemoryStackInspector';
 import { toast } from './Toast';
 import { useGesture } from '@use-gesture/react';
 

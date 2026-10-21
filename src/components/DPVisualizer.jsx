@@ -1,5 +1,5 @@
 import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Play, Pause, RotateCcw, Shuffle, BookOpen, Code2 } from 'lucide-react';
+import { Play, Pause, RotateCcw, BookOpen, Code2 } from 'lucide-react';
 import ExplanationPanel from './educational/ExplanationPanel';
 const CodeViewer = lazy(() => import('./educational/CodeViewer'));
 import { triggerVictoryConfetti } from '../utils/confettiHelper';

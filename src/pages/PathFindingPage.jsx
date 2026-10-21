@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import PathFindingVisualizer from '../components/PathFindingVisualizer';
 import PageShell from '../components/ui/PageShell';

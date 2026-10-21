@@ -1,15 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Play, Settings, MessageSquare, BarChart3, Shuffle, RotateCcw } from 'lucide-react';
+import { Play, Settings, MessageSquare, Shuffle } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
-import {
-  generateRandomArrayForSegTree,
-  buildSegmentTreeAnimated,
-  buildSegmentTreeSync,
-  layoutSegmentTree,
-  querySegmentTreeAnimated,
-  updateSegmentTreeAnimated,
-  SEG_TYPES
-} from '../algorithms/trees/segmentTreeOperations';
+import { generateRandomArrayForSegTree, buildSegmentTreeSync, layoutSegmentTree, querySegmentTreeAnimated, updateSegmentTreeAnimated, SEG_TYPES } from '../algorithms/trees/segmentTreeOperations';
 
 /* ------------------------------------------------------------------ */
 /*  SegmentTreeVisualizer                                             */

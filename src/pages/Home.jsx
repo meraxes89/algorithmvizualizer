@@ -1,19 +1,7 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Swords,
-  Network,
-  Search,
-  ListTree,
-  BarChart3,
-  PlayCircle,
-  Code2,
-  Cpu,
-  GitBranch,
-} from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Swords, Network, Search, BarChart3, PlayCircle, Code2, Cpu, GitBranch } from 'lucide-react';
 import GitLabIcon from '../components/GitLabIcon';
 import Logo from '../components/Logo';
 import LiveSortCanvas from '../components/home/LiveSortCanvas';
