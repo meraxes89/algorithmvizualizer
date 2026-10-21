@@ -4,7 +4,7 @@ import { SPEED_PRESETS } from '../../utils/animationHelpers';
 
 const SPEED_CHIPS = [
   { label: '1x', val: SPEED_PRESETS.SLOW },
-  { label: '2x', val: SPEED_PRESETS.NORMAL },
+  { label: '2x', val: SPEED_PRESETS.MEDIUM },
   { label: '4x', val: SPEED_PRESETS.FAST }
 ];
 
