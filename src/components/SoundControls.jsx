@@ -9,7 +9,7 @@ const SOUND_PROFILES = [
   { id: 'sine', name: 'Pure Sine' },
 ];
 
-const SoundControls = React.memo(() => {
+const SoundControls = React.memo(({ className = '' }) => {
   const [enabled, setEnabled] = useState(soundEngine.isEnabled);
   const [profile, setProfile] = useState(soundEngine.soundProfile);
   const [showOptions, setShowOptions] = useState(false);
@@ -31,7 +31,7 @@ const SoundControls = React.memo(() => {
   }, []);
 
   return (
-    <div className="relative inline-flex items-center gap-2">
+    <div className={`relative inline-flex items-center gap-2 ${className}`}>
       <button
         onClick={handleToggle}
         className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all shadow-sm ${

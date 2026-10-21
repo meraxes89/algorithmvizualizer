@@ -618,7 +618,7 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
               <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
             </button>
 
-            <SoundControls className="scale-85" />
+            <SoundControls className="scale-90" />
 
             {/* Speed Group */}
             <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-0.5">

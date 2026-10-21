@@ -468,7 +468,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
               <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
             </button>
 
-            <SoundControls className="scale-85" />
+            <SoundControls className="scale-90" />
 
             <button
               onClick={() => setShowSettings(!showSettings)}
