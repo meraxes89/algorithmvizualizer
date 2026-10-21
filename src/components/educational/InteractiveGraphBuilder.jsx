@@ -1,30 +1,50 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, MousePointer2, ArrowRight, ToggleLeft, ToggleRight } from 'lucide-react';
 
-const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
-  const [isDirected, setIsDirected] = useState(false);
+const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen, initialGraph }) => {
+  // Seed from the live graph so opening the builder shows the current
+  // graph instead of an empty canvas.
+  const [nodes, setNodes] = useState(() => initialGraph?.vertices ?? []);
+  const [edges, setEdges] = useState(() => initialGraph?.edges ?? []);
+  const [isDirected, setIsDirected] = useState(() => initialGraph?.isDirected ?? false);
   const [mode, setMode] = useState('select'); // select, addNode, addEdge, delete
   const [selectedNode, setSelectedNode] = useState(null);
   const [edgeStart, setEdgeStart] = useState(null);
   const [edgeWeight, setEdgeWeight] = useState(1);
   const svgRef = useRef(null);
 
+  // Keep the latest callback in a ref so a new inline function identity on
+  // every parent render cannot retrigger the effect below.
+  const onGraphChangeRef = useRef(onGraphChange);
   useEffect(() => {
-    if (onGraphChange) {
-      onGraphChange({ nodes, edges, isDirected });
+    onGraphChangeRef.current = onGraphChange;
+  });
+
+  // Snapshot of the graph the builder was opened with. Reporting only when
+  // the graph actually diverges from it keeps the initial mount (and any
+  // parent re-render) from wiping the live graph.
+  const initialGraphRef = useRef({ nodes, edges, isDirected });
+
+  useEffect(() => {
+    const initial = initialGraphRef.current;
+    if (initial.nodes === nodes && initial.edges === edges && initial.isDirected === isDirected) {
+      return;
     }
-  }, [nodes, edges, isDirected, onGraphChange]);
+    onGraphChangeRef.current?.({ vertices: nodes, edges, isDirected });
+  }, [nodes, edges, isDirected]);
 
   const handleSvgClick = (e) => {
     if (mode === 'addNode' && svgRef.current) {
       const rect = svgRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+      // Mirror GraphVisualizer's id/label scheme so ids stay unique and
+      // consistent when the builder starts from an existing graph.
+      const maxId = nodes.reduce((max, n) => (n.id > max ? n.id : max), -1);
+      const newId = maxId + 1;
       const newNode = {
-        id: nodes.length,
-        label: String.fromCharCode(65 + nodes.length),
+        id: newId,
+        label: String.fromCharCode(65 + (newId % 26)) + (newId >= 26 ? Math.floor(newId / 26) : ''),
         x,
         y,
       };

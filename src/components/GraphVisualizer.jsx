@@ -970,10 +970,12 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
             </button>
             <InteractiveGraphBuilder
               isOpen={showGraphBuilder}
+              initialGraph={{ vertices, edges, isDirected }}
               onGraphChange={(newGraph) => {
-                if (newGraph && newGraph.vertices) setVertices(newGraph.vertices);
-                if (newGraph && newGraph.edges) setEdges(newGraph.edges);
-                setShowGraphBuilder(false);
+                if (!newGraph) return;
+                if (newGraph.vertices) setVertices(newGraph.vertices);
+                if (newGraph.edges) setEdges(newGraph.edges);
+                if (typeof newGraph.isDirected === 'boolean') setIsDirected(newGraph.isDirected);
               }}
             />
           </div>
