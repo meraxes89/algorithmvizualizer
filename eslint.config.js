@@ -123,6 +123,38 @@ export default tseslint.config(
     },
   },
 
+  // ── The pure layers may not depend on the untyped layers ───────────────
+  {
+    // `src/core` and `src/algorithms` are the layers that have to stay
+    // framework-agnostic. They may only reach for other typed code, so
+    // they cannot quietly take a dependency on a legacy .js module and
+    // drag it into the typecheck.
+    files: ['src/core/**/*.ts', 'src/algorithms/**/*.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: [
+                '**/utils/*',
+                '**/components/*',
+                '**/data/*',
+                '**/pages/*',
+                '**/editor/*',
+                '**/context/*',
+                '**/lib/*',
+                '**/hooks/*',
+              ],
+              message:
+                'The core and algorithm layers may only import typed code. Move the shared piece into src/core, or keep the algorithm pure.',
+            },
+          ],
+        },
+      ],
+    },
+  },
+
   // ── Node-side tooling and configuration ─────────────────────────────────
   {
     files: [
