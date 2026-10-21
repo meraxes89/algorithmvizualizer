@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Play, RotateCcw, Trash2, Code2, Terminal, Keyboard, Cpu, Settings, X, FileCode, Code, Folder, File, ChevronRight, ChevronDown, FolderPlus, FilePlus, ChevronsLeft } from 'lucide-react';
+import { Play, RotateCcw, Trash2, Code2, Terminal, Keyboard, Cpu, Settings, X, FileCode, Folder, ChevronRight, ChevronDown, FolderPlus, FilePlus, ChevronsLeft } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import PageShell from '../components/ui/PageShell';
 import { useTheme } from '../context/ThemeContext';
@@ -19,7 +19,6 @@ const PlaygroundPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   const [customInput, setCustomInput] = useState('');
-  const [activeTab, setActiveTab] = useState('output'); // 'output' | 'input'
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -42,7 +41,7 @@ const PlaygroundPage = () => {
 
   // Pyodide runtime cache (loaded once, reused)
   const pyodideRef = useRef(null);
-  const [isPyodideLoading, setIsPyodideLoading] = useState(false);
+  const [, setIsPyodideLoading] = useState(false);
 
   // Monaco editor instance ref (for live option updates without remount)
   const editorRef = useRef(null);

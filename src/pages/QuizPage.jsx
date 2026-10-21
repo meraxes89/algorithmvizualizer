@@ -62,7 +62,7 @@ const QuizPage = () => {
   const [score, setScore] = useState(0);
   const [streak, setStreak] = useState(0);
   const [isFinished, setIsFinished] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const [, setAnswers] = useState({});
 
   const currentQ = QUIZ_QUESTIONS[currentIdx];
 

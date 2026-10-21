@@ -137,17 +137,6 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
 
   /* ---------- Rendering Helpers ---------- */
 
-  const logColor = (type) => {
-    switch (type) {
-      case 'PLACE': return 'text-blue-400';
-      case 'TRY': return 'text-yellow-400';
-      case 'SUCCESS': return 'text-emerald-400';
-      case 'BACKTRACK': return 'text-rose-400';
-      case 'INVALID': return 'text-orange-400';
-      default: return 'text-gray-300';
-    }
-  };
-
   const meta = recursionAlgorithmsData[algorithmId] || {};
 
   const renderGrid = () => {

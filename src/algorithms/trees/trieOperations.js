@@ -50,7 +50,7 @@ export function buildTrieFromWords(words) {
 /*  Tree Layout (N-ary Tree)                                          */
 /* ------------------------------------------------------------------ */
 
-export function layoutTrie(root, svgWidth = 1100, svgHeight = 460) {
+export function layoutTrie(root, svgWidth = 1100) {
   if (!root) return { nodes: [], edges: [] };
 
   const padY = 60;

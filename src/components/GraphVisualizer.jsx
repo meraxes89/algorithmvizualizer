@@ -166,7 +166,6 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     const count = 6;
     const width = 800;
     const height = 340;
-    const padding = 60;
 
     // Arrange nodes in a neat circle
     const newVertices = [];

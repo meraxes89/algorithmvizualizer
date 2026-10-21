@@ -93,15 +93,6 @@ const reveal = {
   }),
 };
 
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: EASE, delay: i * 0.08 },
-  }),
-};
-
 const KineticHeadline = () => (
   <h1 className="font-display text-[2.9rem] leading-[1.05] sm:text-6xl lg:text-[4.4rem] font-bold text-ink mb-7 tracking-tight">
     {HEADLINE.map((word, i) => (

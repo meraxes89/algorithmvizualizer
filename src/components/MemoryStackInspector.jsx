@@ -2,7 +2,7 @@
 import { Layers, CornerDownRight, MemoryStick as Memory } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
-const MemoryStackInspector = ({ stack = [], currentFunction = 'fn()' }) => {
+const MemoryStackInspector = ({ stack = [] }) => {
   return (
     <div className="flex flex-col bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm transition-colors duration-200">
       {/* Header */}

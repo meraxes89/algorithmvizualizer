@@ -286,16 +286,6 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
     return '#a7f3d0';
   };
 
-  const logColor = (type) => {
-    switch (type) {
-      case 'CALL': return 'text-blue-400';
-      case 'RETURN': return 'text-purple-400';
-      case 'SUCCESS': return 'text-emerald-400';
-      case 'BACKTRACK': return 'text-rose-400';
-      default: return 'text-gray-300';
-    }
-  };
-
   const meta = recursionAlgorithmsData[algorithmId] || {};
 
   return (

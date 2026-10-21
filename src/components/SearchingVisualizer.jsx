@@ -14,7 +14,7 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   const [searchRange, setSearchRange] = useState([-1, -1]);
   const [isSearching, setIsSearching] = useState(false);
   const [arraySize, setArraySize] = useState(30);
-  const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
+  const [speed] = useState(SPEED_PRESETS.MEDIUM);
   const [searchResult, setSearchResult] = useState(null);
 
   const [showExplanation, setShowExplanation] = useState(false);

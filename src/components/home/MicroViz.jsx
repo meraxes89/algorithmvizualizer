@@ -1,9 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useCanvasPalette } from '../../utils/useCanvasPalette';
 
-const VIZ_W = 160;
-const VIZ_H = 100;
-
 function initBars() {
   return { kind: 'bars', arr: shuffledVals(18), i: 1, j: 0, hold: 0 };
 }

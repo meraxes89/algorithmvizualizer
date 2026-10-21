@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Play, RotateCcw, Settings, BookOpen } from 'lucide-react';
-import { SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
+import { SPEED_PRESETS } from '../utils/animationHelpers';
 import ExplanationPanel from './educational/ExplanationPanel';
 
 // Helper to generate a complete binary tree with coordinates
@@ -79,12 +79,6 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
 
     setActiveNode(null);
     setIsTraversing(false);
-  };
-
-  const getNodeColor = (id) => {
-    if (activeNode === id) return COLORS.COMPARING; // Often yellow/orange
-    if (visitedNodes.includes(id)) return COLORS.SORTED; // Often green
-    return COLORS.DEFAULT; // Often purple/blue
   };
 
   return (

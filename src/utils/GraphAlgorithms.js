@@ -74,7 +74,9 @@ export const generateBFS = (vertices, edges, sourceId, targetId, isDirected = fa
       const edgeKey = getEdgeKey(edge.from, edge.to, isDirected);
 
       const currentEdgesState = {};
-      steps[steps.length - 1]?.edgesState && Object.assign(currentEdgesState, steps[steps.length - 1].edgesState);
+      if (steps[steps.length - 1]?.edgesState) {
+        Object.assign(currentEdgesState, steps[steps.length - 1].edgesState);
+      }
 
       if (!visited.has(neighbor)) {
         visited.add(neighbor);

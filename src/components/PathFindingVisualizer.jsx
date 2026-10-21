@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, lazy } from 'react';
-import { Play, RotateCcw, Eraser, Box, Grid, Sparkles, Activity, ZoomIn, ZoomOut } from 'lucide-react';
+import { Play, RotateCcw, Eraser, Box, Sparkles, Activity, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { createInitialGrid, SPEED_PRESETS } from '../utils/animationHelpers';
 import { generateComplexMaze } from '../algorithms/pathfinding/mazeGenerator';
@@ -109,12 +109,6 @@ function getNeighbors(node, grid) {
   return nbs.filter(n => !n.isVisited && !n.isWall);
 }
 
-function deepCloneGrid(grid) {
-  return grid.map(row =>
-    row.map(node => ({ ...node, isVisited: false, isPath: false, distance: Infinity, previousNode: null }))
-  );
-}
-
 function computeInstant(algorithmKey, grid, startRow, startCol, endRow, endCol) {
   const g = grid.map(row => row.map(node => ({ ...node, isVisited: false, isPath: false, distance: Infinity, previousNode: null })));
   const s = g[startRow][startCol];
@@ -142,7 +136,7 @@ function computeInstant(algorithmKey, grid, startRow, startCol, endRow, endCol) 
 const ROWS = 20;
 const COLS = 48;
 
-const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmKey: algorithmKeyProp }) => {
+const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorithmKeyProp }) => {
   const [grid, setGrid] = useState([]);
   const [startPos, setStartPos] = useState({ row: 10, col: 4 });
   const [endPos, setEndPos] = useState({ row: 10, col: 43 });
@@ -150,7 +144,7 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(null); // 'start' | 'end' | null
   const [is3DMode, setIs3DMode] = useState(false);
-  const [liveMode, setLiveMode] = useState(false);
+  const [liveMode] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
   const [selectedMazeType, setSelectedMazeType] = useState('dfs'); // 'dfs' | 'recursive_division' | 'prims'
   const [stats, setStats] = useState(null);

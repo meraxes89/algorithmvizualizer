@@ -276,7 +276,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen, initialGrap
           {nodes.map((node) => (
             <g
               key={node.id}
-              onMouseDown={(e) => {
+              onMouseDown={() => {
                 if (mode === 'select') {
                   const handleMouseMove = (e) => handleNodeDrag(e, node);
                   const handleMouseUp = () => {

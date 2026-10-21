@@ -103,19 +103,9 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
 
   /* ---------- Rendering Helpers ---------- */
 
-  const logColor = (type) => {
-    switch (type) {
-      case 'CALL': return 'text-blue-400';
-      case 'MOVE': return 'text-fuchsia-400';
-      case 'RETURN': return 'text-purple-400';
-      case 'SUCCESS': return 'text-emerald-400';
-      default: return 'text-gray-300';
-    }
-  };
-
   const meta = recursionAlgorithmsData[algorithmId] || {};
 
-  const getDiskColor = (diskNum, totalDisks) => {
+  const getDiskColor = (diskNum) => {
     const colors = [
       'bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 
       'bg-blue-500', 'bg-indigo-500', 'bg-violet-500', 'bg-fuchsia-500'
@@ -137,7 +127,7 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
 
         {/* Disks */}
         <div className="flex flex-col-reverse items-center pb-4 z-20 w-full gap-1">
-          {disks.map((disk, idx) => {
+          {disks.map((disk) => {
             const widthPct = 30 + (disk / Math.max(totalDisks, 1)) * 70;
             return (
               <div 

@@ -12,10 +12,8 @@ const StepControls = React.memo(({
   currentStep,
   totalSteps,
   isPlaying,
-  isPaused,
   onPlay,
   onPause,
-  onResume,
   onNext,
   onPrevious,
   onReset,
@@ -35,7 +33,11 @@ const StepControls = React.memo(({
 
       if (e.code === 'Space') {
         e.preventDefault();
-        isPlaying ? onPause?.() : onPlay?.();
+        if (isPlaying) {
+          onPause?.();
+        } else {
+          onPlay?.();
+        }
       } else if (e.code === 'ArrowRight') {
         e.preventDefault();
         if (currentStep < totalSteps) onNext?.();

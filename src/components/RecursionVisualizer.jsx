@@ -11,10 +11,10 @@ const RecursionVisualizer = React.memo(({ algorithm, algorithmInfo, type }) => {
   const [board, setBoard] = useState([]);
   const [boardSize, setBoardSize] = useState(4);
   const [queensStatus, setQueensStatus] = useState(null);
-  const [solutionCount, setSolutionCount] = useState(0);
+  const [, setSolutionCount] = useState(0);
 
   const [isVisualizing, setIsVisualizing] = useState(false);
-  const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
+  const [speed] = useState(SPEED_PRESETS.MEDIUM);
 
   useEffect(() => {
     if (type === "hanoi") resetHanoi();
