@@ -9,9 +9,9 @@ Audited against source on 2026-10-21. `[x]` means verified present in code. `[ ]
 - [ ] Hoisting every inline `style={{}}` object — only partially applied
 
 ## Phase 2: Critical Path Render Engine
-- [ ] Pathfinding canvas renderer — the unused `GridCanvasRenderer.js` was deleted; `PathFindingVisualizer` still renders 960 DOM cells (scheduled for Phase 4)
+- [x] Pathfinding canvas renderer — `src/components/pathfinding/GridCanvas.jsx` draws the 20×48 grid, with pointer painting for walls and node dragging
 - [x] Arena runner state held in refs (`ArenaPage.jsx`)
-- [ ] Arena rAF loop and `Set` lookups — still uses `setInterval` and `Array.includes` in render
+- [ ] Arena rAF loop and `Set` lookups — still uses `setInterval` and `Array.includes` in render; the loop now pauses when the tab is hidden
 - [x] Sorting visualizer uses `Set` lookups, memoized `maxValue`, `transform: scaleY()` bars
 - [x] Searching visualizer uses memoized `maxValue` and `transform: scaleY()` bars
 
@@ -21,9 +21,11 @@ Audited against source on 2026-10-21. `[x]` means verified present in code. `[ ]
 - [-] `Hero3DVisualizer` removed — it had no importers
 - [x] `isFPV` removed from the animation effect dependency list
 - [ ] `updateProjectionMatrix()` guard — still called in several per-frame branches
+- [x] Render loops pause when the tab is hidden or the canvas leaves the viewport (`src/utils/renderLoop.js`)
+- [x] Shadow maps, 512px shadow textures and per-mesh shadows are disabled on low-tier or reduced-motion devices
 
 ## Phase 4: CSS & GPU Compositor
-- [ ] Backdrop-filter elimination — 33 `backdrop-blur-*` utilities remain plus `.footer-glass`
+- [ ] Backdrop-filter elimination — utilities remain plus `.footer-glass`; the heaviest `2xl`/`3xl` tiers were collapsed to `xl`
 - [x] Cursor glow reduced to a 400px `translate3d` layer
 - [ ] SVG noise removal — `feTurbulence` remains in `.glass-card::after`
 - [x] `cursor: none` scoped to `html, body` under fine-pointer media query
@@ -42,6 +44,9 @@ Audited against source on 2026-10-21. `[x]` means verified present in code. `[ ]
 - [x] `manualChunks` plus `drop: ['console', 'debugger']` in `vite.config.js`
 - [x] Monaco wrapper chunked (Monaco itself still loads from CDN at runtime)
 - [x] Non-blocking font loading in `index.html`
+- [x] Unused Playfair weights and italics trimmed from the Google Fonts request
+- [x] 3D visualizers, per-category tree visualizers and `CodeViewer` split into lazy chunks
+- [x] Route warmup gated by `saveData`/2G and staggered to keep idle prefetch off the critical path
 - [x] Algorithm data split behind lazy routes
 
 ## Phase 7: Advanced Techniques
