@@ -50,8 +50,11 @@ function runDijkstraSync(grid, startNode, endNode) {
     visited.push(closest);
     if (closest === endNode) return visited;
     for (const nb of getNeighbors(closest, grid)) {
-      nb.distance = closest.distance + 1;
-      nb.previousNode = closest;
+      const candidate = closest.distance + 1;
+      if (candidate < nb.distance) {
+        nb.distance = candidate;
+        nb.previousNode = closest;
+      }
     }
   }
   return visited;
@@ -278,8 +281,11 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
         visitedOrder.push(closest);
         if (closest === e2) break;
         for (const nb of getNeighbors(closest, gForAnim)) {
-          nb.distance = closest.distance + 1;
-          nb.previousNode = closest;
+          const candidate = closest.distance + 1;
+          if (candidate < nb.distance) {
+            nb.distance = candidate;
+            nb.previousNode = closest;
+          }
         }
       }
     } else if (algorithmKey === 'bfs') {
