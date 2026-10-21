@@ -69,10 +69,45 @@
 
 ### Phase 2 — Core contract & engine
 
-- [ ] `core/steps.ts` (typed step schema per family)
-- [ ] `core/playback.ts` (play/pause/step/seek/speed engine)
-- [ ] `core/events.ts` (typed step-event bus)
-- [ ] Family-by-family ports: sorting → searching → pathfinding → graph → trees → segment/trie → recursion → DP → arena
+#### The core
+
+- [x] `core/steps.ts` — the typed step schema, one discriminated union per family (`2a879de`)
+- [x] `core/playback.ts` — the playback engine: rAF, accumulated elapsed time, play/pause/step/seek/reset/speed, auto-pause on a hidden tab; the browser globals are injectable so it is testable without fake timers or a DOM (`2a879de`)
+- [x] `core/events.ts` — the typed step-event bus, per family, carrying a source and metadata (`2a879de`)
+- [x] `hooks/usePlayback.ts` — the thin React binding (`2a879de`)
+- [x] `docs/adr/0001-step-trace-contract.md` — the reasoning, the rejected alternatives, the costs (`2a879de`)
+
+#### Family ports
+
+- [x] **sorting** — 5 pure generators, golden + property tests, typed `SortingBars` renderer; the 5 callback modules, 4 proxy setters and the `setTimeout` chain are gone (`92bb435`)
+- [x] **searching** — 2 pure generators, golden + property tests, typed `SearchingBars` renderer; the 2 callback modules are gone (`92ea357`)
+- [x] **pathfinding** — 4 pure generators, golden + property tests, a shared grid model; the 4 callback modules **and the 6 inline copies inside the visualizer** are gone (`49aafa3`)
+- [ ] **graph** — 8 algorithms in `src/utils/GraphAlgorithms.js`, plus the Arena racing the registry instead of `raceTraces.js`
+- [ ] **trees / BST / AVL / heap**
+- [ ] **segment tree / trie**
+- [ ] **recursion engines**
+- [ ] **DP**
+- [ ] **arena composition**
+- [ ] the maze generator, still a plain `.js` module
+
+#### Found by the safety net, not by reading
+
+- [x] `SortingVisualizer` called `useMemo`/`useCallback` without importing them — a `ReferenceError` on every render (`72f763f`)
+- [x] `usePlayback` had no test at all; function coverage was 81.57% against the 85% gate (`9abc1c2`)
+- [x] insertion sort wrote the array on a `mark` step instead of a `swap` step — caught by the property test
+- [x] A* expanded the whole grid because ties were broken arbitrarily
+
+#### Rules added
+
+- [x] `src/core` and `src/algorithms` may not import from the untyped layers
+- [x] the path aliases live in one typed module shared by Vite, Vitest and TypeScript
+
+#### Phase 2 acceptance
+
+- [x] Golden traces pass for every ported family
+- [x] Component smoke tests pass for every ported family
+- [x] The old implementation is gone for every ported family — verified by grep
+- [ ] Every family ported
 
 ### Phase 3 — Registry drives the app
 
