@@ -73,7 +73,12 @@ const AnimatedRoutes = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <Suspense fallback={<PageLoader />}>
+      {/* The key has to sit on AnimatePresence's direct child: it tracks
+          children by key, so an unkeyed <Suspense> wrapper meant it never
+          saw the route change and the exit variants never ran. The
+          location prop on <Routes> keeps the frozen (exiting) copy
+          rendering the page we are leaving. */}
+      <Suspense key={location.pathname} fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
           <Route path="/algorithms" element={<PageWrapper><CategoriesPage /></PageWrapper>} />
