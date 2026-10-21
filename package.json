@@ -62,7 +62,8 @@
     "test:comps": "vitest run src/components",
     "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "size": "node tools/bundle-size.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
