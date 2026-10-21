@@ -37,12 +37,34 @@
 
 ### Phase 1 — Safety net
 
-- [ ] TypeScript config (`strict`, `allowJs`/`checkJs`, path aliases)
-- [ ] ESLint flat config with layer-boundary rules
-- [ ] Prettier
-- [ ] husky + lint-staged
-- [ ] Vitest wired with jsdom + coverage
-- [ ] CI `checks` job live on every PR
+#### Tooling
+
+- [x] TypeScript config: `strict`, `allowJs` + `checkJs`, path aliases `@core @registry @algorithms @components @hooks @data`, mirrored by `resolve.alias` in `vite.config.js` (`9ebc954`)
+- [x] ESLint flat config with layer-boundary rules (`9ebc954`)
+- [x] `import/no-cycle` — module graph verified acyclic (`9ebc954`)
+- [x] `local/no-legacy-js-file` — blocks *new* plain `.js`/`.jsx` under `src/`; 107 pre-existing files grandfathered in `.eslint-legacy-allowlist.json` (`9ebc954`)
+- [x] Prettier configured; wired into lint-staged for typed/config files only (`9ebc954`, `779da68`)
+- [x] husky + lint-staged pre-commit hook (`fcf0517`)
+- [x] Vitest with jsdom, setup file and a coverage gate on the typed surface (`922b659`)
+- [x] CI `checks` job live on every PR: lint → typecheck → test:coverage (`05d31e1`)
+- [x] CI `build` job with a per-chunk bundle budget (`05d31e1`)
+- [x] Deploy gated on the Checks workflow via `workflow_run` (`05d31e1`)
+
+#### Bugs the new lint found
+
+- [x] `SortingVisualizer` called `useMemo`/`useCallback` without importing them — a `ReferenceError` on every render, same class as the missing `RotateCcw` import (`72f763f`)
+- [x] 35 lint errors of genuinely dead code removed across 21 files (`50699d7`)
+
+#### Deferred
+
+- [ ] Playwright e2e job — no e2e specs exist until the Phase 2 ports land
+- [ ] Prettier sweep over the 94 legacy files that are not formatted — a separate, explicit decision
+- [ ] `react-hooks/exhaustive-deps` warnings (17) and `react-refresh` warnings (2) — warnings today, errors when the components are rewritten
+
+#### Phase 1 acceptance
+
+- [x] CI green — lint, typecheck, tests, build and bundle budget all pass locally
+- [x] The boundary rule blocks itself — a React import inside `src/algorithms`, a `document` reference there, and a new plain `.js` file under `src/` were each confirmed to fail the lint
 
 ### Phase 2 — Core contract & engine
 
