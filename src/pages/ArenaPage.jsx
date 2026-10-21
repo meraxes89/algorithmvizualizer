@@ -9,6 +9,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '../components/Toast';
 
 const RACE_HISTORY_CAP = 300;
+const GRID_ROWS = 8;
+const GRID_COLS = 12;
 
 const strokeColorFor = (color = '') =>
   color.includes('blue') || color.includes('indigo') ? '#6366f1' :
@@ -268,7 +270,7 @@ const PATHFINDING_ALGORITHMS = {
     complexity: 'O(V log V + E)',
     color: 'from-indigo-500 to-purple-600',
     generator: function* (rows = 8, cols = 12) {
-      const start = [1, 1], end = [6, 10];
+      const start = [1, 1], end = [rows - 2, cols - 2];
       const visited = new Set();
       const parent = {};
       const queue = [[...start, 0]];
@@ -317,10 +319,10 @@ const PATHFINDING_ALGORITHMS = {
     complexity: 'O(E)',
     color: 'from-emerald-500 to-cyan-600',
     generator: function* (rows = 8, cols = 12) {
-      const start = [1, 1], end = [6, 10];
+      const start = [1, 1], end = [rows - 2, cols - 2];
       const visited = new Set();
       const parent = {};
-      const queue = [[...start, 0, Math.abs(1 - 6) + Math.abs(1 - 10)]];
+      const queue = [[...start, 0, Math.abs(start[0] - end[0]) + Math.abs(start[1] - end[1])]];
       let steps = 0;
 
       while (queue.length > 0) {
@@ -367,7 +369,7 @@ const PATHFINDING_ALGORITHMS = {
     complexity: 'O(V + E)',
     color: 'from-blue-500 to-teal-500',
     generator: function* (rows = 8, cols = 12) {
-      const start = [1, 1], end = [6, 10];
+      const start = [1, 1], end = [rows - 2, cols - 2];
       const visited = new Set();
       const parent = {};
       const queue = [[...start]];
@@ -470,7 +472,7 @@ const ArenaPage = () => {
           activeNode: null,
           steps: 0,
           finished: false,
-          generator: PATHFINDING_ALGORITHMS[key].generator(10, 15)
+          generator: PATHFINDING_ALGORITHMS[key].generator(GRID_ROWS, GRID_COLS)
         };
       });
     }
@@ -794,12 +796,15 @@ const ArenaPage = () => {
 
                   {activeCategory === 'pathfinding' && (
                     <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-2.5 flex items-center justify-center border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
-                      <div className="grid grid-rows-8 grid-cols-12 gap-1 w-full h-full">
-                        {Array.from({ length: 8 }).map((_, r) =>
-                          Array.from({ length: 12 }).map((_, c) => {
+                      <div
+                        className="grid gap-1 w-full h-full"
+                        style={{ gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`, gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))` }}
+                      >
+                        {Array.from({ length: GRID_ROWS }).map((_, r) =>
+                          Array.from({ length: GRID_COLS }).map((_, c) => {
                             const key = `${r},${c}`;
                             const isStart = r === 1 && c === 1;
-                            const isTarget = r === 6 && c === 10;
+                            const isTarget = r === GRID_ROWS - 2 && c === GRID_COLS - 2;
                             const isVisited = runner.visitedSet ? runner.visitedSet.has(key) : runner.visitedList?.includes(key);
                             const isPath = runner.pathSet ? runner.pathSet.has(key) : runner.pathList?.includes(key);
                             const isActive = runner.activeNode && runner.activeNode[0] === r && runner.activeNode[1] === c;
