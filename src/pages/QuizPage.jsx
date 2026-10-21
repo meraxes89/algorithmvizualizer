@@ -204,7 +204,7 @@ const QuizPage = () => {
 
             <h2 className="text-3xl font-extrabold mb-2">Quiz Completed!</h2>
             <p className="text-sm text-slate-400 mb-6">
-              You scored <strong className="text-purple-400 text-xl">{score}</strong> out of <strong className="text-white text-xl">{QUIZ_QUESTIONS.length}</strong>!
+              You scored <strong className="text-purple-400 text-xl">{score}</strong> out of <strong className="text-ink text-xl">{QUIZ_QUESTIONS.length}</strong>!
             </p>
 
             <button
