@@ -61,7 +61,7 @@ const PageWrapper = ({ children }) => {
       animate="animate"
       exit="exit"
       variants={pageVariants}
-      className="w-full min-h-screen pt-24 preserve-3d" // pt-24 accommodates the floating navbar
+      className="w-full min-h-screen pt-24" // pt-24 accommodates the floating navbar
     >
       {children}
     </motion.div>

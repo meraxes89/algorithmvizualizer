@@ -371,7 +371,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       {/* Settings Overlay */}
       {showSettings && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30">
-          <div className="bg-paper-1/95 dark:bg-paper-0/95 backdrop-blur-2xl border border-line-subtle p-4 rounded-2xl shadow-2xl shadow-accent/10 flex gap-6 w-80">
+          <div className="bg-paper-1/95 dark:bg-paper-0/95 backdrop-blur-xl border border-line-subtle p-4 rounded-2xl shadow-2xl shadow-accent/10 flex gap-6 w-80">
             <div className="flex-1">
               <label className="text-ink text-[11px] font-bold mb-2 flex justify-between">
                 Array Size <span className="text-accent">{arraySize}</span>
@@ -436,7 +436,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
 
         {/* Floating HUD Controls Pill Container */}
         <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-paper-1/95 dark:bg-paper-0/95 backdrop-blur-2xl border border-line-subtle p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-accent/10 min-w-max mx-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-paper-1/95 dark:bg-paper-0/95 backdrop-blur-xl border border-line-subtle p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-accent/10 min-w-max mx-auto">
             
             {steps.length === 0 && (
               <button

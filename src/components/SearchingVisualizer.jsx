@@ -151,7 +151,7 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
 
         {/* Floating HUD Controls Pill Container */}
         <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border border-slate-200/60 dark:border-zinc-800/80 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-emerald-500/10 min-w-max mx-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-slate-200/60 dark:border-zinc-800/80 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-emerald-500/10 min-w-max mx-auto">
             
             <div className="flex items-center gap-1.5 bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl px-2 py-1 focus-within:border-emerald-500/50 transition-colors mr-0.5">
               <span className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider pl-0.5">Target</span>
@@ -239,7 +239,7 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
 
       {showCodeViewer && (
         <div className="absolute bottom-28 right-4 sm:right-6 h-[60%] w-[90%] sm:w-[400px] z-40">
-          <div className="w-full h-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-3xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-2xl overflow-hidden relative">
+          <div className="w-full h-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-2xl overflow-hidden relative">
             <div className="absolute top-2 right-2 z-50">
               <button onClick={() => setShowCodeViewer(false)} className="bg-slate-100 dark:bg-zinc-800 text-slate-500 hover:text-slate-700 p-1.5 rounded-full"><BookOpen size={14} /></button>
             </div>
@@ -256,7 +256,7 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
 
       {showCustomTest && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md z-50">
-          <div className="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-3xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-2xl overflow-hidden p-2">
+          <div className="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-2xl overflow-hidden p-2">
             <CustomTestCases
               onApplyTest={(customArr) => {
                 const sorted = [...customArr].sort((a, b) => a - b);

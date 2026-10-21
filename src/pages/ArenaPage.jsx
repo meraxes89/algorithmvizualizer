@@ -201,6 +201,14 @@ const ArenaPage = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isRunning, runners, activeCategory, toggleRun]);
 
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'hidden') setIsRunning(false);
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
+
   const getActiveDict = () => {
     if (activeCategory === 'sorting') return SORTING_ALGORITHMS;
     if (activeCategory === 'searching') return SEARCHING_ALGORITHMS;
@@ -307,6 +315,7 @@ const ArenaPage = () => {
             {Object.keys(getActiveDict()).map((key, index) => {
               const runner = runners[key] || {};
               const algInfo = getActiveDict()[key];
+              const maxVal = Math.max(...(runner.array?.length ? runner.array : [0]), 100);
 
               return (
                 <motion.div
@@ -339,7 +348,6 @@ const ArenaPage = () => {
                   {activeCategory === 'sorting' && (
                     <div className="mb-4 flex h-44 items-end justify-center gap-1 overflow-hidden rounded-2xl border border-line-subtle bg-paper-1/70 p-3">
                       {runner.array?.map((val, idx) => {
-                        const maxVal = Math.max(...runner.array, 100);
                         const isComparing = runner.comparing?.includes(idx);
                         const isSwapped = runner.swapped?.includes(idx);
 
@@ -363,7 +371,6 @@ const ArenaPage = () => {
                   {activeCategory === 'searching' && (
                     <div className="mb-4 flex h-44 items-end justify-center gap-1 overflow-hidden rounded-2xl border border-line-subtle bg-paper-1/70 p-3">
                       {runner.array?.map((val, idx) => {
-                        const maxVal = Math.max(...runner.array, 100);
                         const isComparing = runner.comparing?.includes(idx);
                         const isFound = runner.foundIndex === idx;
 
