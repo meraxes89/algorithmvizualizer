@@ -1,79 +1,107 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { Search, Shuffle, BookOpen, Code2, FileText } from 'lucide-react';
 import { generateSortedArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import ExplanationPanel from './educational/ExplanationPanel';
 const CodeViewer = lazy(() => import('./educational/CodeViewer'));
 import CustomTestCases from './educational/CustomTestCases';
 import { algorithmDatabase } from '../data/algorithmData';
+import StepControls from './educational/StepControls';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
+import { SearchingBars } from './visualizers/searching/SearchingBars';
+
+// The colours the bars are painted with.
+const SEARCH_COLORS = {
+  default: COLORS.DEFAULT || '#a7f3d0',
+  range: COLORS.COMPARING || '#34d399',
+  current: COLORS.SWAPPING || '#f43f5e',
+  found: COLORS.SORTED || '#10b981',
+};
 
 const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
-  const [array, setArray] = useState([]);
-  const [target, setTarget] = useState(0);
-  const [currentIndex, setCurrentIndex] = useState(-1);
-  const [foundIndex, setFoundIndex] = useState(-1);
-  const [searchRange, setSearchRange] = useState([-1, -1]);
-  const [isSearching, setIsSearching] = useState(false);
   const [arraySize, setArraySize] = useState(30);
-  const [speed] = useState(SPEED_PRESETS.MEDIUM);
-  const [searchResult, setSearchResult] = useState(null);
+  const [array, setArray] = useState(() => generateSortedArray(30, 1, 100));
+  const [target, setTarget] = useState(0);
+
+  // Whether the run has been started. The trace exists from the start;
+  // this only decides which controls are on screen.
+  const [hasStarted, setHasStarted] = useState(false);
 
   const [showExplanation, setShowExplanation] = useState(false);
   const [showCodeViewer, setShowCodeViewer] = useState(false);
   const [showCustomTest, setShowCustomTest] = useState(false);
 
   useEffect(() => {
-    resetArray();
-  }, [arraySize, algorithmInfo.name]);
+    const newArray = generateSortedArray(arraySize, 1, 100);
+    setArray(newArray);
+    setTarget(newArray[Math.floor(Math.random() * newArray.length)]);
+    setHasStarted(false);
+  }, [arraySize, algorithm]);
+
+  // The trace. Computed up front and purely, so scrubbing is instant.
+  const steps = useMemo(
+    () => (algorithm ? collectSteps(algorithm(array, target)) : []),
+    [algorithm, array, target]
+  );
+
+  const {
+    index,
+    isPlaying,
+    speed,
+    setSpeed,
+    play,
+    pause,
+    next,
+    previous,
+    seek,
+    reset,
+  } = usePlayback(steps, {
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'searching',
+    meta: { algorithm: algorithmInfo?.name ?? '' },
+  });
+
+  // The outcome of the run, as far as the current step shows it.
+  const currentStep = steps[index];
+  const searchResult =
+    currentStep?.t === 'found'
+      ? { found: true, index: currentStep.view.found }
+      : currentStep?.t === 'not-found'
+        ? { found: false, index: -1 }
+        : null;
 
   const resetArray = () => {
-    if (!isSearching) {
-      const newArray = generateSortedArray(arraySize, 1, 100);
-      setArray(newArray);
-      setTarget(newArray[Math.floor(Math.random() * newArray.length)]);
-      setCurrentIndex(-1);
-      setFoundIndex(-1);
-      setSearchRange([-1, -1]);
-      setSearchResult(null);
-    }
+    const newArray = generateSortedArray(arraySize, 1, 100);
+    setArray(newArray);
+    setTarget(newArray[Math.floor(Math.random() * newArray.length)]);
+    setHasStarted(false);
   };
 
-  const handleSearch = async () => {
-    if (isSearching) return;
-    
-    setIsSearching(true);
-    setCurrentIndex(-1);
-    setFoundIndex(-1);
-    setSearchRange([-1, -1]);
-    setSearchResult(null);
-
-    const startTime = Date.now();
-    const result = await algorithm(
-      array,
-      target,
-      setCurrentIndex,
-      setFoundIndex,
-      setSearchRange,
-      speed
-    );
-    const endTime = Date.now();
-
-    setSearchResult({
-      found: result !== -1,
-      index: result,
-      time: endTime - startTime,
-    });
-
-    setIsSearching(false);
+  const handleSearch = () => {
+    setHasStarted(true);
+    play();
   };
+
+  const handleStepPlay = () => {
+    setHasStarted(true);
+    play();
+  };
+
+  const handleStepPause = () => pause();
+
+  const handleStepNext = () => {
+    pause();
+    next();
+  };
+
+  const handleStepPrevious = () => {
+    pause();
+    previous();
+  };
+
+  const handleStepReset = () => reset();
 
   const maxValue = React.useMemo(() => Math.max(...array, 100), [array]);
-
-  const getBarColor = (index) => {
-    if (index === foundIndex) return COLORS.SORTED || '#10b981';
-    if (index === currentIndex) return COLORS.SWAPPING || '#f43f5e';
-    if (searchRange[0] !== -1 && index >= searchRange[0] && index <= searchRange[1]) return COLORS.COMPARING || '#34d399';
-    return COLORS.DEFAULT || '#a7f3d0';
-  };
 
   return (
     <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-black rounded-3xl overflow-hidden border border-slate-200 dark:border-zinc-800/80">
@@ -109,22 +137,36 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       </div>
 
       {/* Main Visualization Viewport */}
-      <div className="flex-1 w-full relative flex items-end justify-center gap-2 p-6 pb-32 overflow-hidden">
-        {array.map((value, idx) => (
-          <div key={idx} className="flex flex-col items-center gap-1.5 h-full justify-end flex-1">
-            <div
-              className="rounded-t-md transition-all duration-150 border border-black/5 shadow-sm w-full h-full"
-              style={{
-                transform: `scaleY(${(value / maxValue) * 0.8})`,
-                transformOrigin: 'bottom',
-                backgroundColor: getBarColor(idx),
-                minHeight: '24px',
-              }}
-            />
-            <span className="text-slate-600 dark:text-slate-400 text-[11px] font-bold">{value}</span>
-          </div>
-        ))}
-      </div>
+      <SearchingBars
+        view={{
+          array,
+          current: currentStep?.view.current ?? -1,
+          found: currentStep?.view.found ?? -1,
+          range: currentStep?.view.range ?? null,
+        }}
+        maxValue={maxValue}
+        colors={SEARCH_COLORS}
+      />
+
+      {/* Step Controls (Floating above HUD) */}
+      {hasStarted && (
+        <div className="absolute bottom-28 left-1/2 -translate-x-1/2 z-20 scale-90 origin-bottom shadow-2xl rounded-2xl">
+          <StepControls
+            currentStep={index + 1}
+            totalSteps={steps.length}
+            isPlaying={isPlaying}
+            onPlay={handleStepPlay}
+            onPause={handleStepPause}
+            onResume={handleStepPlay}
+            onNext={handleStepNext}
+            onPrevious={handleStepPrevious}
+            onReset={handleStepReset}
+            onSeek={seek}
+            speed={speed}
+            onSpeedChange={setSpeed}
+          />
+        </div>
+      )}
 
       {/* Legend & HUD Floating Control Dock */}
       <div className="absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-20 flex flex-col items-center gap-2 w-full max-w-full px-2 pointer-events-none">
@@ -159,24 +201,23 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
                 type="number"
                 value={target}
                 onChange={(e) => setTarget(Number(e.target.value))}
-                disabled={isSearching}
+                disabled={isPlaying}
                 className="w-12 bg-transparent text-slate-900 dark:text-white font-bold text-xs outline-none text-center appearance-none"
               />
             </div>
 
             <button
               onClick={handleSearch}
-              disabled={isSearching}
-              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-emerald-600/20 hover:scale-105 active:scale-95 whitespace-nowrap"
+              className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-emerald-600/20 hover:scale-105 active:scale-95 whitespace-nowrap"
             >
-              <Search size={15} /> {isSearching ? 'Wait...' : 'Search'}
+              <Search size={15} /> {isPlaying ? 'Pause' : 'Search'}
             </button>
 
             <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
 
             <button
               onClick={resetArray}
-              disabled={isSearching}
+              disabled={isPlaying}
               title="New Random Array"
               className="flex items-center gap-1 px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all whitespace-nowrap"
             >
@@ -192,7 +233,7 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
                 max="50"
                 value={arraySize}
                 onChange={(e) => setArraySize(Number(e.target.value))}
-                disabled={isSearching}
+                disabled={isPlaying}
                 className="w-14 accent-emerald-500"
               />
               <span className="text-[10px] font-bold text-slate-700 dark:text-slate-200 w-3 text-center">{arraySize}</span>
