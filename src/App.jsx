@@ -2,6 +2,7 @@ import React, { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
 import { AnimatePresence, motion } from 'framer-motion';
+import { pageVariants } from './lib/motion';
 
 import Navbar from './components/Navbar';
 import BottomDock from './components/BottomDock';
@@ -27,12 +28,6 @@ const DPPage = lazy(() => import('./pages/DPPage'));
 const ArenaPage = lazy(() => import('./pages/ArenaPage'));
 const QuizPage = lazy(() => import('./pages/QuizPage'));
 
-const pageVariants = {
-  initial: { opacity: 0, y: 15, scale: 0.98 },
-  animate: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] } },
-  exit: { opacity: 0, y: -15, scale: 0.98, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }
-};
-
 import DioramaWrapper from './components/DioramaWrapper';
 
 // Loading fallback for lazy pages (Loading States with Personality)
@@ -51,11 +46,11 @@ const PageLoader = () => (
             delay: i * 0.1,
             ease: "easeInOut"
           }}
-          className="w-2.5 bg-indigo-500 rounded-t-sm shadow-[0_0_10px_rgba(99,102,241,0.5)]"
+          className="w-2.5 bg-accent rounded-t-sm shadow-[0_0_10px_var(--glow-primary)]"
         />
       ))}
     </div>
-    <span className="text-xs font-bold text-slate-500 uppercase tracking-widest animate-pulse">Organizing Data...</span>
+    <span className="text-xs font-bold text-ink-3 uppercase tracking-widest animate-pulse">Organizing Data...</span>
   </div>
 );
 
