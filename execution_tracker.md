@@ -78,6 +78,26 @@
 
 ---
 
+## Repository remotes
+
+Decided 2026-10-22, Phase 1 risk register ("Dual remotes (GitHub + GitLab) diverge").
+
+| Remote | URL | Role |
+| :--- | :--- | :--- |
+| `github` | `git@github.com:meraxes89/algorithmvizualizer.git` | **Primary.** Source of truth for branches, PRs, CI and releases. |
+| `origin` | `git@gitlab.com:sireenyadav/algorithmvizualizer.git` | Read-only mirror. Push here only to re-sync the mirror. |
+
+Policy:
+
+1. `remote.pushDefault` is set to `github`, so a bare `git push` goes to GitHub. `main` and every feature branch track `github/*` and push to it.
+2. GitLab is a mirror, not an upstream. Never open a PR against GitLab and never force-push to it.
+3. After `main` moves on GitHub, re-sync the mirror with `git push origin main:refs/heads/main` — a fast-forward only. If the mirror has diverged, reset it to `github/main` rather than merging.
+4. Releases, tags and CI runs are cut on GitHub only.
+
+Current state: GitHub `main` is at `e62c25f`; the GitLab mirror is behind at `20e58bc`.
+
+---
+
 ## Archive — Improvement v1 (Performance Engineering)
 
 Audited against source on 2026-10-21. `[x]` means verified present in code. `[ ]` means planned or still missing. `[-]` means the item was removed because the target was dead code.
