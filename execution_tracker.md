@@ -64,6 +64,7 @@
 #### Phase 1 acceptance
 
 - [x] CI green — lint, typecheck, tests, build and bundle budget all pass locally
+- [x] CI green in GitHub Actions — run 39671048032 on `4c50fb8`, both jobs (`lint · typecheck · test` and `build · bundle budget`) succeeded
 - [x] The boundary rule blocks itself — a React import inside `src/algorithms`, a `document` reference there, and a new plain `.js` file under `src/` were each confirmed to fail the lint
 
 ### Phase 2 — Core contract & engine
