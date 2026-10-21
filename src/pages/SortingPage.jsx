@@ -4,20 +4,15 @@ import SortingVisualizer from '../components/SortingVisualizer';
 import ComparisonMode from '../components/educational/ComparisonMode';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
-import { bubbleSort, bubbleSortInfo } from '../algorithms/sorting/bubbleSort';
-import { selectionSort, selectionSortInfo } from '../algorithms/sorting/selectionSort';
-import { insertionSort, insertionSortInfo } from '../algorithms/sorting/insertionSort';
-import { mergeSort, mergeSortInfo } from '../algorithms/sorting/mergeSort';
-import { quickSort, quickSortInfo } from '../algorithms/sorting/quickSort';
+import { sortingAlgorithms } from '../algorithms/sorting';
+import { algorithmDatabase } from '../data/algorithmData';
 
 const SortingPage = () => {
-  const algorithms = [
-    { name: 'Bubble Sort', algorithm: bubbleSort, info: bubbleSortInfo },
-    { name: 'Selection Sort', algorithm: selectionSort, info: selectionSortInfo },
-    { name: 'Insertion Sort', algorithm: insertionSort, info: insertionSortInfo },
-    { name: 'Merge Sort', algorithm: mergeSort, info: mergeSortInfo },
-    { name: 'Quick Sort', algorithm: quickSort, info: quickSortInfo },
-  ];
+  const algorithms = sortingAlgorithms.map((entry) => ({
+    name: entry.name,
+    algorithm: entry.generator,
+    info: algorithmDatabase.sorting[entry.id] ?? { name: entry.name },
+  }));
 
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(algorithms[0]);
   const [isCompareOpen, setIsCompareOpen] = useState(false);

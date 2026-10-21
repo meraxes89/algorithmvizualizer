@@ -8,6 +8,10 @@ export type UsePlaybackOptions = {
   autoplay?: boolean;
   /** Injectable browser environment. Tests use this. */
   env?: PlaybackEnv;
+  /** Identifies which visualizer this playback belongs to. */
+  source?: string;
+  /** Context attached to every published event, e.g. the algorithm name. */
+  meta?: Record<string, unknown>;
 };
 
 export type UsePlaybackResult = {
@@ -45,7 +49,7 @@ export function usePlayback(
   steps: readonly unknown[],
   options: UsePlaybackOptions = {}
 ): UsePlaybackResult {
-  const { speed: initialSpeed = DEFAULT_SPEED, autoplay = false, env } = options;
+  const { speed: initialSpeed = DEFAULT_SPEED, autoplay = false, env, source, meta } = options;
 
   const [index, setIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -57,6 +61,8 @@ export function usePlayback(
     playbackRef.current = new Playback(
       {
         speed: initialSpeed,
+        source,
+        meta,
         onStep: (next) => setIndex(next),
         onPlayStateChange: (playing) => setIsPlaying(playing),
       },
@@ -64,6 +70,13 @@ export function usePlayback(
     );
   }
   const playback = playbackRef.current;
+
+  // Keep the event metadata current, e.g. when the algorithm changes.
+  useEffect(() => {
+    if (meta) {
+      playback.setMeta(meta);
+    }
+  }, [playback, meta]);
 
   // Load a new trace whenever the caller hands us a different one.
   useEffect(() => {

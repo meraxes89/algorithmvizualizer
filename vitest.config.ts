@@ -1,6 +1,12 @@
 import { defineConfig } from 'vitest/config';
+import { alias } from './vite.aliases';
 
 export default defineConfig({
+  resolve: {
+    // The same aliases the app build uses, so a test can import a module
+    // by the same path the source does.
+    alias,
+  },
   test: {
     // jsdom everywhere: component tests need it, and unit tests are
     // unaffected by the extra environment.

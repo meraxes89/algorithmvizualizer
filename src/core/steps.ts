@@ -287,3 +287,16 @@ export const isStepOfFamily = <F extends StepFamily>(
   family: F,
   step: AnyStep
 ): step is StepByFamily[F] => step.family === family;
+
+/**
+ * Recognise a value as a step of some family.
+ *
+ * Used by the playback engine, which is generic over the step type and
+ * only publishes to the bus when it is actually looking at a step.
+ */
+export const isAnyStep = (value: unknown): value is AnyStep =>
+  typeof value === 'object' &&
+  value !== null &&
+  'family' in value &&
+  't' in value &&
+  'view' in value;

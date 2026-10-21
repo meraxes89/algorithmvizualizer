@@ -15,6 +15,15 @@ const graphStep: GraphStep = {
   vertex: 3,
 };
 
+const event = (index = 0, total = 1) => ({
+  family: 'sorting' as const,
+  step: sortStep,
+  index,
+  total,
+  source: 'test',
+  meta: {},
+});
+
 describe('StepEventBus', () => {
   it('delivers an event to the handlers of its own family', () => {
     const bus = new StepEventBus();
@@ -24,24 +33,26 @@ describe('StepEventBus', () => {
     bus.on('sorting', sorting);
     bus.on('graph', graph);
 
-    bus.emit({ family: 'sorting', step: sortStep, index: 0, total: 1 });
+    bus.emit(event());
 
     expect(sorting).toHaveBeenCalledTimes(1);
     expect(graph).not.toHaveBeenCalled();
   });
 
-  it('carries the step, the index and the total', () => {
+  it('carries the step, the index, the total, the source and the metadata', () => {
     const bus = new StepEventBus();
     const handler = vi.fn();
 
     bus.on('sorting', handler);
-    bus.emit({ family: 'sorting', step: sortStep, index: 7, total: 42 });
+    bus.emit({ ...event(7, 42), source: 'sorting-page', meta: { algorithm: 'Bubble Sort' } });
 
     expect(handler).toHaveBeenCalledWith({
       family: 'sorting',
       step: sortStep,
       index: 7,
       total: 42,
+      source: 'sorting-page',
+      meta: { algorithm: 'Bubble Sort' },
     });
   });
 
@@ -50,9 +61,9 @@ describe('StepEventBus', () => {
     const handler = vi.fn();
 
     const unsubscribe = bus.on('sorting', handler);
-    bus.emit({ family: 'sorting', step: sortStep, index: 0, total: 1 });
+    bus.emit(event());
     unsubscribe();
-    bus.emit({ family: 'sorting', step: sortStep, index: 1, total: 2 });
+    bus.emit(event(1, 2));
 
     expect(handler).toHaveBeenCalledTimes(1);
     expect(bus.handlerCount('sorting')).toBe(0);
@@ -66,7 +77,7 @@ describe('StepEventBus', () => {
     });
     bus.on('sorting', second);
 
-    expect(() => bus.emit({ family: 'sorting', step: sortStep, index: 0, total: 1 })).not.toThrow();
+    expect(() => bus.emit(event())).not.toThrow();
 
     expect(second).toHaveBeenCalledTimes(1);
   });
@@ -76,20 +87,27 @@ describe('StepEventBus', () => {
     const any = vi.fn();
 
     bus.onAny(any);
-    bus.emit({ family: 'sorting', step: sortStep, index: 0, total: 1 });
-    bus.emit({ family: 'graph', step: graphStep, index: 1, total: 2 });
+    bus.emit(event());
+    bus.emit({
+      family: 'graph',
+      step: graphStep,
+      index: 1,
+      total: 2,
+      source: 'test',
+      meta: {},
+    });
 
     expect(any).toHaveBeenCalledTimes(2);
   });
 
   it('ignores an emit when nobody is listening', () => {
     const bus = new StepEventBus();
-    expect(() => bus.emit({ family: 'sorting', step: sortStep, index: 0, total: 1 })).not.toThrow();
+    expect(() => bus.emit(event())).not.toThrow();
   });
 });
 
 describe('publishStep', () => {
-  it('publishes on the shared bus', () => {
+  it('publishes on the shared bus with a default source and metadata', () => {
     const handler = vi.fn();
     const unsubscribe = stepBus.on('sorting', handler);
 
@@ -100,6 +118,26 @@ describe('publishStep', () => {
       step: sortStep,
       index: 3,
       total: 10,
+      source: 'unknown',
+      meta: {},
+    });
+
+    unsubscribe();
+  });
+
+  it('publishes with an explicit source and metadata', () => {
+    const handler = vi.fn();
+    const unsubscribe = stepBus.on('sorting', handler);
+
+    publishStep('sorting', sortStep, 0, 1, 'sorting-page', { algorithm: 'Quick Sort' });
+
+    expect(handler).toHaveBeenCalledWith({
+      family: 'sorting',
+      step: sortStep,
+      index: 0,
+      total: 1,
+      source: 'sorting-page',
+      meta: { algorithm: 'Quick Sort' },
     });
 
     unsubscribe();

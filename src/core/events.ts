@@ -20,6 +20,15 @@ export type StepEvent<F extends StepFamily = StepFamily> = {
   readonly index: number;
   /** Total number of steps in the trace, when it is known. */
   readonly total: number;
+  /**
+   * Which visualizer produced the step.
+   *
+   * Two visualizers can run at once in compare mode, so a subscriber that
+   * only wants one of them can filter on this.
+   */
+  readonly source: string;
+  /** Free-form context, e.g. `{ algorithm: 'Bubble Sort' }`. */
+  readonly meta: Readonly<Record<string, unknown>>;
 };
 
 export type StepEventHandler<F extends StepFamily = StepFamily> = (event: StepEvent<F>) => void;
@@ -120,7 +129,9 @@ export const publishStep = <F extends StepFamily>(
   family: F,
   step: StepByFamily[F],
   index: number,
-  total: number
+  total: number,
+  source = 'unknown',
+  meta: Readonly<Record<string, unknown>> = {}
 ): void => {
-  stepBus.emit({ family, step, index, total });
+  stepBus.emit({ family, step, index, total, source, meta });
 };

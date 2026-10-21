@@ -1,6 +1,8 @@
 // Web Audio API Sonification Engine for Algorithm Visualizer
 // Dynamically synthesizes audio pitch mapped to array values and algorithm events.
 
+import { stepBus } from '../core/events';
+
 class SoundEngine {
   constructor() {
     this.audioCtx = null;
@@ -204,3 +206,38 @@ class SoundEngine {
 }
 
 export const soundEngine = new SoundEngine();
+
+/**
+ * Play a note for every sorting step.
+ *
+ * The sound engine is a *subscriber*, not something an algorithm or a
+ * visualizer calls directly. The playback engine publishes each step to
+ * the event bus, and this listener turns the steps that carry a
+ * comparison or a swap into notes. Nothing in `src/algorithms` knows
+ * that sound exists.
+ *
+ * @returns a function that unsubscribes.
+ */
+export const subscribeToStepEvents = () => {
+  return stepBus.on('sorting', ({ step, meta }) => {
+    if (!soundEngine.isEnabled) return;
+
+    const { array, comparing, swapping } = step.view;
+    if (!array || array.length === 0) return;
+
+    const maxVal = Math.max(...array, 1);
+    const algorithm = meta.algorithm || '';
+    const options = { algorithm, arrayLength: array.length };
+
+    if (step.t === 'swap' && swapping.length > 0) {
+      const [i, j] = swapping;
+      soundEngine.playSwap(array[i], j === undefined ? undefined : array[j], 1, maxVal, {
+        ...options,
+        index: i,
+      });
+    } else if (step.t === 'compare' && comparing.length > 0) {
+      const i = comparing[0];
+      soundEngine.playCompare(array[i], 1, maxVal, { ...options, index: i });
+    }
+  });
+};

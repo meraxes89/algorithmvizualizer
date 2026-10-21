@@ -14,6 +14,9 @@
  * driven by fakes in tests without fake timers or a DOM.
  */
 
+import { publishStep } from './events';
+import { isAnyStep } from './steps';
+
 /** The shape of the browser bits the engine uses. */
 export type PlaybackEnv = {
   now: () => number;
@@ -57,6 +60,10 @@ export type PlaybackConfig = {
   onFinish?: () => void;
   /** Called when playback starts or stops. */
   onPlayStateChange?: (isPlaying: boolean) => void;
+  /** Identifies which visualizer this engine belongs to. */
+  source?: string;
+  /** Free-form context attached to every published event. */
+  meta?: Record<string, unknown>;
 };
 
 export const DEFAULT_SPEED = 200;
@@ -81,11 +88,15 @@ export class Playback {
   private readonly env: PlaybackEnv;
   private readonly config: PlaybackConfig;
   private readonly unsubscribeVisibility: () => void;
+  private readonly source: string;
+  private meta: Readonly<Record<string, unknown>>;
 
   constructor(config: PlaybackConfig = {}, env: PlaybackEnv = browserEnv) {
     this.config = config;
     this.env = env;
     this.speed = config.speed ?? DEFAULT_SPEED;
+    this.source = config.source ?? 'unknown';
+    this.meta = config.meta ?? {};
 
     this.unsubscribeVisibility = env.onVisibilityChange((hidden) => {
       // A hidden tab cannot show anything, so stop burning frames on it.
@@ -185,7 +196,6 @@ export class Playback {
   next(): void {
     this.seek(Math.min(this.index + 1, Math.max(this.steps.length - 1, 0)));
   }
-
   /** Go back one step. */
   previous(): void {
     this.seek(Math.max(this.index - 1, 0));
@@ -204,6 +214,7 @@ export class Playback {
     this.index = clamped;
     this.accumulator = 0;
     this.config.onStep?.(this.index);
+    this.publish(this.steps[this.index], this.index);
 
     if (this.isFinished) {
       this.pause();
@@ -221,6 +232,11 @@ export class Playback {
   setSpeed(speed: number): void {
     this.speed = Math.max(0, speed);
     this.accumulator = 0;
+  }
+
+  /** Merge new context into the metadata attached to published events. */
+  setMeta(meta: Record<string, unknown>): void {
+    this.meta = { ...this.meta, ...meta };
   }
 
   /** Release the engine's resources. */
@@ -282,6 +298,19 @@ export class Playback {
 
     this.index += 1;
     this.config.onStep?.(this.index);
+    this.publish(this.steps[this.index], this.index);
+  }
+
+  /**
+   * Publish the current step so that side effects — sound, confetti, the
+   * favicon — can react to it without the algorithm ever knowing they
+   * exist.
+   */
+  private publish(step: unknown, index: number): void {
+    if (!isAnyStep(step)) {
+      return;
+    }
+    publishStep(step.family, step, index, this.steps.length, this.source, this.meta);
   }
 }
 

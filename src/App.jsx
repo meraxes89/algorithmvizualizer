@@ -11,6 +11,7 @@ import CustomCursor from './components/CustomCursor';
 import OnboardingTour from './components/OnboardingTour';
 import ToastContainer from './components/Toast';
 import EasterEgg from './components/EasterEgg';
+import { subscribeToStepEvents } from './utils/soundEngine';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -159,6 +160,10 @@ const useRouteWarmup = () => {
 
 function App() {
   useRouteWarmup();
+
+  // The sound engine is a subscriber: it listens to the step events the
+  // playback engine publishes. No algorithm and no visualizer calls it.
+  useEffect(() => subscribeToStepEvents(), []);
 
   return (
     <ThemeProvider>
