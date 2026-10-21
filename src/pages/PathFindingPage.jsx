@@ -3,18 +3,16 @@ import { MapPin } from 'lucide-react';
 import PathFindingVisualizer from '../components/PathFindingVisualizer';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
-import { astar, astarInfo } from '../algorithms/pathfinding/astar';
-import { dijkstra, dijkstraInfo } from '../algorithms/pathfinding/dijkstra';
-import { bfs, bfsInfo } from '../algorithms/pathfinding/bfs';
-import { dfs, dfsInfo } from '../algorithms/pathfinding/dfs';
+import { pathfindingAlgorithms } from '../algorithms/pathfinding';
+import { algorithmDatabase } from '../data/algorithmData';
 
 const PathFindingPage = () => {
-  const algorithms = [
-    { name: 'A* Search', key: 'astar', algorithm: astar, info: astarInfo },
-    { name: "Dijkstra's Algorithm", key: 'dijkstra', algorithm: dijkstra, info: dijkstraInfo },
-    { name: 'Breadth-First Search', key: 'bfs', algorithm: bfs, info: bfsInfo },
-    { name: 'Depth-First Search', key: 'dfs', algorithm: dfs, info: dfsInfo },
-  ];
+  const algorithms = pathfindingAlgorithms.map((entry) => ({
+    name: entry.name,
+    key: entry.id,
+    algorithm: entry.generator,
+    info: algorithmDatabase.pathfinding?.[entry.id] ?? { name: entry.name },
+  }));
 
   const [selectedAlgorithm, setSelectedAlgorithm] = useState(algorithms[0]);
 

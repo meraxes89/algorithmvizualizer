@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback, lazy } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, lazy } from 'react';
 import { Play, RotateCcw, Eraser, Box, Sparkles, Activity, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { createInitialGrid, SPEED_PRESETS } from '../utils/animationHelpers';
@@ -7,129 +7,29 @@ const PathFinding3DVisualizer = lazy(() => import('./3D/PathFinding3DVisualizer'
 import SoundControls from './SoundControls';
 import OdometerCounter from './OdometerCounter';
 import GridCanvas from './pathfinding/GridCanvas';
+import StepControls from './educational/StepControls';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
+import { pathfindingAlgorithmByKey } from '../algorithms/pathfinding';
+import { cellKey } from '../algorithms/pathfinding/grid';
 
 // ─── Synchronous algorithm runners (no delays) ────────────────────────────────
 
-function runAstarSync(grid, startNode, endNode) {
-  const visited = [];
-  startNode.distance = 0;
-  startNode.fDistance = Math.abs(startNode.row - endNode.row) + Math.abs(startNode.col - endNode.col);
-  const openSet = [startNode];
-  while (openSet.length) {
-    openSet.sort((a, b) => (a.fDistance || Infinity) - (b.fDistance || Infinity));
-    const curr = openSet.shift();
-    if (curr.isWall) continue;
-    if (curr.distance === Infinity) return visited;
-    curr.isVisited = true;
-    visited.push(curr);
-    if (curr === endNode) return visited;
-    for (const nb of getNeighbors(curr, grid)) {
-      const g = curr.distance + 1;
-      if (g < nb.distance) {
-        nb.distance = g;
-        nb.fDistance = g + Math.abs(nb.row - endNode.row) + Math.abs(nb.col - endNode.col);
-        nb.previousNode = curr;
-        if (!openSet.includes(nb)) openSet.push(nb);
-      }
-    }
-  }
-  return visited;
-}
+// The grid, reduced to what a pathfinding algorithm needs: where the
+// walls are.
+const toGridModel = (grid) =>
+  grid.map((row) => row.map((node) => ({ row: node.row, col: node.col, isWall: node.isWall })));
 
-function runDijkstraSync(grid, startNode, endNode) {
-  const visited = [];
-  startNode.distance = 0;
-  const unvisited = getAllNodes(grid);
-  while (unvisited.length) {
-    unvisited.sort((a, b) => a.distance - b.distance);
-    const closest = unvisited.shift();
-    if (closest.isWall) continue;
-    if (closest.distance === Infinity) return visited;
-    closest.isVisited = true;
-    visited.push(closest);
-    if (closest === endNode) return visited;
-    for (const nb of getNeighbors(closest, grid)) {
-      const candidate = closest.distance + 1;
-      if (candidate < nb.distance) {
-        nb.distance = candidate;
-        nb.previousNode = closest;
-      }
-    }
-  }
-  return visited;
-}
+// The route from one cell to another, computed without animating it.
+// This is the same generator the animated run uses, so the preview and
+// the run can never disagree.
+const computePreviewPath = (generator, grid, from, to) => {
+  if (!generator || grid.length === 0) return [];
 
-function runBfsSync(grid, startNode, endNode) {
-  const visited = [];
-  const queue = [startNode];
-  startNode.isVisited = true;
-  while (queue.length) {
-    const cur = queue.shift();
-    if (cur.isWall) continue;
-    visited.push(cur);
-    if (cur === endNode) return visited;
-    for (const nb of getNeighbors(cur, grid)) {
-      nb.isVisited = true;
-      nb.previousNode = cur;
-      queue.push(nb);
-    }
-  }
-  return visited;
-}
-
-function runDfsSync(grid, startNode, endNode) {
-  const visited = [];
-  const stack = [startNode];
-  startNode.isVisited = true;
-  while (stack.length) {
-    const cur = stack.pop();
-    if (cur.isWall) continue;
-    visited.push(cur);
-    if (cur === endNode) return visited;
-    for (const nb of getNeighbors(cur, grid)) {
-      nb.isVisited = true;
-      nb.previousNode = cur;
-      stack.push(nb);
-    }
-  }
-  return visited;
-}
-
-function getAllNodes(grid) {
-  return grid.flatMap(row => row);
-}
-
-function getNeighbors(node, grid) {
-  const { row, col } = node;
-  const nbs = [];
-  if (row > 0) nbs.push(grid[row - 1][col]);
-  if (row < grid.length - 1) nbs.push(grid[row + 1][col]);
-  if (col > 0) nbs.push(grid[row][col - 1]);
-  if (col < grid[0].length - 1) nbs.push(grid[row][col + 1]);
-  return nbs.filter(n => !n.isVisited && !n.isWall);
-}
-
-function computeInstant(algorithmKey, grid, startRow, startCol, endRow, endCol) {
-  const g = grid.map(row => row.map(node => ({ ...node, isVisited: false, isPath: false, distance: Infinity, previousNode: null })));
-  const s = g[startRow][startCol];
-  const e = g[endRow][endCol];
-  s.isStart = true;
-  e.isEnd = true;
-  let runner;
-  if (algorithmKey === 'astar') runner = runAstarSync;
-  else if (algorithmKey === 'bfs') runner = runBfsSync;
-  else if (algorithmKey === 'dfs') runner = runDfsSync;
-  else runner = runDijkstraSync;
-
-  runner(g, s, e);
-  let cur = e;
-  while (cur && cur.previousNode) {
-    cur.isPath = true;
-    cur = cur.previousNode;
-  }
-  if (s) s.isPath = true;
-  return g;
-}
+  const steps = collectSteps(generator(toGridModel(grid), from, to));
+  const last = steps[steps.length - 1];
+  return last?.view.path ?? [];
+};
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -140,19 +40,70 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
   const [grid, setGrid] = useState([]);
   const [startPos, setStartPos] = useState({ row: 10, col: 4 });
   const [endPos, setEndPos] = useState({ row: 10, col: 43 });
-  const [isVisualizing, setIsVisualizing] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(null); // 'start' | 'end' | null
   const [is3DMode, setIs3DMode] = useState(false);
   const [liveMode] = useState(false);
-  const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
   const [selectedMazeType, setSelectedMazeType] = useState('dfs'); // 'dfs' | 'recursive_division' | 'prims'
-  const [stats, setStats] = useState(null);
-  const animationRef = useRef(null);
+  // The route shown while dragging in live mode. It is not part of the
+  // trace, so it lives in its own state.
+  const [previewPath, setPreviewPath] = useState(null);
   const algorithmKey = algorithmKeyProp
     || (algorithmInfo?.name?.toLowerCase().includes('a*') ? 'astar'
     : ['bfs', 'breadth'].some((s) => algorithmInfo?.name?.toLowerCase().includes(s)) ? 'bfs'
     : ['dfs', 'depth'].some((s) => algorithmInfo?.name?.toLowerCase().includes(s)) ? 'dfs' : 'dijkstra');
+
+  const algorithm = useMemo(() => pathfindingAlgorithmByKey(algorithmKey).generator, [algorithmKey]);
+
+  // The trace. Computed up front and purely, so scrubbing is instant.
+  const steps = useMemo(() => {
+    if (!algorithm || grid.length === 0) return [];
+    return collectSteps(algorithm(toGridModel(grid), startPos, endPos));
+  }, [algorithm, grid, startPos, endPos]);
+
+  const {
+    index,
+    isPlaying,
+    speed,
+    setSpeed,
+    play,
+    pause,
+    next,
+    previous,
+    seek,
+    reset,
+  } = usePlayback(steps, {
+    speed: SPEED_PRESETS.FAST,
+    source: 'pathfinding',
+    meta: { algorithm: algorithmInfo?.name ?? '' },
+  });
+
+  const view = steps[index]?.view;
+
+  // How much work the run did, as far as the current step shows it.
+  const stats = useMemo(() => {
+    if (!view) return null;
+    return { visited: view.visited.length, path: view.path.length };
+  }, [view]);
+
+  // The grid as it is drawn: the walls from the state, the visited cells
+  // and the route from the current step.
+  const displayGrid = useMemo(() => {
+    const visited = new Set((view?.visited ?? []).map(cellKey));
+    const path = new Set((view?.path ?? []).map(cellKey));
+    const preview = new Set(previewPath ?? []);
+
+    return grid.map((row) =>
+      row.map((node) => {
+        const key = cellKey(node);
+        return {
+          ...node,
+          isVisited: visited.has(key),
+          isPath: path.has(key) || preview.has(key),
+        };
+      })
+    );
+  }, [grid, view, previewPath]);
 
   // Build fresh base grid (walls only, no path/visited)
   const buildBaseGrid = useCallback(() => {
@@ -167,189 +118,59 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
     // Default to a pre-generated maze for immediate visual appeal in 3D mode
     const initialGrid = generateComplexMaze(baseGrid, startPos, endPos, 'recursive_division');
     setGrid(initialGrid);
-    setStats(null);
   }, []);
 
   // Live-mode: re-run instantly whenever positions change
   useEffect(() => {
-    if (!liveMode || isVisualizing || grid.length === 0) return;
-    const computed = computeInstant(
-      algorithmKey, grid, startPos.row, startPos.col, endPos.row, endPos.col
-    );
-    setGrid(computed);
-  }, [liveMode, startPos, endPos, algorithmKey]);
+    if (!liveMode || isPlaying || grid.length === 0) return;
+    setPreviewPath(computePreviewPath(algorithm, grid, startPos, endPos).map(cellKey));
+  }, [liveMode, algorithm, grid, startPos, endPos]);
 
   // ── Reset
   const handleReset = () => {
-    if (isVisualizing) return;
-    if (animationRef.current) clearTimeout(animationRef.current);
+    if (isPlaying) return;
     const g = grid.map(row =>
       row.map(node => ({ ...node, isVisited: false, isPath: false, distance: Infinity, previousNode: null }))
     );
     setGrid(g);
-    setStats(null);
   };
 
   const handleClearWalls = () => {
-    if (isVisualizing) return;
+    if (isPlaying) return;
     const g = grid.map(row =>
       row.map(node => ({ ...node, isWall: false, isVisited: false, isPath: false, distance: Infinity, previousNode: null }))
     );
     setGrid(g);
-    setStats(null);
   };
 
   const handleGenerateMaze = (overrideType) => {
-    if (isVisualizing || grid.length === 0) return;
+    if (isPlaying || grid.length === 0) return;
     const typeToUse = typeof overrideType === 'string' ? overrideType : selectedMazeType;
     const newGrid = generateComplexMaze(grid, startPos, endPos, typeToUse);
     setGrid(newGrid);
-    setStats(null);
   };
 
   // ── Animated visualize
-  const visualize = async () => {
-    if (isVisualizing) return;
-    setIsVisualizing(true);
-    setStats(null);
-
-    // Reset visited/path
-    const baseGrid = grid.map(row =>
-      row.map(node => ({ ...node, isVisited: false, isPath: false, distance: Infinity, previousNode: null }))
-    );
-    const sNode = baseGrid[startPos.row][startPos.col];
-    const eNode = baseGrid[endPos.row][endPos.col];
-    sNode.isStart = true; eNode.isEnd = true;
-
-    // Choose runner
-    let runner;
-    if (algorithmKey === 'bfs') runner = runBfsSync;
-    else if (algorithmKey === 'dfs') runner = runDfsSync;
-    else runner = runDijkstraSync;
-
-    // Compute all at once
-    runner(baseGrid, sNode, eNode);
-
-    // Collect visited order (re-run for order tracking)
-    const gForAnim = grid.map(row =>
-      row.map(node => ({ ...node, isVisited: false, isPath: false, distance: Infinity, previousNode: null }))
-    );
-    const s2 = gForAnim[startPos.row][startPos.col];
-    const e2 = gForAnim[endPos.row][endPos.col];
-    s2.isStart = true; e2.isEnd = true;
-
-    const visitedOrder = [];
-    // Collect with wrapper
-    if (algorithmKey === 'astar') {
-      s2.distance = 0;
-      s2.fDistance = Math.abs(s2.row - e2.row) + Math.abs(s2.col - e2.col);
-      const openSet = [s2];
-      while (openSet.length) {
-        openSet.sort((a, b) => (a.fDistance || Infinity) - (b.fDistance || Infinity));
-        const curr = openSet.shift();
-        if (curr.isWall) continue;
-        if (curr.distance === Infinity) break;
-        curr.isVisited = true;
-        visitedOrder.push(curr);
-        if (curr === e2) break;
-        for (const nb of getNeighbors(curr, gForAnim)) {
-          const g = curr.distance + 1;
-          if (g < nb.distance) {
-            nb.distance = g;
-            nb.fDistance = g + Math.abs(nb.row - e2.row) + Math.abs(nb.col - e2.col);
-            nb.previousNode = curr;
-            if (!openSet.includes(nb)) openSet.push(nb);
-          }
-        }
-      }
-    } else if (algorithmKey === 'dijkstra') {
-      s2.distance = 0;
-      const unvisited = getAllNodes(gForAnim);
-      while (unvisited.length) {
-        unvisited.sort((a, b) => a.distance - b.distance);
-        const closest = unvisited.shift();
-        if (closest.isWall) continue;
-        if (closest.distance === Infinity) break;
-        closest.isVisited = true;
-        visitedOrder.push(closest);
-        if (closest === e2) break;
-        for (const nb of getNeighbors(closest, gForAnim)) {
-          const candidate = closest.distance + 1;
-          if (candidate < nb.distance) {
-            nb.distance = candidate;
-            nb.previousNode = closest;
-          }
-        }
-      }
-    } else if (algorithmKey === 'bfs') {
-      const q = [s2]; s2.isVisited = true;
-      while (q.length) {
-        const cur = q.shift();
-        if (cur.isWall) continue;
-        visitedOrder.push(cur);
-        if (cur === e2) break;
-        for (const nb of getNeighbors(cur, gForAnim)) {
-          nb.isVisited = true; nb.previousNode = cur; q.push(nb);
-        }
-      }
-    } else {
-      const stk = [s2]; s2.isVisited = true;
-      while (stk.length) {
-        const cur = stk.pop();
-        if (cur.isWall) continue;
-        visitedOrder.push(cur);
-        if (cur === e2) break;
-        for (const nb of getNeighbors(cur, gForAnim)) {
-          nb.isVisited = true; nb.previousNode = cur; stk.push(nb);
-        }
-      }
-    }
-
-    // Animate visited nodes
-    setGrid(gForAnim.map(row => row.map(n => ({ ...n, isVisited: false, isPath: false }))));
-    await new Promise(resolve => {
-      let i = 0;
-      const step = () => {
-        if (i >= visitedOrder.length) { resolve(); return; }
-        const node = visitedOrder[i++];
-        setGrid(prev => prev.map(row =>
-          row.map(n => n.row === node.row && n.col === node.col ? { ...n, isVisited: true } : n)
-        ));
-        animationRef.current = setTimeout(step, speed);
-      };
-      step();
-    });
-
-    // Animate path
-    let pathLen = 0;
-    let cur = e2;
-    const pathNodes = [];
-    while (cur && cur.previousNode) { pathNodes.unshift(cur); cur = cur.previousNode; }
-    if (s2) pathNodes.unshift(s2);
-    pathLen = pathNodes.length;
-
-    await new Promise(resolve => {
-      let i = 0;
-      const step = () => {
-        if (i >= pathNodes.length) { resolve(); return; }
-        const node = pathNodes[i++];
-        setGrid(prev => prev.map(row =>
-          row.map(n => n.row === node.row && n.col === node.col ? { ...n, isPath: true } : n)
-        ));
-        // Slow down yellow path specifically in 3D mode for better cinematic FPV turns
-        const pathSpeed = is3DMode ? speed * 10 : speed * 2;
-        animationRef.current = setTimeout(step, pathSpeed);
-      };
-      step();
-    });
-
-    setStats({ visited: visitedOrder.length, path: pathLen });
-    setIsVisualizing(false);
+  const visualize = () => {
+    if (isPlaying) return;
+    play();
   };
+
+  const handleStepPlay = () => play();
+  const handleStepPause = () => pause();
+  const handleStepNext = () => {
+    pause();
+    next();
+  };
+  const handleStepPrevious = () => {
+    pause();
+    previous();
+  };
+  const handleStepReset = () => reset();
 
   // ── Mouse handlers
   const handleMouseDown = (row, col) => {
-    if (isVisualizing) return;
+    if (isPlaying) return;
     if (row === startPos.row && col === startPos.col) { setIsDragging('start'); return; }
     if (row === endPos.row && col === endPos.col) { setIsDragging('end'); return; }
     setIsDrawing(true);
@@ -357,7 +178,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
   };
 
   const handleMouseEnter = (row, col) => {
-    if (isVisualizing) return;
+    if (isPlaying) return;
     if (isDragging === 'start') {
       if (row === endPos.row && col === endPos.col) return;
       const newStart = { row, col };
@@ -367,8 +188,9 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
         const g = prev.map(r => r.map(n => ({ ...n, isStart: false })));
         g[row][col] = { ...g[row][col], isStart: true, isWall: false, isVisited: false, isPath: false };
         if (liveMode) {
-          const computed = computeInstant(algorithmKey, g, row, col, endPos.row, endPos.col);
-          return computed;
+          setPreviewPath(
+            computePreviewPath(algorithm, g, { row, col }, endPos).map(cellKey)
+          );
         }
         return g.map(r => r.map(n => ({ ...n, isVisited: false, isPath: false, distance: Infinity, previousNode: null })));
       });
@@ -382,8 +204,9 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
         const g = prev.map(r => r.map(n => ({ ...n, isEnd: false })));
         g[row][col] = { ...g[row][col], isEnd: true, isWall: false, isVisited: false, isPath: false };
         if (liveMode) {
-          const computed = computeInstant(algorithmKey, g, startPos.row, startPos.col, row, col);
-          return computed;
+          setPreviewPath(
+            computePreviewPath(algorithm, g, startPos, { row, col }).map(cellKey)
+          );
         }
         return g.map(r => r.map(n => ({ ...n, isVisited: false, isPath: false, distance: Infinity, previousNode: null })));
       });
@@ -411,7 +234,6 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
         })
       )
     );
-    setStats(null);
   };
 
   return (
@@ -454,7 +276,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
       <div className="flex-1 w-full relative flex items-center justify-center overflow-hidden p-4 pb-32 select-none">
         {is3DMode ? (
           <div className="w-full h-full min-h-[450px]">
-            <PathFinding3DVisualizer grid={grid} startPos={startPos} endPos={endPos} />
+            <PathFinding3DVisualizer grid={displayGrid} startPos={startPos} endPos={endPos} />
           </div>
         ) : (
           <TransformWrapper initialScale={1} minScale={0.5} maxScale={3} centerOnInit={true} panning={{ excluded: ['canvas'] }}>
@@ -488,7 +310,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
                 <TransformComponent wrapperClassName="w-full h-full" contentClassName="w-full h-full flex items-center justify-center">
                   <div className="w-full max-w-[960px] rounded-2xl border border-line-subtle bg-paper-1 p-1 shadow-paper">
                     <GridCanvas
-                      grid={grid}
+                      grid={displayGrid}
                       rows={ROWS}
                       cols={COLS}
                       onCellDown={handleMouseDown}
@@ -522,13 +344,33 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
           ))}
         </div>
 
+        {/* Step Controls (Floating above HUD) */}
+        {steps.length > 0 && (
+          <div className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 scale-90 origin-bottom shadow-2xl rounded-2xl">
+            <StepControls
+              currentStep={index + 1}
+              totalSteps={steps.length}
+              isPlaying={isPlaying}
+              onPlay={handleStepPlay}
+              onPause={handleStepPause}
+              onResume={handleStepPlay}
+              onNext={handleStepNext}
+              onPrevious={handleStepPrevious}
+              onReset={handleStepReset}
+              onSeek={seek}
+              speed={speed}
+              onSpeedChange={setSpeed}
+            />
+          </div>
+        )}
+
         {/* Floating HUD Controls Pill Container */}
         <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
           <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-slate-200/60 dark:border-zinc-800/80 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max mx-auto">
             
             <button
               onClick={visualize}
-              disabled={isVisualizing}
+              disabled={isPlaying}
               className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95 whitespace-nowrap"
             >
               <Play size={15} fill="currentColor" /> Visualize
@@ -540,7 +382,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
             <div className="flex items-center bg-indigo-50/50 dark:bg-indigo-950/30 border border-indigo-200/50 dark:border-indigo-800/50 rounded-xl overflow-hidden hover:border-indigo-500/50 transition-colors">
               <button
                 onClick={() => handleGenerateMaze()}
-                disabled={isVisualizing}
+                disabled={isPlaying}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-[12px] font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 whitespace-nowrap"
               >
                 <Sparkles size={14} className="text-indigo-500" /> Generate Maze
@@ -552,7 +394,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
                   setSelectedMazeType(e.target.value);
                   handleGenerateMaze(e.target.value);
                 }}
-                disabled={isVisualizing}
+                disabled={isPlaying}
                 className="bg-transparent text-[11px] font-bold text-indigo-600 dark:text-indigo-400 px-2 py-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
               >
                 <option value="dfs" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">DFS</option>
@@ -563,7 +405,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
 
             <button
               onClick={handleReset}
-              disabled={isVisualizing}
+              disabled={isPlaying}
               title="Reset Board"
               className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
             >
@@ -572,7 +414,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
 
             <button
               onClick={handleClearWalls}
-              disabled={isVisualizing}
+              disabled={isPlaying}
               title="Clear Walls"
               className="p-2 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-all"
             >
@@ -601,7 +443,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
                 <button
                   key={label}
                   onClick={() => setSpeed(val)}
-                  disabled={isVisualizing}
+                  disabled={isPlaying}
                   className={`px-2 py-1 rounded text-[10px] font-black tracking-wider transition-all ${
                     speed === val ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
                   }`}
