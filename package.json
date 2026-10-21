@@ -57,6 +57,10 @@
     "lint": "eslint src tools",
     "lint:fix": "eslint src tools --fix",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:comps": "vitest run src/components",
+    "test:coverage": "vitest run --coverage",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
