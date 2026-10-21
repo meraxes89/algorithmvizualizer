@@ -2,7 +2,7 @@
 // Metadata for each tree algorithm used by TreeAlgorithms page.
 // Each entry contains a name, description, time/space complexity, and optional UI input flag.
 
-export const algorithmData = {
+export const treeAlgorithmData = {
   traversals: {
     preOrder: {
       name: 'Pre‑order Traversal',

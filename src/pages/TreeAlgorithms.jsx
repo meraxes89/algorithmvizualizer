@@ -7,7 +7,7 @@ const HeapVisualizer = lazy(() => import('../components/HeapVisualizer'));
 const TrieVisualizer = lazy(() => import('../components/TrieVisualizer'));
 const SegmentTreeVisualizer = lazy(() => import('../components/SegmentTreeVisualizer'));
 import { preOrderTraversal, inOrderTraversal, postOrderTraversal, levelOrderTraversal } from '../algorithms/trees/traversals';
-import { algorithmData } from '../data/treeAlgorithms';
+import { treeAlgorithmData } from '../data/treeAlgorithms';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
 
@@ -16,10 +16,10 @@ const TreeAlgorithms = () => {
     {
       name: 'Traversals',
       list: [
-        { name: 'Pre-order', fn: preOrderTraversal, info: algorithmData.traversals.preOrder },
-        { name: 'In-order', fn: inOrderTraversal, info: algorithmData.traversals.inOrder },
-        { name: 'Post-order', fn: postOrderTraversal, info: algorithmData.traversals.postOrder },
-        { name: 'Level-order', fn: levelOrderTraversal, info: algorithmData.traversals.levelOrder },
+        { name: 'Pre-order', fn: preOrderTraversal, info: treeAlgorithmData.traversals.preOrder },
+        { name: 'In-order', fn: inOrderTraversal, info: treeAlgorithmData.traversals.inOrder },
+        { name: 'Post-order', fn: postOrderTraversal, info: treeAlgorithmData.traversals.postOrder },
+        { name: 'Level-order', fn: levelOrderTraversal, info: treeAlgorithmData.traversals.levelOrder },
       ],
     },
     { name: 'BST Operations', isBST: true, list: [] },
