@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { Volume2, VolumeX, Sliders } from 'lucide-react';
-import soundEngine from '../utils/soundEngine';
+import { soundEngine } from '../utils/soundEngine';
 
 const SOUND_PROFILES = [
   { id: 'marimba', name: 'Marimba' },
