@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
 export default defineConfig(({ mode }) => ({
+  base: process.env.GITHUB_PAGES === 'true' ? '/algorithmvizualizer/' : '/',
   plugins: [react()],
   server: {
     host: true,

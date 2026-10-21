@@ -4,7 +4,7 @@
   "description": "Interactive Algorithm Visualizer with beautiful UI",
   "private": true,
   "type": "module",
-  "packageManager": "npm@11.18.0",
+  "packageManager": "pnpm@12.14.0",
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
     "@use-gesture/react": "^10.3.1",
