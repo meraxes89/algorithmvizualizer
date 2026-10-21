@@ -104,6 +104,20 @@ describe('StepEventBus', () => {
     const bus = new StepEventBus();
     expect(() => bus.emit(event())).not.toThrow();
   });
+
+  it('drops every subscription on clear', () => {
+    const bus = new StepEventBus();
+    bus.on('sorting', vi.fn());
+    bus.on('graph', vi.fn());
+
+    expect(bus.handlerCount('sorting')).toBe(1);
+    expect(bus.handlerCount('graph')).toBe(1);
+
+    bus.clear();
+
+    expect(bus.handlerCount('sorting')).toBe(0);
+    expect(bus.handlerCount('graph')).toBe(0);
+  });
 });
 
 describe('publishStep', () => {

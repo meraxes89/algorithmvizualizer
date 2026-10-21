@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { Playback, collectSteps } from './playback';
+import { Playback, browserEnv, collectSteps } from './playback';
+import { stepBus } from './events';
 import { createFakeEnv } from '../test/fakeEnv';
 
 const steps = ['a', 'b', 'c', 'd', 'e'];
@@ -222,6 +223,81 @@ describe('Playback', () => {
     playback.destroy();
     expect(fake.pendingFrames()).toBe(0);
     expect(playback.isPlaying).toBe(false);
+  });
+});
+
+describe('Playback metadata', () => {
+  it('exposes the current speed', () => {
+    const fake = createFakeEnv();
+    const playback = new Playback({ speed: 42 }, fake.env);
+
+    expect(playback.currentSpeed).toBe(42);
+
+    playback.setSpeed(7);
+    expect(playback.currentSpeed).toBe(7);
+  });
+
+  it('publishes the metadata it was given', () => {
+    const fake = createFakeEnv();
+    const playback = new Playback({ speed: 0, source: 'sorting' }, fake.env);
+
+    playback.setMeta({ algorithm: 'Bubble Sort' });
+
+    const published: { source: string; meta: Record<string, unknown> }[] = [];
+    const unsubscribe = stepBus.on('sorting', (event) => {
+      published.push({ source: event.source, meta: event.meta });
+    });
+
+    playback.load([
+      {
+        family: 'sorting',
+        t: 'compare',
+        view: { array: [1], comparing: [0], swapping: [], sorted: [] },
+      },
+      {
+        family: 'sorting',
+        t: 'swap',
+        view: { array: [1], comparing: [], swapping: [0], sorted: [] },
+      },
+    ]);
+    playback.play();
+    fake.advance(16);
+
+    unsubscribe();
+
+    expect(published).toHaveLength(1);
+    expect(published[0].source).toBe('sorting');
+    expect(published[0].meta).toEqual({ algorithm: 'Bubble Sort' });
+  });
+});
+
+describe('browserEnv', () => {
+  it('reports the current time', () => {
+    expect(typeof browserEnv.now()).toBe('number');
+  });
+
+  it('schedules and cancels a frame', () => {
+    const handle = browserEnv.requestAnimationFrame(() => {});
+    expect(typeof handle).toBe('number');
+    expect(() => browserEnv.cancelAnimationFrame(handle)).not.toThrow();
+  });
+
+  it('reports whether the document is hidden', () => {
+    expect(typeof browserEnv.isHidden()).toBe('boolean');
+  });
+
+  it('subscribes to visibility changes and unsubscribes again', () => {
+    let calls = 0;
+    const unsubscribe = browserEnv.onVisibilityChange(() => {
+      calls += 1;
+    });
+
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(calls).toBe(1);
+
+    unsubscribe();
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(calls).toBe(1);
   });
 });
 

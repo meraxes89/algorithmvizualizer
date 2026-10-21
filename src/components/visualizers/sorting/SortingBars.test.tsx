@@ -1,5 +1,5 @@
-import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { fireEvent, render, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 import { SortingBars, type SortColors } from './SortingBars';
 import { bubbleSort } from '@algorithms/sorting/bubble-sort/bubble-sort';
 import { collectSteps } from '@core/playback';
@@ -81,5 +81,21 @@ describe('SortingBars', () => {
 
     expect(tallest.style.transform).toBe('scaleY(0.85)');
     expect(shortest.style.transform).toBe('scaleY(0.10625)');
+  });
+
+  it('reports the bar that was clicked', () => {
+    const onSelect = vi.fn();
+    render(
+      <SortingBars
+        view={stepOf('set-array').view}
+        maxValue={8}
+        colors={colors}
+        onSelect={onSelect}
+      />
+    );
+
+    fireEvent.click(screen.getByTitle('Value: 5, Index: 0'));
+
+    expect(onSelect).toHaveBeenCalledWith(0);
   });
 });
