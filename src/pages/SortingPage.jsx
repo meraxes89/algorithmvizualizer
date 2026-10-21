@@ -63,10 +63,8 @@ const SortingPage = () => {
               setIsCompareOpen(!isCompareOpen);
               if (isCompareOpen) setCompareAlgos(null);
             }}
-            className={`btn-premium text-xs px-4 py-2 rounded-xl transition-all ${
-              isCompareOpen
-                ? ''
-                : 'btn-secondary'
+            className={`text-xs px-4 py-2 rounded-xl transition-all ${
+              isCompareOpen ? 'btn-premium' : 'btn-secondary'
             }`}
           >
             <Scale className="w-4 h-4 text-indigo-400" />
