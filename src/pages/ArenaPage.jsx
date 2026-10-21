@@ -7,6 +7,8 @@ import { useTheme } from '../context/ThemeContext';
 import RaceChart from '../components/RaceChart';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '../components/Toast';
+import PageShell from '../components/ui/PageShell';
+import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { SORTING_ALGORITHMS, SEARCHING_ALGORITHMS, PATHFINDING_ALGORITHMS } from '../algorithms/raceTraces';
 
 const RACE_HISTORY_CAP = 300;
@@ -205,82 +207,64 @@ const ArenaPage = () => {
     return PATHFINDING_ALGORITHMS;
   };
 
+  const CATEGORY_TABS = [
+    { id: 'sorting', label: 'Sorting Race', icon: BarChart2 },
+    { id: 'searching', label: 'Search Race', icon: SearchIcon },
+    { id: 'pathfinding', label: 'Pathfinding Race', icon: Network },
+  ];
+
   return (
-    <div className="min-h-screen bg-[#f7f4ee] dark:bg-black text-slate-900 dark:text-slate-100 flex flex-col font-sans transition-colors duration-200">
-
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 flex flex-col gap-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white dark:bg-slate-800/60 p-6 rounded-3xl border border-slate-200 dark:border-slate-700/60 backdrop-blur-xl shadow-sm">
-          <div>
-            <div className="flex items-center gap-3 mb-1">
-              <span className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400">
-                <Swords className="w-5 h-5" />
-              </span>
-              <h1 className="text-2xl md:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
-                Algorithm Battle Arena
-              </h1>
-            </div>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              Race algorithms side-by-side across Sorting, Searching, and Pathfinding categories.
-            </p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-3">
-            <SoundControls />
-            <button
-              onClick={() => initCategory(activeCategory)}
-              disabled={isRunning}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 disabled:opacity-50 text-xs font-semibold transition-all border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200"
-            >
-              <RotateCcw className="w-3.5 h-3.5" /> Reset Battle
-            </button>
-            <button
-              onClick={toggleRun}
-              title="Start/Pause [Space]"
-              className={`flex items-center gap-2 px-5 py-2 rounded-xl text-xs font-bold transition-all shadow-sm ${
-                isRunning
-                  ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                  : 'bg-indigo-600 hover:bg-indigo-700 text-white'
-              }`}
-            >
-              {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
-              <span>{isRunning ? 'PAUSE [SPACE]' : 'START [SPACE]'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Category Navigation Tabs */}
-        <div className="flex items-center gap-2 p-1.5 bg-white dark:bg-slate-800/80 rounded-2xl border border-slate-200 dark:border-slate-700/80 w-fit">
-          {[
-            { id: 'sorting', label: 'Sorting Race', icon: BarChart2 },
-            { id: 'searching', label: 'Search Race', icon: SearchIcon },
-            { id: 'pathfinding', label: 'Pathfinding Race', icon: Network },
-          ].map(cat => {
-            const Icon = cat.icon;
-            const isActive = activeCategory === cat.id;
-            return (
-              <button
-                key={cat.id}
-                onClick={() => setActiveCategory(cat.id)}
-                disabled={isRunning}
-                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all ${
-                  isActive
-                    ? 'bg-indigo-600 text-white shadow-sm'
-                    : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200'
-                }`}
-              >
-                <Icon className="w-3.5 h-3.5" />
-                <span>{cat.label}</span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Controls Bar */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-white dark:bg-slate-800/40 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
+    <PageShell
+      kicker={
+        <>
+          <Swords className="w-3 h-3" />
+          <span>Battle Arena</span>
+        </>
+      }
+      title="Algorithm Battle Arena"
+      subtitle="Race algorithms side-by-side across sorting, searching and pathfinding."
+      icon={Swords}
+      layoutKey="ARENA"
+      stage={false}
+      actions={
+        <>
+          <SoundControls />
+          <button
+            onClick={() => initCategory(activeCategory)}
+            disabled={isRunning}
+            className="btn-secondary px-4 py-2 text-xs"
+          >
+            <RotateCcw className="w-3.5 h-3.5" />
+            <span>Reset Battle</span>
+          </button>
+          <button
+            onClick={toggleRun}
+            title="Start or pause the race [Space]"
+            className={`inline-flex items-center gap-2 rounded-xl px-5 py-2 text-xs font-bold transition-all shadow-paper ${
+              isRunning
+                ? 'bg-amber-500 text-white hover:bg-amber-600'
+                : 'bg-ink text-paper-1 hover:bg-accent'
+            }`}
+          >
+            {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+            <span>{isRunning ? 'PAUSE [SPACE]' : 'START [SPACE]'}</span>
+          </button>
+        </>
+      }
+      tabs={
+        <SegmentedTabs
+          items={CATEGORY_TABS.map((tab) => ({ ...tab, disabled: isRunning }))}
+          value={activeCategory}
+          onChange={(item) => setActiveCategory(item.id)}
+          label="Race category"
+        />
+      }
+    >
+      <div className="flex flex-col gap-6">
+        <div className="grid grid-cols-1 gap-4 rounded-2xl border border-line-subtle bg-paper-2/60 p-4 sm:grid-cols-2 lg:grid-cols-3">
           {activeCategory !== 'pathfinding' && (
             <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-24">Data Size: {arraySize}</span>
+              <span className="w-24 text-xs font-semibold text-ink-2">Data Size: {arraySize}</span>
               <input
                 type="range"
                 min="15"
@@ -288,39 +272,38 @@ const ArenaPage = () => {
                 value={arraySize}
                 disabled={isRunning}
                 onChange={(e) => setArraySize(Number(e.target.value))}
-                className="flex-1 accent-indigo-600 cursor-pointer"
+                className="flex-1 cursor-pointer accent-accent"
               />
             </div>
           )}
 
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-slate-500 dark:text-slate-400 w-24">Speed: {speed}%</span>
+            <span className="w-24 text-xs font-semibold text-ink-2">Speed: {speed}%</span>
             <input
               type="range"
               min="1"
               max="95"
               value={speed}
               onChange={(e) => setSpeed(Number(e.target.value))}
-              className="flex-1 accent-indigo-600 cursor-pointer"
+              className="flex-1 cursor-pointer accent-accent"
             />
           </div>
 
           {activeCategory === 'searching' && (
-            <div className="flex items-center justify-center gap-2 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/30 border border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 rounded-xl text-xs font-bold">
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-accent/20 bg-accent-soft px-3 py-1 text-xs font-bold text-accent">
               <span>Target Value: {searchTarget}</span>
             </div>
           )}
 
           {winner && (
-            <div className="flex items-center justify-center gap-2 px-4 py-1.5 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-400 rounded-xl text-xs font-bold">
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
               <Trophy className="w-4 h-4 text-amber-500" /> Winner: {winner}
             </div>
           )}
         </div>
 
-        {/* Arena Grid */}
         <AnimatePresence>
-          <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <motion.div layout className="grid grid-cols-1 gap-6 md:grid-cols-2">
             {Object.keys(getActiveDict()).map((key, index) => {
               const runner = runners[key] || {};
               const algInfo = getActiveDict()[key];
@@ -329,33 +312,32 @@ const ArenaPage = () => {
                 <motion.div
                   initial={{ opacity: 0, x: index % 2 === 0 ? -50 : 50 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ type: "spring", stiffness: 100, delay: index * 0.1 }}
+                  transition={{ type: 'spring', stiffness: 100, delay: index * 0.1 }}
                   key={key}
-                  className={`relative flex flex-col bg-white dark:bg-slate-800/70 border rounded-3xl p-5 backdrop-blur-md transition-all shadow-sm ${
+                  className={`relative flex flex-col rounded-3xl border p-5 transition-all ${
                     runner.finished && winner === algInfo.name
-                      ? 'border-amber-500/60 ring-2 ring-amber-500/20 shadow-amber-500/20 shadow-xl'
-                      : 'border-slate-200 dark:border-slate-700/60'
+                      ? 'border-amber-500/60 bg-paper-2/70 ring-2 ring-amber-500/20'
+                      : 'border-line-subtle bg-paper-2/60'
                   }`}
                 >
-                  {/* Header info */}
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
-                      <div className={`w-3 h-3 rounded-full bg-gradient-to-r ${algInfo.color}`} />
-                      <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100">{algInfo.name}</h3>
-                      <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-700 text-[10px] font-mono text-slate-600 dark:text-slate-300">
+                      <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${algInfo.color}`} />
+                      <h3 className="text-sm font-bold text-ink">{algInfo.name}</h3>
+                      <span className="rounded-full border border-line-subtle bg-paper-1 px-2 py-0.5 font-mono text-[10px] text-ink-3">
                         {algInfo.complexity}
                       </span>
                     </div>
 
                     {runner.finished && (
-                      <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold flex items-center gap-1">
+                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
                         <CheckCircle2 className="w-3 h-3" /> Finished
                       </span>
                     )}
                   </div>
-                  {/* Visualizer Renderer */}
+
                   {activeCategory === 'sorting' && (
-                    <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                    <div className="mb-4 flex h-44 items-end justify-center gap-1 overflow-hidden rounded-2xl border border-line-subtle bg-paper-1/70 p-3">
                       {runner.array?.map((val, idx) => {
                         const maxVal = Math.max(...runner.array, 100);
                         const isComparing = runner.comparing?.includes(idx);
@@ -365,13 +347,13 @@ const ArenaPage = () => {
                         if (isSwapped) barColor = 'bg-rose-500';
                         else if (isComparing) barColor = 'bg-amber-400';
 
-                        const scaleY = (val / maxVal);
+                        const scaleY = val / maxVal;
 
                         return (
                           <div
                             key={idx}
                             style={{ transform: `scaleY(${scaleY})`, transformOrigin: 'bottom' }}
-                            className={`flex-1 h-full rounded-t-sm transition-all duration-75 ${barColor}`}
+                            className={`h-full flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
                           />
                         );
                       })}
@@ -379,23 +361,23 @@ const ArenaPage = () => {
                   )}
 
                   {activeCategory === 'searching' && (
-                    <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-3 flex items-end justify-center gap-1 border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                    <div className="mb-4 flex h-44 items-end justify-center gap-1 overflow-hidden rounded-2xl border border-line-subtle bg-paper-1/70 p-3">
                       {runner.array?.map((val, idx) => {
                         const maxVal = Math.max(...runner.array, 100);
                         const isComparing = runner.comparing?.includes(idx);
                         const isFound = runner.foundIndex === idx;
 
-                        let barColor = 'bg-indigo-400/50 dark:bg-indigo-600/40';
+                        let barColor = 'bg-ink-3/40';
                         if (isFound) barColor = 'bg-emerald-500 ring-2 ring-emerald-400';
                         else if (isComparing) barColor = 'bg-amber-400';
 
-                        const scaleY = (val / maxVal);
+                        const scaleY = val / maxVal;
 
                         return (
                           <div
                             key={idx}
                             style={{ transform: `scaleY(${scaleY})`, transformOrigin: 'bottom' }}
-                            className={`flex-1 h-full rounded-t-sm transition-all duration-75 ${barColor}`}
+                            className={`h-full flex-1 rounded-t-sm transition-all duration-75 ${barColor}`}
                           />
                         );
                       })}
@@ -403,31 +385,34 @@ const ArenaPage = () => {
                   )}
 
                   {activeCategory === 'pathfinding' && (
-                    <div className="h-44 bg-slate-50 dark:bg-slate-950/60 rounded-2xl p-2.5 flex items-center justify-center border border-slate-200 dark:border-slate-800 mb-4 overflow-hidden">
+                    <div className="mb-4 flex h-44 items-center justify-center overflow-hidden rounded-2xl border border-line-subtle bg-paper-1/70 p-2.5">
                       <div
-                        className="grid gap-1 w-full h-full"
-                        style={{ gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`, gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))` }}
+                        className="grid h-full w-full gap-1"
+                        style={{
+                          gridTemplateRows: `repeat(${GRID_ROWS}, minmax(0, 1fr))`,
+                          gridTemplateColumns: `repeat(${GRID_COLS}, minmax(0, 1fr))`,
+                        }}
                       >
                         {Array.from({ length: GRID_ROWS }).map((_, r) =>
                           Array.from({ length: GRID_COLS }).map((_, c) => {
-                            const key = `${r},${c}`;
+                            const cellKey = `${r},${c}`;
                             const isStart = r === 1 && c === 1;
                             const isTarget = r === GRID_ROWS - 2 && c === GRID_COLS - 2;
-                            const isVisited = runner.visitedSet ? runner.visitedSet.has(key) : runner.visitedList?.includes(key);
-                            const isPath = runner.pathSet ? runner.pathSet.has(key) : runner.pathList?.includes(key);
+                            const isVisited = runner.visitedSet ? runner.visitedSet.has(cellKey) : runner.visitedList?.includes(cellKey);
+                            const isPath = runner.pathSet ? runner.pathSet.has(cellKey) : runner.pathList?.includes(cellKey);
                             const isActive = runner.activeNode && runner.activeNode[0] === r && runner.activeNode[1] === c;
 
-                            let cellStyle = 'bg-slate-200/50 dark:bg-slate-800/40 border-slate-300/30 dark:border-slate-800/30';
-                            if (isStart) cellStyle = 'bg-emerald-500 ring-2 ring-emerald-400 font-bold';
-                            else if (isTarget) cellStyle = 'bg-rose-500 ring-2 ring-rose-400 font-bold';
-                            else if (isPath) cellStyle = 'bg-amber-400 dark:bg-amber-500 shadow-md shadow-amber-500/50';
-                            else if (isActive) cellStyle = 'bg-amber-300 dark:bg-amber-400 animate-pulse';
-                            else if (isVisited) cellStyle = 'bg-indigo-400/40 dark:bg-indigo-600/50';
+                            let cellStyle = 'border-line-subtle bg-line-subtle';
+                            if (isStart) cellStyle = 'bg-emerald-500 ring-2 ring-emerald-400';
+                            else if (isTarget) cellStyle = 'bg-rose-500 ring-2 ring-rose-400';
+                            else if (isPath) cellStyle = 'bg-amber-400 dark:bg-amber-500';
+                            else if (isActive) cellStyle = 'animate-pulse bg-amber-300 dark:bg-amber-400';
+                            else if (isVisited) cellStyle = 'bg-accent/30';
 
                             return (
                               <div
-                                key={key}
-                                className={`rounded-sm border text-[9px] flex items-center justify-center transition-all duration-100 ${cellStyle}`}
+                                key={cellKey}
+                                className={`flex items-center justify-center rounded-sm border text-[9px] transition-all duration-100 ${cellStyle}`}
                               />
                             );
                           })
@@ -436,22 +421,27 @@ const ArenaPage = () => {
                     </div>
                   )}
 
-                  {/* Stats Footer */}
-                  <div className="grid grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <div className="grid grid-cols-2 gap-3 rounded-xl border border-line-subtle bg-paper-1/70 p-3 text-xs">
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-3">
                         {activeCategory === 'pathfinding' ? 'Total Operations' : 'Comparisons'}
                       </span>
-                      <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">
+                      <span className="font-mono text-sm font-bold text-ink">
                         {runner.steps || runner.comps || 0}
                       </span>
                     </div>
                     <div className="flex flex-col">
-                      <span className="text-[10px] text-slate-500 dark:text-slate-400 uppercase tracking-wider font-semibold">
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-ink-3">
                         {activeCategory === 'sorting' ? 'Array Swaps' : activeCategory === 'searching' ? 'Status' : 'Exploration'}
                       </span>
-                      <span className="text-sm font-bold text-slate-900 dark:text-slate-200 font-mono">
-                        {activeCategory === 'sorting' ? runner.swaps || 0 : runner.foundIndex !== undefined && runner.foundIndex !== null ? 'TARGET FOUND' : runner.finished ? 'DONE' : 'RUNNING'}
+                      <span className="font-mono text-sm font-bold text-ink">
+                        {activeCategory === 'sorting'
+                          ? runner.swaps || 0
+                          : runner.foundIndex !== undefined && runner.foundIndex !== null
+                            ? 'TARGET FOUND'
+                            : runner.finished
+                              ? 'DONE'
+                              : 'RUNNING'}
                       </span>
                     </div>
                   </div>
@@ -461,49 +451,47 @@ const ArenaPage = () => {
           </motion.div>
         </AnimatePresence>
 
-        {/* Live Race Line Chart & Commentary */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
-          <div className="lg:col-span-2 glass-card p-5 rounded-3xl border border-slate-200 dark:border-slate-700 h-[300px] flex flex-col">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-4 flex items-center gap-2">
-              <BarChart2 className="w-4 h-4 text-indigo-500" />
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="glass-card flex h-[300px] flex-col p-5 lg:col-span-2">
+            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
+              <BarChart2 className="w-4 h-4 text-accent" />
               Live Operations Race
             </h3>
-            <div className="flex-1 w-full min-h-0">
+            <div className="min-h-0 w-full flex-1">
               <RaceChart
                 history={raceHistory}
-                gridColor={isDark ? '#334155' : '#e2e8f0'}
+                gridColor={isDark ? '#4a4238' : '#e6ddcf'}
                 series={Object.entries(getActiveDict()).map(([key, algInfo]) => ({
                   key,
                   name: algInfo.name,
-                  color: strokeColorFor(algInfo.color)
+                  color: strokeColorFor(algInfo.color),
                 }))}
               />
             </div>
           </div>
-          
-          <div className="glass-card p-5 rounded-3xl border border-slate-200 dark:border-slate-700 h-[300px] flex flex-col bg-gradient-to-br from-indigo-500/5 to-purple-500/5 dark:from-indigo-500/10 dark:to-purple-500/10">
-            <h3 className="font-bold text-sm text-slate-900 dark:text-slate-100 mb-2">Live Commentary</h3>
-            <div className="flex-1 flex flex-col justify-center items-center text-center">
-              <motion.p 
+
+          <div className="glass-card flex h-[300px] flex-col bg-accent-soft p-5">
+            <h3 className="mb-2 text-sm font-bold text-ink">Live Commentary</h3>
+            <div className="flex flex-1 flex-col items-center justify-center text-center">
+              <motion.p
                 key={commentary}
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-lg md:text-xl font-serif italic font-bold text-slate-700 dark:text-slate-300 leading-relaxed"
+                className="font-display text-lg font-bold italic leading-relaxed text-ink-2 md:text-xl"
               >
                 "{commentary}"
               </motion.p>
               {isRunning && (
-                <div className="mt-6 flex gap-1 items-center">
-                  <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></div>
-                  <span className="text-[10px] font-bold text-red-500 uppercase tracking-widest">LIVE</span>
+                <div className="mt-6 flex items-center gap-1">
+                  <div className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-accent">LIVE</span>
                 </div>
               )}
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </PageShell>
   );
 };
-
 export default ArenaPage;
