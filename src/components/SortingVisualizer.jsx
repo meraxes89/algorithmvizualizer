@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
-import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward, Box, Layers, ZoomIn, ZoomOut } from 'lucide-react';
+import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward, Box, Layers, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { generateRandomArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import StepControls from './educational/StepControls';
