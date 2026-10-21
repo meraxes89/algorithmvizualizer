@@ -79,15 +79,15 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
   };
 
   return (
-    <div className="bg-gray-800 border-t border-gray-700 p-6">
+    <div className="bg-paper-0/40 border-t border-line-subtle p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <FileText className="text-blue-400" size={24} />
-          <h3 className="text-2xl font-bold text-white">Custom Test Cases</h3>
+          <FileText className="text-accent" size={24} />
+          <h3 className="text-xl font-bold text-ink">Custom Test Cases</h3>
         </div>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-white transition-colors"
+          className="text-ink-3 hover:text-ink transition-colors"
         >
           <X size={24} />
         </button>
@@ -99,8 +99,8 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
           onClick={() => setInputType('manual')}
           className={`px-4 py-2 rounded-lg font-semibold transition-all ${
             inputType === 'manual'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-accent text-accent-fg'
+              : 'bg-paper-2/70 text-ink-2 hover:bg-paper-2'
           }`}
         >
           Manual Input
@@ -109,8 +109,8 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
           onClick={() => setInputType('json')}
           className={`px-4 py-2 rounded-lg font-semibold transition-all ${
             inputType === 'json'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-accent text-accent-fg'
+              : 'bg-paper-2/70 text-ink-2 hover:bg-paper-2'
           }`}
         >
           JSON Upload
@@ -119,8 +119,8 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
           onClick={() => setInputType('random')}
           className={`px-4 py-2 rounded-lg font-semibold transition-all ${
             inputType === 'random'
-              ? 'bg-blue-500 text-white'
-              : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+              ? 'bg-accent text-accent-fg'
+              : 'bg-paper-2/70 text-ink-2 hover:bg-paper-2'
           }`}
         >
           Random Generate
@@ -139,19 +139,19 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
       {inputType === 'manual' && (
         <div className="space-y-4">
           <div>
-            <label className="text-white text-sm font-semibold mb-2 block">
+            <label className="text-ink-2 text-sm font-semibold mb-2 block">
               Enter array (comma-separated numbers):
             </label>
             <textarea
               value={manualInput}
               onChange={(e) => setManualInput(e.target.value)}
               placeholder="e.g., 64, 34, 25, 12, 22, 11, 90"
-              className="w-full h-32 px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 outline-none resize-none font-mono"
+              className="w-full h-32 px-4 py-3 rounded-lg bg-paper-2 text-ink border border-line-strong focus:border-accent outline-none resize-none font-mono"
             />
           </div>
           <button
             onClick={handleManualSubmit}
-            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+            className="flex items-center gap-2 btn-premium px-6 py-2 text-sm"
           >
             Apply Test Case
           </button>
@@ -162,11 +162,11 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
       {inputType === 'json' && (
         <div className="space-y-4">
           <div>
-            <label className="text-white text-sm font-semibold mb-2 block">
+            <label className="text-ink-2 text-sm font-semibold mb-2 block">
               Upload JSON file or paste JSON array:
             </label>
             <div className="flex gap-2 mb-3">
-              <label className="flex items-center gap-2 bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg cursor-pointer transition-colors">
+              <label className="flex items-center gap-2 bg-paper-2/70 hover:bg-paper-2 text-ink-2 px-4 py-2 rounded-lg cursor-pointer transition-colors">
                 <Upload size={18} />
                 Upload File
                 <input
@@ -181,12 +181,12 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
               value={jsonInput}
               onChange={(e) => setJsonInput(e.target.value)}
               placeholder='e.g., [64, 34, 25, 12, 22, 11, 90]'
-              className="w-full h-32 px-4 py-3 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 outline-none resize-none font-mono"
+              className="w-full h-32 px-4 py-3 rounded-lg bg-paper-2 text-ink border border-line-strong focus:border-accent outline-none resize-none font-mono"
             />
           </div>
           <button
             onClick={handleJsonSubmit}
-            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+            className="flex items-center gap-2 btn-premium px-6 py-2 text-sm"
           >
             Apply Test Case
           </button>
@@ -198,7 +198,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-4">
             <div>
-              <label className="text-white text-sm font-semibold mb-2 block">
+              <label className="text-ink-2 text-sm font-semibold mb-2 block">
                 Array Size: {randomSize}
               </label>
               <input
@@ -211,7 +211,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
               />
             </div>
             <div>
-              <label className="text-white text-sm font-semibold mb-2 block">
+              <label className="text-ink-2 text-sm font-semibold mb-2 block">
                 Min Value: {randomMin}
               </label>
               <input
@@ -224,7 +224,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
               />
             </div>
             <div>
-              <label className="text-white text-sm font-semibold mb-2 block">
+              <label className="text-ink-2 text-sm font-semibold mb-2 block">
                 Max Value: {randomMax}
               </label>
               <input
@@ -239,7 +239,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
           </div>
           <button
             onClick={handleRandomGenerate}
-            className="flex items-center gap-2 bg-purple-500 hover:bg-purple-600 text-white px-6 py-2 rounded-lg font-semibold transition-colors"
+            className="flex items-center gap-2 btn-premium px-6 py-2 text-sm"
           >
             <Shuffle size={18} />
             Generate Random Array

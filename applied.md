@@ -3,7 +3,7 @@
 ## P0 (Highest Priority)
 - [x] 1. Cinematic Theme Transition (Dark ↔ Light)
 - [x] 2. Cursor-Reactive Ambient Lighting
-- [x] 4. Magnetic Buttons & Elastic Interactions
+- [ ] 4. Magnetic buttons — not implemented (the unused component was removed)
 - [x] 6. Glassmorphism 2.0 — Noise Texture + Chromatic Borders
 - [x] 14. Algorithm-Specific Color Theming
 - [x] 16. Custom Cursor
@@ -20,7 +20,7 @@
 - [x] 8. Keyboard-First Microinteractions
 - [x] 11. Spatial Audio Engine Upgrade
 - [x] 12. Interactive Onboarding Tour
-- [x] 15. Particle System Upgrade
+- [ ] 15. Particle system — not present (confetti effects only)
 - [x] 18. Toast Notifications with Style
 
 ## P3

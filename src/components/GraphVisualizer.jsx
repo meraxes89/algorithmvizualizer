@@ -84,7 +84,7 @@ const ALGORITHM_DETAILS = {
   }
 };
 
-const GraphVisualizer = React.memo(({ algorithm: legacyAlgo, algorithmInfo }) => {
+const GraphVisualizer = React.memo(({ algorithmInfo }) => {
   // Read algorithm type from context. Fall back to Dijkstra if not found.
   const currentAlgoKey = Object.keys(ALGORITHM_DETAILS).find(
     key => ALGORITHM_DETAILS[key].name === algorithmInfo?.name || key === algorithmInfo?.name

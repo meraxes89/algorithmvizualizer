@@ -26,7 +26,7 @@ const Navbar = () => {
 
   return (
     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center pointer-events-none px-4 transition-all duration-300">
-      <nav className="pointer-events-auto w-full max-w-5xl border border-white/60 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/10 bg-[#fbf9f5]/55 dark:bg-black/50 backdrop-blur-2xl backdrop-saturate-200 shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.7)] rounded-2xl relative transition-all duration-300">
+      <nav className="pointer-events-auto w-full max-w-5xl border border-line-subtle bg-paper-1/75 dark:bg-paper-0/75 backdrop-blur-xl shadow-[0_8px_32px_0_rgba(0,0,0,0.08)] dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.7)] rounded-2xl relative transition-all duration-300">
         <div className="px-5 md:px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-8">
             {/* Logo */}
@@ -35,32 +35,32 @@ const Navbar = () => {
             </Link>
 
             {/* Desktop Links */}
-            <div className="hidden md:flex items-center gap-6 text-[13px] font-semibold text-slate-600 dark:text-slate-300 relative">
+            <div className="hidden md:flex items-center gap-6 text-[13px] font-semibold text-ink-2 relative">
               <div
-                className="flex items-center gap-1 cursor-pointer hover:text-slate-900 dark:hover:text-white transition-colors py-4"
+                className="flex items-center gap-1 cursor-pointer hover:text-ink transition-colors py-4"
                 onMouseEnter={() => setShowDropdown(true)}
                 onMouseLeave={() => setShowDropdown(false)}
               >
-                Algorithms <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+                Algorithms <ChevronDown className="w-3.5 h-3.5 text-ink-3" />
 
                 {/* Dropdown Menu */}
                 {showDropdown && (
-                  <div className="absolute top-[90%] left-0 w-64 bg-[#fbf9f5]/85 dark:bg-zinc-950/85 backdrop-blur-2xl border border-white/60 dark:border-zinc-800/80 shadow-2xl rounded-xl py-2 z-50 transform origin-top-left transition-all">
-                    <Link to="/algorithms" className="block px-4 py-2 text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                  <div className="absolute top-[90%] left-0 w-64 bg-paper-1/95 dark:bg-paper-0/95 backdrop-blur-xl border border-line-subtle shadow-2xl rounded-xl py-2 z-50 transform origin-top-left transition-all">
+                    <Link to="/algorithms" className="block px-4 py-2 text-xs font-bold text-ink-3 uppercase tracking-wider hover:text-accent transition-colors">
                       Categories &rarr;
                     </Link>
-                    <Link to="/sorting" className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-zinc-900/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Sorting Algorithms</Link>
-                    <Link to="/searching" className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-zinc-900/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Searching Algorithms</Link>
-                    <Link to="/pathfinding" className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-zinc-900/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Pathfinding Algorithms</Link>
-                    <Link to="/graph" className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-zinc-900/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Graph Algorithms</Link>
-                    <Link to="/recursion" className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-zinc-900/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Recursion & Backtracking</Link>
-                    <Link to="/trees" className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-zinc-900/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Tree Algorithms</Link>
-                    <Link to="/dp" className="block px-4 py-2 text-slate-600 dark:text-slate-300 hover:bg-slate-50/50 dark:hover:bg-zinc-900/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">Dynamic Programming</Link>
+                    <Link to="/sorting" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Sorting Algorithms</Link>
+                    <Link to="/searching" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Searching Algorithms</Link>
+                    <Link to="/pathfinding" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Pathfinding Algorithms</Link>
+                    <Link to="/graph" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Graph Algorithms</Link>
+                    <Link to="/recursion" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Recursion & Backtracking</Link>
+                    <Link to="/trees" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Tree Algorithms</Link>
+                    <Link to="/dp" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Dynamic Programming</Link>
                   </div>
                 )}
               </div>
 
-              <Link to="/algorithms" className="hover:text-slate-900 dark:hover:text-white transition-colors">Categories</Link>
+              <Link to="/algorithms" className="hover:text-ink transition-colors">Categories</Link>
               <Link id="tour-arena" to="/arena" className="hover:text-amber-600 dark:hover:text-amber-400 flex items-center gap-1.5 transition-colors">
                 <Swords className="w-3.5 h-3.5 text-amber-500" />
                 <span>Battle Arena</span>
@@ -69,7 +69,7 @@ const Navbar = () => {
                 <Trophy className="w-3.5 h-3.5 text-purple-500" />
                 <span>Quiz</span>
               </Link>
-              <Link to="/playground" className="hover:text-slate-900 dark:hover:text-white transition-colors">Playground</Link>
+              <Link to="/playground" className="hover:text-ink transition-colors">Playground</Link>
             </div>
           </div>
 
@@ -77,11 +77,11 @@ const Navbar = () => {
             {/* Spotlight Search Trigger Button */}
             <button
               onClick={() => setIsCmdPaletteOpen(true)}
-              className="hidden lg:flex items-center gap-3 bg-[#faf7f2]/80 dark:bg-zinc-900/80 border border-stone-200/80 dark:border-zinc-800/80 hover:border-indigo-400 dark:hover:border-indigo-500 text-stone-500 dark:text-stone-400 text-xs font-medium px-3 py-1.5 rounded-xl shadow-sm hover:shadow transition-all group"
+              className="hidden lg:flex items-center gap-3 bg-paper-1/80 dark:bg-paper-1/80 border border-line-subtle hover:border-accent text-ink-3 text-xs font-medium px-3 py-1.5 rounded-xl shadow-sm hover:shadow transition-all group"
             >
-              <Search className="w-3.5 h-3.5 text-stone-400 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors" />
+              <Search className="w-3.5 h-3.5 text-ink-3 group-hover:text-accent transition-colors" />
               <span>Search algorithms...</span>
-              <kbd className="flex items-center gap-0.5 text-[10px] font-mono font-bold text-stone-400 dark:text-stone-500 bg-stone-200/60 dark:bg-zinc-800 px-1.5 py-0.5 rounded border border-stone-300/40 dark:border-zinc-700 ml-2">
+              <kbd className="flex items-center gap-0.5 text-[10px] font-mono font-bold text-ink-3 bg-paper-0/70 px-1.5 py-0.5 rounded border border-line-subtle ml-2">
                 <span className="text-[11px]">⌘</span>K
               </kbd>
             </button>
@@ -96,7 +96,7 @@ const Navbar = () => {
               id="tour-theme"
               onClick={(e) => toggleTheme(e)}
               title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="p-1.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100/50 dark:hover:bg-zinc-900/60 rounded-lg transition-colors"
+              className="p-1.5 text-ink-3 hover:text-ink hover:bg-paper-2/70 rounded-lg transition-colors"
             >
               {isDark ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4" />}
             </button>
@@ -105,7 +105,7 @@ const Navbar = () => {
               href="https://gitlab.com/sireenyadav/algorithmvizualizer"
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden sm:flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-[12px] font-semibold px-3 py-1.5 rounded-lg shadow-sm shadow-indigo-600/20 transition-all"
+              className="hidden sm:flex items-center gap-1.5 bg-ink text-paper-0 hover:bg-accent text-[12px] font-semibold px-3 py-1.5 rounded-lg shadow-sm shadow-accent/20 transition-all"
             >
               <GitLabIcon className="w-3.5 h-3.5 fill-current" />
               GitLab
@@ -114,7 +114,7 @@ const Navbar = () => {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-1.5 md:hidden text-slate-600 dark:text-slate-300 hover:bg-slate-100/50 dark:hover:bg-zinc-900/60 rounded-lg transition-colors"
+              className="p-1.5 md:hidden text-ink-2 hover:bg-paper-2/70 rounded-lg transition-colors"
             >
               {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
@@ -123,17 +123,17 @@ const Navbar = () => {
 
         {/* Mobile Menu Drawer (Floating) */}
         {isMobileMenuOpen && (
-          <div className="md:hidden absolute top-[110%] left-0 w-full border border-slate-200/50 dark:border-zinc-800/80 bg-white/95 dark:bg-black/95 backdrop-blur-2xl shadow-2xl rounded-2xl px-6 py-4 space-y-2 z-50">
-            <div className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2">Navigation</div>
-            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">Home</Link>
-            <Link to="/algorithms" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">All Categories</Link>
-            <Link to="/sorting" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 pl-3 border-l-2 border-indigo-500/50">Sorting</Link>
-            <Link to="/searching" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 pl-3 border-l-2 border-indigo-500/50">Searching</Link>
-            <Link to="/pathfinding" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 pl-3 border-l-2 border-indigo-500/50">Pathfinding</Link>
-            <Link to="/graph" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 pl-3 border-l-2 border-indigo-500/50">Graphs</Link>
-            <Link to="/recursion" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 pl-3 border-l-2 border-indigo-500/50">Recursion</Link>
-            <Link to="/trees" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 pl-3 border-l-2 border-indigo-500/50">Trees</Link>
-            <Link to="/playground" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-slate-700 dark:text-slate-200">Playground</Link>
+          <div className="md:hidden absolute top-[110%] left-0 w-full border border-line-subtle bg-paper-1/95 dark:bg-paper-0/95 backdrop-blur-xl shadow-2xl rounded-2xl px-6 py-4 space-y-2 z-50">
+            <div className="text-[10px] font-bold text-ink-3 uppercase tracking-widest mb-2">Navigation</div>
+            <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-ink">Home</Link>
+            <Link to="/algorithms" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-ink">All Categories</Link>
+            <Link to="/sorting" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Sorting</Link>
+            <Link to="/searching" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Searching</Link>
+            <Link to="/pathfinding" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Pathfinding</Link>
+            <Link to="/graph" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Graphs</Link>
+            <Link to="/recursion" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Recursion</Link>
+            <Link to="/trees" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Trees</Link>
+            <Link to="/playground" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-ink">Playground</Link>
           </div>
         )}
       </nav>

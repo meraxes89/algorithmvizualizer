@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { disposeScene } from '../../utils/threeDisposal';
+import { createVisibilityRenderLoop } from '../../utils/renderLoop';
 
 const dummy = new THREE.Object3D();
 const tempColor = new THREE.Color();
@@ -91,19 +92,21 @@ const Sorting3DVisualizer = React.memo(({ array = [], comparing = [], swapped = 
     scene.add(instancedMesh);
     instancedMeshRef.current = instancedMesh;
 
-    let animationFrameId;
-    const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
-      if (cameraRef.current) {
-        const time = Date.now() * 0.00003;
-        const radius = Math.max(55, (array.length || 30) * 1.4);
-        cameraRef.current.position.x = Math.sin(time) * radius;
-        cameraRef.current.position.z = Math.cos(time) * radius;
-        cameraRef.current.lookAt(0, 8, 0);
-      }
-      renderer.render(scene, camera);
-    };
-    animate();
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const disposeLoop = createVisibilityRenderLoop({
+      container,
+      onFrame: () => {
+        if (cameraRef.current && !reduceMotion) {
+          const time = Date.now() * 0.00003;
+          const barCount = instancedMeshRef.current?.count || 30;
+          const radius = Math.max(55, barCount * 1.4);
+          cameraRef.current.position.x = Math.sin(time) * radius;
+          cameraRef.current.position.z = Math.cos(time) * radius;
+          cameraRef.current.lookAt(0, 8, 0);
+        }
+        renderer.render(scene, camera);
+      },
+    });
 
     const handleResize = () => {
       if (!container || !cameraRef.current || !rendererRef.current) return;
@@ -117,7 +120,7 @@ const Sorting3DVisualizer = React.memo(({ array = [], comparing = [], swapped = 
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
+      disposeLoop();
       disposeScene(scene);
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);

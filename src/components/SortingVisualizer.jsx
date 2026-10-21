@@ -1,17 +1,17 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
 import { Play, Pause, Shuffle, Settings, BookOpen, Code2, FileText, SkipForward, Box, Layers, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { generateRandomArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
 import StepControls from './educational/StepControls';
 import ExplanationPanel from './educational/ExplanationPanel';
-import CodeViewer from './educational/CodeViewer';
+const CodeViewer = lazy(() => import('./educational/CodeViewer'));
 import CustomTestCases from './educational/CustomTestCases';
 import { algorithmDatabase } from '../data/algorithmData';
 import { soundEngine } from '../utils/soundEngine';
 import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
 import { startFaviconAnimation, stopFaviconAnimation } from '../utils/animatedFavicon';
 import SoundControls from './SoundControls';
-import Sorting3DVisualizer from './3D/Sorting3DVisualizer';
+const Sorting3DVisualizer = lazy(() => import('./3D/Sorting3DVisualizer'));
 import MemoryStackInspector from './MemoryStackInspector';
 import { toast } from './Toast';
 import { useGesture } from '@use-gesture/react';
@@ -274,25 +274,25 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   });
 
   return (
-    <div {...bindGestures()} className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-black rounded-3xl overflow-hidden border border-slate-200 dark:border-zinc-800/80 touch-pan-y">
+    <div {...bindGestures()} className="w-full flex-1 min-h-[600px] relative flex flex-col bg-paper-0/50 dark:bg-paper-0 rounded-3xl overflow-hidden border border-line-subtle touch-pan-y">
       
       {/* Top Header & Telemetry Bar */}
-      <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-zinc-800/80">
+      <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-paper-1/70 dark:bg-paper-0/80 backdrop-blur-xl border-b border-line-subtle">
         <div>
-          <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <Layers className="w-5 h-5 text-indigo-500" />
+          <h2 className="text-lg sm:text-xl font-extrabold text-ink tracking-tight flex items-center gap-2">
+            <Layers className="w-5 h-5 text-accent" />
             {algorithmInfo.name}
           </h2>
-          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+          <p className="text-xs text-ink-3 mt-0.5">
             {algorithmInfo.description || 'Watch elements rearrange in real-time.'}
           </p>
         </div>
 
         {/* Telemetry Metrics Badges */}
         <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-200/50 dark:border-indigo-800/50 text-indigo-700 dark:text-indigo-300 text-xs font-mono font-bold">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-accent-soft border border-accent/20 text-accent text-xs font-mono font-bold">
             <span>Size:</span>
-            <span className="text-indigo-900 dark:text-indigo-100">{array.length}</span>
+            <span className="text-accent">{array.length}</span>
           </div>
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-800/50 text-amber-700 dark:text-amber-300 text-xs font-mono font-bold">
             <span>Comparing:</span>
@@ -308,35 +308,37 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       {/* Main Visualization Viewport */}
       <div className="flex-1 w-full relative flex items-center justify-center p-4 sm:p-8">
         {is3DMode ? (
-          <Sorting3DVisualizer
-            array={array}
-            comparing={comparingIndices}
-            swapped={swappingIndices}
-            pivot={-1}
-          />
+          <Suspense fallback={<div className="flex h-full items-center justify-center text-xs font-semibold text-ink-3">Loading 3D view…</div>}>
+            <Sorting3DVisualizer
+              array={array}
+              comparing={comparingIndices}
+              swapped={swappingIndices}
+              pivot={-1}
+            />
+          </Suspense>
         ) : (
           <TransformWrapper initialScale={1} minScale={0.5} maxScale={4} centerOnInit>
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 {/* Floating 2D Zoom Widget */}
-                <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md p-1 rounded-xl border border-slate-200/50 dark:border-zinc-800/80 shadow-md">
+                <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-paper-1/85 dark:bg-paper-0/85 backdrop-blur-md p-1 rounded-xl border border-line-subtle shadow-md">
                   <button
                     onClick={() => zoomIn()}
-                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    className="p-1.5 hover:bg-paper-2/70 rounded-lg text-ink-2 transition-colors"
                     title="Zoom In"
                   >
                     <ZoomIn className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => zoomOut()}
-                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    className="p-1.5 hover:bg-paper-2/70 rounded-lg text-ink-2 transition-colors"
                     title="Zoom Out"
                   >
                     <ZoomOut className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => resetTransform()}
-                    className="p-1.5 hover:bg-slate-100 dark:hover:bg-zinc-900 rounded-lg text-slate-700 dark:text-slate-300 transition-colors"
+                    className="p-1.5 hover:bg-paper-2/70 rounded-lg text-ink-2 transition-colors"
                     title="Reset Zoom"
                   >
                     <RotateCcw className="w-3.5 h-3.5" />
@@ -369,10 +371,10 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       {/* Settings Overlay */}
       {showSettings && (
         <div className="absolute top-20 left-1/2 -translate-x-1/2 z-30">
-          <div className="bg-white/90 dark:bg-zinc-950/90 backdrop-blur-2xl border border-slate-200/60 dark:border-zinc-800/80 p-4 rounded-2xl shadow-2xl shadow-indigo-500/10 flex gap-6 w-80">
+          <div className="bg-paper-1/95 dark:bg-paper-0/95 backdrop-blur-xl border border-line-subtle p-4 rounded-2xl shadow-2xl shadow-accent/10 flex gap-6 w-80">
             <div className="flex-1">
-              <label className="text-slate-700 dark:text-slate-200 text-[11px] font-bold mb-2 flex justify-between">
-                Array Size <span className="text-indigo-600 dark:text-indigo-400">{arraySize}</span>
+              <label className="text-ink text-[11px] font-bold mb-2 flex justify-between">
+                Array Size <span className="text-accent">{arraySize}</span>
               </label>
               <input
                 type="range"
@@ -381,7 +383,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
                 value={arraySize}
                 onChange={(e) => setArraySize(Number(e.target.value))}
                 disabled={isPlaying}
-                className="w-full accent-indigo-600 cursor-pointer h-1.5 bg-slate-200 dark:bg-zinc-800 rounded-lg appearance-none"
+                className="w-full accent-accent cursor-pointer h-1.5 bg-ink-3/20 rounded-lg appearance-none"
               />
             </div>
           </div>
@@ -413,7 +415,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       <div className="absolute bottom-3 sm:bottom-4 inset-x-0 mx-auto z-20 flex flex-col items-center gap-2 w-full max-w-full px-2 pointer-events-none">
         
         {/* Compact Horizontal Legend Dock */}
-        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-white/85 dark:bg-zinc-950/85 backdrop-blur-xl border border-slate-200/80 dark:border-zinc-800/80 px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-slate-700 dark:text-slate-300 overflow-x-auto max-w-full scrollbar-hide">
+        <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-paper-1/90 dark:bg-paper-0/90 backdrop-blur-xl border border-line-subtle px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-ink-2 overflow-x-auto max-w-full scrollbar-hide">
           <div className="flex items-center gap-1.5 whitespace-nowrap">
             <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.DEFAULT || '#94a3b8' }}></div>
             <span className="uppercase tracking-wider">Unsorted</span>
@@ -434,13 +436,13 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
 
         {/* Floating HUD Controls Pill Container */}
         <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border border-slate-200/60 dark:border-zinc-800/80 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max mx-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-paper-1/95 dark:bg-paper-0/95 backdrop-blur-xl border border-line-subtle p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-accent/10 min-w-max mx-auto">
             
             {steps.length === 0 && (
               <button
                 onClick={handleSort}
                 disabled={isSorting}
-                className="flex items-center gap-1.5 bg-indigo-600 hover:bg-indigo-500 disabled:bg-slate-300 dark:disabled:bg-slate-700 disabled:cursor-not-allowed text-white px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-indigo-600/20 hover:scale-105 active:scale-95 mr-0.5 whitespace-nowrap"
+                className="flex items-center gap-1.5 bg-accent hover:bg-accent-strong disabled:bg-ink-3/30 disabled:cursor-not-allowed text-accent-fg px-3.5 sm:px-5 py-1.5 sm:py-2 rounded-xl text-[12px] sm:text-[13px] font-bold transition-all shadow-md shadow-accent/20 hover:scale-105 active:scale-95 mr-0.5 whitespace-nowrap"
               >
                 <Play size={15} fill="currentColor" /> {isSorting ? 'Wait...' : 'Sort'}
               </button>
@@ -449,12 +451,12 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
             <button
               onClick={() => resetArray()}
               title="New Random Array"
-              className="flex items-center gap-1 px-2.5 py-1.5 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all whitespace-nowrap"
+              className="flex items-center gap-1 px-2.5 py-1.5 text-ink-2 hover:bg-paper-2/70 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all whitespace-nowrap"
             >
-              <Shuffle size={15} className="text-slate-400" /> Array
+              <Shuffle size={15} className="text-ink-3" /> Array
             </button>
 
-            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
+            <div className="w-px h-6 bg-line-subtle mx-0.5"></div>
 
             <button
               onClick={() => setIs3DMode(!is3DMode)}
@@ -462,46 +464,46 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
                 is3DMode
                   ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
-                  : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                  : 'bg-transparent border-transparent text-ink-3 hover:bg-paper-2/70 hover:text-ink'
               }`}
             >
               <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
             </button>
 
-            <SoundControls className="scale-85" />
+            <SoundControls className="scale-90" />
 
             <button
               onClick={() => setShowSettings(!showSettings)}
               title="Settings"
               className={`p-2 rounded-xl transition-all ${
-                showSettings ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800'
+                showSettings ? 'bg-accent-soft text-accent' : 'text-ink-3 hover:text-ink hover:bg-paper-2/70'
               }`}
             >
               <Settings size={16} />
             </button>
 
-            <div className="w-px h-6 bg-slate-200 dark:bg-slate-700/50 mx-0.5"></div>
+            <div className="w-px h-6 bg-line-subtle mx-0.5"></div>
 
             {/* Educational Tools */}
-            <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-xl p-0.5">
+            <div className="flex bg-paper-0/60 dark:bg-paper-2/40 border border-line-subtle rounded-xl p-0.5">
               <button
                 onClick={() => setShowExplanation(!showExplanation)}
                 title="Algorithm Explanation"
-                className={`p-1.5 rounded-lg transition-all ${showExplanation ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                className={`p-1.5 rounded-lg transition-all ${showExplanation ? 'bg-paper-2 text-accent shadow-sm' : 'text-ink-3 hover:text-ink'}`}
               >
                 <BookOpen size={15} />
               </button>
               <button
                 onClick={() => setShowCodeViewer(!showCodeViewer)}
                 title="Source Code"
-                className={`p-1.5 rounded-lg transition-all ${showCodeViewer ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                className={`p-1.5 rounded-lg transition-all ${showCodeViewer ? 'bg-paper-2 text-accent shadow-sm' : 'text-ink-3 hover:text-ink'}`}
               >
                 <Code2 size={15} />
               </button>
               <button
                 onClick={() => setShowCustomTest(!showCustomTest)}
                 title="Custom Test Case"
-                className={`p-1.5 rounded-lg transition-all ${showCustomTest ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'}`}
+                className={`p-1.5 rounded-lg transition-all ${showCustomTest ? 'bg-paper-2 text-accent shadow-sm' : 'text-ink-3 hover:text-ink'}`}
               >
                 <FileText size={15} />
               </button>
@@ -521,22 +523,24 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
 
       {showCodeViewer && (
         <div className="absolute bottom-28 right-4 sm:right-6 h-[60%] w-[90%] sm:w-[400px] z-40">
-          <div className="w-full h-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-3xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-2xl overflow-hidden relative">
+          <div className="w-full h-full bg-paper-1/95 dark:bg-paper-0/95 border border-line-subtle shadow-2xl rounded-2xl overflow-hidden relative">
             <div className="absolute top-2 right-2 z-50">
-              <button onClick={() => setShowCodeViewer(false)} className="bg-slate-100 dark:bg-zinc-800 text-slate-500 hover:text-slate-700 p-1.5 rounded-full"><BookOpen size={14} /></button>
+              <button onClick={() => setShowCodeViewer(false)} className="bg-paper-0 dark:bg-paper-2/70 text-ink-3 hover:text-ink p-1.5 rounded-full"><BookOpen size={14} /></button>
             </div>
-             <CodeViewer
-              codeSnippets={getAlgorithmData(algorithmInfo.name)?.codeSnippets}
-              isOpen={showCodeViewer}
-              onClose={() => setShowCodeViewer(false)}
-            />
+            <Suspense fallback={<div className="flex h-full items-center justify-center text-xs font-semibold text-ink-3">Loading source…</div>}>
+              <CodeViewer
+                codeSnippets={getAlgorithmData(algorithmInfo.name)?.codeSnippets}
+                isOpen={showCodeViewer}
+                onClose={() => setShowCodeViewer(false)}
+              />
+            </Suspense>
           </div>
         </div>
       )}
 
       {showCustomTest && (
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-md z-50">
-          <div className="bg-white/95 dark:bg-zinc-950/95 backdrop-blur-3xl border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl rounded-2xl overflow-hidden p-2">
+          <div className="bg-paper-1/95 dark:bg-paper-0/95 border border-line-subtle shadow-2xl rounded-2xl overflow-hidden p-2">
             <CustomTestCases
               onApplyTest={handleCustomTest}
               isOpen={showCustomTest}

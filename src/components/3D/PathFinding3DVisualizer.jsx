@@ -3,6 +3,7 @@ import * as THREE from 'three';
 import { Box, Camera, Video, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
 import { disposeScene } from '../../utils/threeDisposal';
+import { createVisibilityRenderLoop } from '../../utils/renderLoop';
 
 const PathFinding3DVisualizer = ({ grid = [] }) => {
   const { isDark } = useTheme();
@@ -180,7 +181,13 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
-    renderer.shadowMap.enabled = true;
+
+    const lowTier =
+      (navigator.hardwareConcurrency || 4) <= 4 ||
+      (navigator.deviceMemory || 8) <= 4 ||
+      window.matchMedia('(prefers-reduced-motion: reduce)').matches ||
+      /(^|-)2g$/.test(navigator.connection?.effectiveType || '');
+    renderer.shadowMap.enabled = !lowTier;
     renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
@@ -194,9 +201,11 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
     const dirLight = new THREE.DirectionalLight(0xffffff, isDark ? 1.6 : 1.3);
     dirLight.position.set(25, 50, 25);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
+    dirLight.castShadow = !lowTier;
+    if (!lowTier) {
+      dirLight.shadow.mapSize.width = 512;
+      dirLight.shadow.mapSize.height = 512;
+    }
     scene.add(dirLight);
 
     const hemiLight = new THREE.HemisphereLight(
@@ -262,21 +271,22 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     groundMesh.renderOrder = 0;
 
     [wallMesh, visitedMesh, pathMesh, groundMesh].forEach(m => {
-      m.castShadow = true;
-      m.receiveShadow = true;
+      m.castShadow = !lowTier;
+      m.receiveShadow = !lowTier;
       m.frustumCulled = false;
-      m.count = 0; 
+      m.count = 0;
       scene.add(m);
     });
 
     meshesRef.current = { wall: wallMesh, visited: visitedMesh, path: pathMesh, ground: groundMesh };
 
     // Animation Loop (FPV Drone Flying Overhead Above Yellow Path)
-    let animationFrameId;
     const lookTarget = lookTargetRef.current;
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    const animate = () => {
-      animationFrameId = requestAnimationFrame(animate);
+    const disposeLoop = createVisibilityRenderLoop({
+      container,
+      onFrame: () => {
       if (!cameraRef.current) return;
 
       if (isFPV) {
@@ -385,17 +395,19 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
           cameraRef.current.rotation.z *= 0.9;
           if (Math.abs(cameraRef.current.rotation.z) < 0.001) cameraRef.current.rotation.z = 0;
         }
-        const time = Date.now() * 0.00003;
-        const radius = 46;
-        cameraRef.current.position.x = Math.sin(time) * radius;
-        cameraRef.current.position.y = 30;
-        cameraRef.current.position.z = Math.cos(time) * radius + 4;
-        cameraRef.current.lookAt(0, 0, 0);
+        if (!reduceMotion) {
+          const time = Date.now() * 0.00003;
+          const radius = 46;
+          cameraRef.current.position.x = Math.sin(time) * radius;
+          cameraRef.current.position.y = 30;
+          cameraRef.current.position.z = Math.cos(time) * radius + 4;
+          cameraRef.current.lookAt(0, 0, 0);
+        }
       }
 
       renderer.render(scene, camera);
-    };
-    animate();
+      },
+    });
 
     const handleResize = () => {
       if (!container || !cameraRef.current || !rendererRef.current) return;
@@ -409,7 +421,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
     return () => {
       window.removeEventListener('resize', handleResize);
-      cancelAnimationFrame(animationFrameId);
+      disposeLoop();
       disposeScene(scene);
       if (container.contains(renderer.domElement)) {
         container.removeChild(renderer.domElement);

@@ -9,22 +9,22 @@ export default {
     extend: {
       colors: {
         paper: {
-          DEFAULT: 'var(--paper-0)',
-          1: 'var(--paper-1)',
-          2: 'var(--paper-2)',
+          DEFAULT: 'rgb(var(--paper-0-rgb) / <alpha-value>)',
+          1: 'rgb(var(--paper-1-rgb) / <alpha-value>)',
+          2: 'rgb(var(--paper-2-rgb) / <alpha-value>)',
         },
         ink: {
-          DEFAULT: 'var(--ink-1)',
-          2: 'var(--ink-2)',
-          3: 'var(--ink-3)',
+          DEFAULT: 'rgb(var(--ink-1-rgb) / <alpha-value>)',
+          2: 'rgb(var(--ink-2-rgb) / <alpha-value>)',
+          3: 'rgb(var(--ink-3-rgb) / <alpha-value>)',
         },
         line: {
           subtle: 'var(--line-subtle)',
           strong: 'var(--line-strong)',
         },
         accent: {
-          DEFAULT: 'var(--accent)',
-          strong: 'var(--accent-strong)',
+          DEFAULT: 'rgb(var(--accent-rgb) / <alpha-value>)',
+          strong: 'rgb(var(--accent-strong-rgb) / <alpha-value>)',
           soft: 'var(--accent-soft)',
           fg: 'var(--on-accent)',
         },

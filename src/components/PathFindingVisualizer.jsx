@@ -1,13 +1,14 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, lazy, Suspense } from 'react';
 import { Play, RotateCcw, Eraser, Zap, Box, Grid, Sparkles, ChevronDown, Activity, ZoomIn, ZoomOut } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { createInitialGrid, resetGrid, SPEED_PRESETS } from '../utils/animationHelpers';
 import { getNodesInShortestPathOrder } from '../algorithms/pathfinding/dijkstra';
 import { generateComplexMaze } from '../algorithms/pathfinding/mazeGenerator';
-import PathFinding3DVisualizer from './3D/PathFinding3DVisualizer';
+const PathFinding3DVisualizer = lazy(() => import('./3D/PathFinding3DVisualizer'));
 import SoundControls from './SoundControls';
 import soundEngine from '../utils/soundEngine';
 import OdometerCounter from './OdometerCounter';
+import GridCanvas from './pathfinding/GridCanvas';
 
 // ─── Synchronous algorithm runners (no delays) ────────────────────────────────
 
@@ -50,8 +51,11 @@ function runDijkstraSync(grid, startNode, endNode) {
     visited.push(closest);
     if (closest === endNode) return visited;
     for (const nb of getNeighbors(closest, grid)) {
-      nb.distance = closest.distance + 1;
-      nb.previousNode = closest;
+      const candidate = closest.distance + 1;
+      if (candidate < nb.distance) {
+        nb.distance = candidate;
+        nb.previousNode = closest;
+      }
     }
   }
   return visited;
@@ -147,7 +151,7 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
   const [isVisualizing, setIsVisualizing] = useState(false);
   const [isDrawing, setIsDrawing] = useState(false);
   const [isDragging, setIsDragging] = useState(null); // 'start' | 'end' | null
-  const [is3DMode, setIs3DMode] = useState(true);
+  const [is3DMode, setIs3DMode] = useState(false);
   const [liveMode, setLiveMode] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
   const [selectedMazeType, setSelectedMazeType] = useState('dfs'); // 'dfs' | 'recursive_division' | 'prims'
@@ -278,8 +282,11 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
         visitedOrder.push(closest);
         if (closest === e2) break;
         for (const nb of getNeighbors(closest, gForAnim)) {
-          nb.distance = closest.distance + 1;
-          nb.previousNode = closest;
+          const candidate = closest.distance + 1;
+          if (candidate < nb.distance) {
+            nb.distance = candidate;
+            nb.previousNode = closest;
+          }
         }
       }
     } else if (algorithmKey === 'bfs') {
@@ -415,22 +422,6 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
     setStats(null);
   };
 
-  // ── Cell appearance
-  // ── Cell appearance
-  const getCellStyle = (node) => {
-    if (node.isStart) return 'bg-emerald-500 shadow-[0_0_12px_2px_rgba(16,185,129,0.4)] z-10 scale-110 border-emerald-600';
-    if (node.isEnd) return 'bg-rose-500 shadow-[0_0_12px_2px_rgba(244,63,94,0.4)] z-10 scale-110 border-rose-600';
-    if (node.isWall) return 'bg-slate-700 border-slate-800 wall-cell';
-    if (node.isPath) return 'path-cell bg-yellow-400 border-yellow-500';
-    if (node.isVisited) return 'visited-cell bg-blue-400 border-blue-500';
-    return 'bg-white hover:bg-slate-50 border-slate-200';
-  };
-
-  const getCursor = (node) => {
-    if (node.isStart || node.isEnd) return 'cursor-grab active:cursor-grabbing';
-    return 'cursor-crosshair';
-  };
-
   return (
     <div className="w-full flex-1 min-h-[600px] relative flex flex-col bg-slate-50 dark:bg-black rounded-3xl overflow-hidden border border-slate-200 dark:border-zinc-800/80">
       
@@ -474,7 +465,7 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
             <PathFinding3DVisualizer grid={grid} startPos={startPos} endPos={endPos} />
           </div>
         ) : (
-          <TransformWrapper initialScale={1} minScale={0.5} maxScale={3} centerOnInit={true}>
+          <TransformWrapper initialScale={1} minScale={0.5} maxScale={3} centerOnInit={true} panning={{ excluded: ['canvas'] }}>
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 {/* Floating 2D Grid Zoom Widget */}
@@ -503,23 +494,15 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
                 </div>
 
                 <TransformComponent wrapperClassName="w-full h-full" contentClassName="w-full h-full flex items-center justify-center">
-                  <div
-                    className="inline-block rounded-2xl overflow-hidden border border-slate-200/60 dark:border-zinc-800/80 shadow-2xl shadow-indigo-500/5 bg-white dark:bg-zinc-950 p-1 max-w-full"
-                    onMouseUp={handleMouseUp}
-                    onMouseLeave={handleMouseUp}
-                  >
-                    {grid.map((row, rIdx) => (
-                      <div key={rIdx} className="flex">
-                        {row.map((node, cIdx) => (
-                          <div
-                            key={cIdx}
-                            className={`w-4 h-4 sm:w-5 sm:h-5 border-r border-b border-slate-100/50 dark:border-zinc-900/60 transition-all duration-100 ${getCellStyle(node)} ${getCursor(node)}`}
-                            onMouseDown={() => handleMouseDown(node.row, node.col)}
-                            onMouseEnter={() => handleMouseEnter(node.row, node.col)}
-                          />
-                        ))}
-                      </div>
-                    ))}
+                  <div className="w-full max-w-[960px] rounded-2xl border border-line-subtle bg-paper-1 p-1 shadow-paper">
+                    <GridCanvas
+                      grid={grid}
+                      rows={ROWS}
+                      cols={COLS}
+                      onCellDown={handleMouseDown}
+                      onCellEnter={handleMouseEnter}
+                      onPointerUp={handleMouseUp}
+                    />
                   </div>
                 </TransformComponent>
               </>
@@ -549,7 +532,7 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
 
         {/* Floating HUD Controls Pill Container */}
         <div className="pointer-events-auto w-full max-w-full overflow-x-auto scrollbar-hide flex justify-start sm:justify-center px-1">
-          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-2xl border border-slate-200/60 dark:border-zinc-800/80 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max mx-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/90 dark:bg-black/90 backdrop-blur-xl border border-slate-200/60 dark:border-zinc-800/80 p-1.5 sm:p-2 rounded-2xl shadow-2xl shadow-indigo-500/10 min-w-max mx-auto">
             
             <button
               onClick={visualize}
@@ -618,7 +601,7 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
               <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
             </button>
 
-            <SoundControls className="scale-85" />
+            <SoundControls className="scale-90" />
 
             {/* Speed Group */}
             <div className="flex bg-slate-100/60 dark:bg-slate-800/60 border border-slate-200/50 dark:border-slate-700/50 rounded-lg p-0.5">
@@ -640,20 +623,6 @@ const PathFindingVisualizer = React.memo(({ algorithm, algorithmInfo, algorithmK
         </div>
 
       </div>
-      <style>{`
-        @keyframes visitedPop {
-          0%   { transform: scale(0.3); opacity: 0; background-color: #3b82f6; }
-          50%  { transform: scale(1.15); background-color: #60a5fa; }
-          100% { transform: scale(1);   opacity: 1; background-color: #60a5fa; }
-        }
-        @keyframes pathPop {
-          0%   { transform: scale(0.5); background-color: #facc15; }
-          60%  { transform: scale(1.3); background-color: #fef08a; }
-          100% { transform: scale(1);   background-color: #facc15; }
-        }
-        .visited-cell { animation: visitedPop 0.35s ease forwards; }
-        .path-cell    { animation: pathPop 0.3s ease forwards; }
-      `}</style>
     </div>
   );
 });
