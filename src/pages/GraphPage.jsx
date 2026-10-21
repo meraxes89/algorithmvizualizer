@@ -53,10 +53,7 @@ const GraphPage = () => {
 
         {/* Visualizer Container */}
         <div className="flex-1 min-h-[600px] w-full bg-white dark:bg-black border border-slate-200 dark:border-slate-700 rounded-3xl shadow-sm overflow-hidden flex flex-col">
-          <GraphVisualizer
-            algorithm={selectedAlgorithm.algorithm}
-            algorithmInfo={selectedAlgorithm.info}
-          />
+          <GraphVisualizer algorithmInfo={selectedAlgorithm.info} />
         </div>
       </main>
 
