@@ -1,5 +1,6 @@
-export async function linearSearch(array, target, setCurrentIndex, setFoundIndex, speed) {
+export async function linearSearch(array, target, setCurrentIndex, setFoundIndex, setSearchRange, speed = 200) {
   for (let i = 0; i < array.length; i++) {
+    setSearchRange?.([i, array.length - 1]);
     setCurrentIndex(i);
     await new Promise(resolve => setTimeout(resolve, speed));
 
