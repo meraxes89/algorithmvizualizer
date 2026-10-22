@@ -1,29 +1,26 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ArrowRight, X, Sparkles, Terminal, Swords, HelpCircle, List, Compass, Network, Share2, GitBranch } from 'lucide-react';
+import { Search, ArrowRight, X, Sparkles } from 'lucide-react';
+import { algorithmFamilies, algorithmHref, tools } from '../registry';
+import { familyIcons, toolIcons } from './ui/registryIcons';
 
+// Built from the registry: every algorithm on every page is one entry,
+// and each one deep-links straight to itself.
 const SEARCH_ITEMS = [
-  { title: 'Quick Sort', category: 'Sorting', path: '/sorting', icon: List },
-  { title: 'Merge Sort', category: 'Sorting', path: '/sorting', icon: List },
-  { title: 'Bubble Sort', category: 'Sorting', path: '/sorting', icon: List },
-  { title: 'Insertion Sort', category: 'Sorting', path: '/sorting', icon: List },
-  { title: 'Selection Sort', category: 'Sorting', path: '/sorting', icon: List },
-  { title: 'Binary Search', category: 'Searching', path: '/searching', icon: Search },
-  { title: 'Linear Search', category: 'Searching', path: '/searching', icon: Search },
-  { title: "Dijkstra's Algorithm", category: 'Pathfinding', path: '/pathfinding', icon: Network },
-  { title: 'A* Search', category: 'Pathfinding', path: '/pathfinding', icon: Network },
-  { title: 'Breadth-First Search (BFS)', category: 'Graph', path: '/graph', icon: GitBranch },
-  { title: 'Depth-First Search (DFS)', category: 'Graph', path: '/graph', icon: GitBranch },
-  { title: 'Binary Search Tree (BST)', category: 'Trees', path: '/trees', icon: Share2 },
-  { title: 'AVL Tree', category: 'Trees', path: '/trees', icon: Share2 },
-  { title: 'Heap (Min/Max)', category: 'Trees', path: '/trees', icon: Share2 },
-  { title: '0/1 Knapsack', category: 'Dynamic Programming', path: '/dp', icon: Sparkles },
-  { title: 'Longest Common Subsequence', category: 'Dynamic Programming', path: '/dp', icon: Sparkles },
-  { title: 'N-Queens Backtracking', category: 'Recursion', path: '/recursion', icon: Compass },
-  { title: 'Tower of Hanoi', category: 'Recursion', path: '/recursion', icon: Compass },
-  { title: 'Code Playground', category: 'Interactive Tool', path: '/playground', icon: Terminal },
-  { title: 'Algorithm Arena', category: 'Gamification', path: '/arena', icon: Swords },
-  { title: 'Knowledge Quiz', category: 'Gamification', path: '/quiz', icon: HelpCircle },
+  ...algorithmFamilies.flatMap((family) =>
+    family.algorithms.map((entry) => ({
+      title: entry.name,
+      category: family.shortName,
+      path: algorithmHref(family.id, entry.id),
+      icon: familyIcons[family.id],
+    }))
+  ),
+  ...tools.map((tool) => ({
+    title: tool.name,
+    category: tool.category,
+    path: tool.path,
+    icon: toolIcons[tool.id] ?? Sparkles,
+  })),
 ];
 
 const CommandPalette = ({ isOpen, onClose }) => {

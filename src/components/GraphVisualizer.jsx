@@ -80,6 +80,13 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     }
   }, [currentAlgoKey, details]);
 
+  // A new algorithm invalidates the previous run but not the graph the
+  // user built, so clear the trace instead of remounting the page.
+  useEffect(() => {
+    resetPlayback();
+    setSteps([]);
+  }, [currentAlgoKey, resetPlayback]);
+
   // Generate an initial random graph
   useEffect(() => {
     generateRandomGraph();

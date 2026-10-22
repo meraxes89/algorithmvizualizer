@@ -6,15 +6,18 @@ import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { sortingAlgorithms } from '../algorithms/sorting';
 import { algorithmDatabase } from '../data/algorithmData';
+import { useParamSelection } from '../hooks/useParamSelection';
 
 const SortingPage = () => {
   const algorithms = sortingAlgorithms.map((entry) => ({
+    id: entry.id,
     name: entry.name,
     algorithm: entry.generator,
     info: algorithmDatabase.sorting[entry.id] ?? { name: entry.name },
   }));
 
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState(algorithms[0]);
+  const { selected: selectedAlgorithm, select: selectAlgorithm } =
+    useParamSelection(algorithms);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [compareAlgos, setCompareAlgos] = useState(null);
 
@@ -56,8 +59,8 @@ const SortingPage = () => {
         !compareAlgos && (
           <SegmentedTabs
             items={algorithms}
-            value={selectedAlgorithm.name}
-            onChange={setSelectedAlgorithm}
+            value={selectedAlgorithm.id}
+            onChange={selectAlgorithm}
             label="Sorting algorithms"
           />
         )

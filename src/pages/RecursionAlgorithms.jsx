@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Boxes } from 'lucide-react';
 import TreeRecursionVisualizer from '../components/TreeRecursionVisualizer';
 import GridBacktrackingVisualizer from '../components/GridBacktrackingVisualizer';
@@ -6,45 +5,28 @@ import TowerOfHanoiVisualizer from '../components/TowerOfHanoiVisualizer';
 import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
+import { familyById } from '../registry';
+import { useParamSelection } from '../hooks/useParamSelection';
+
+// The list and the grouping come from the registry; the panels' copy
+// comes from the content table. One id joins the two.
+const ALGORITHMS = familyById('recursion').algorithms.map((entry) => ({
+  ...recursionAlgorithmsData[entry.id],
+  ...entry,
+}));
+
+const CATEGORIES = [...new Set(ALGORITHMS.map((entry) => entry.group))].map((name) => ({
+  id: name,
+  name,
+  list: ALGORITHMS.filter((entry) => entry.group === name),
+}));
 
 const RecursionAlgorithms = () => {
-  const categories = [
-    {
-      name: 'Tree Recursion',
-      type: 'tree',
-      list: [
-        { id: 'factorial', ...recursionAlgorithmsData.factorial },
-        { id: 'fibonacci', ...recursionAlgorithmsData.fibonacci },
-        { id: 'permutations', ...recursionAlgorithmsData.permutations },
-        { id: 'combinationSum', ...recursionAlgorithmsData.combinationSum },
-        { id: 'generateParentheses', ...recursionAlgorithmsData.generateParentheses },
-        { id: 'subsets', ...recursionAlgorithmsData.subsets },
-      ],
-    },
-    {
-      name: 'Grid Backtracking',
-      type: 'grid',
-      list: [
-        { id: 'nQueens', ...recursionAlgorithmsData.nQueens },
-        { id: 'sudoku', ...recursionAlgorithmsData.sudoku },
-        { id: 'ratInMaze', ...recursionAlgorithmsData.ratInMaze },
-        { id: 'knightsTour', ...recursionAlgorithmsData.knightsTour },
-      ],
-    },
-    {
-      name: 'Classic Puzzles',
-      type: 'puzzle',
-      list: [{ id: 'towerOfHanoi', ...recursionAlgorithmsData.towerOfHanoi }],
-    },
-  ];
+  const { selected: selectedAlgorithm, select: selectAlgorithm } =
+    useParamSelection(ALGORITHMS);
 
-  const [selectedCategory, setSelectedCategory] = useState(categories[0]);
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState(categories[0].list[0]);
-
-  const selectCategory = (category) => {
-    setSelectedCategory(category);
-    setSelectedAlgorithm(category.list[0]);
-  };
+  const selectedCategory =
+    CATEGORIES.find((category) => category.list.includes(selectedAlgorithm)) ?? CATEGORIES[0];
 
   return (
     <PageShell
@@ -56,28 +38,28 @@ const RecursionAlgorithms = () => {
       tabs={
         <div className="flex flex-col items-center gap-3">
           <SegmentedTabs
-            items={categories}
-            value={selectedCategory.name}
-            onChange={selectCategory}
+            items={CATEGORIES}
+            value={selectedCategory.id}
+            onChange={(category) => selectAlgorithm(category.list[0])}
             label="Recursion categories"
           />
           <SegmentedTabs
             items={selectedCategory.list}
             value={selectedAlgorithm.id}
-            onChange={setSelectedAlgorithm}
+            onChange={selectAlgorithm}
             size="sm"
             label="Recursion algorithms"
           />
         </div>
       }
     >
-      {selectedCategory.type === 'tree' && (
+      {selectedAlgorithm.kind === 'tree' && (
         <TreeRecursionVisualizer algorithmId={selectedAlgorithm.id} />
       )}
-      {selectedCategory.type === 'grid' && (
+      {selectedAlgorithm.kind === 'grid' && (
         <GridBacktrackingVisualizer algorithmId={selectedAlgorithm.id} />
       )}
-      {selectedCategory.type === 'puzzle' && (
+      {selectedAlgorithm.kind === 'puzzle' && (
         <TowerOfHanoiVisualizer algorithmId={selectedAlgorithm.id} />
       )}
     </PageShell>

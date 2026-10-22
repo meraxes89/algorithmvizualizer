@@ -129,9 +129,42 @@
 
 ### Phase 3 — Registry drives the app
 
-- [ ] Extract hardcoded nav/tab/palette lists into `registry/`
-- [ ] Deep-linkable algorithm selection via query params
-- [ ] Dogfood: Heap Sort, Jump Search, Fibonacci-DP through the golden path
+- [x] Extract hardcoded nav/tab/palette lists into `registry/`
+- [x] Deep-linkable algorithm selection via query params
+- [x] Dogfood: Heap Sort, Jump Search, Fibonacci-DP flow from the registry to the page tabs and the palette without editing either surface
+
+The registry is two layers on purpose:
+
+- `src/algorithms/<family>/index.ts` stays the source of truth for the implementations (unchanged).
+- `src/registry/index.ts` is the shell's display registry: id, name, family, path, plus the tree operations and recursion groups. It imports no generators. The navbar, category grid and command palette live in the initial bundle; importing the family registries there would ship every generator up front.
+
+`src/registry/registry.test.ts` compares the display registry against the five family registries (ids and names) and against `recursionAlgorithmsData`, so the two layers cannot drift without a failing test.
+
+Surfaces moved onto the registry:
+
+- [x] `Navbar` desktop dropdown and mobile drawer derive their seven family links from `algorithmFamilies`
+- [x] `CategoriesPage` derives all ten cards. Algorithm bullets are the first five of each family plus a `+N more` line, which removes the old drift (a nonexistent "Grid Paths", missing Jump Search, 3 of 8 graph algorithms)
+- [x] `CommandPalette` lists every algorithm in every family; each result deep-links to that algorithm instead of its family page
+- [x] `GraphPage` tabs come from `graphAlgorithms` instead of a hand-written list. Switching algorithms clears the old trace but keeps the graph the user built
+- [x] `TreeAlgorithms` and `RecursionAlgorithms` tabs and groups come from the registry; their content tables stay the copy source
+
+Deep links:
+
+- `?algo=<id>` on all seven pages, read on mount and written with `replace: true` (`useParamSelection`)
+- `?algo=<category>&op=<operation>` on the tree page
+- an unknown or stale id falls back to the first entry; a bare path behaves as before
+- palette results and pasted links therefore open the named algorithm
+
+Verification:
+
+- [x] `pnpm typecheck`
+- [x] `pnpm lint` — 0 errors, 25 warnings (one fewer than Phase 2)
+- [x] `pnpm test` — 308 passing across 41 files (+22 registry, +7 hook)
+- [x] `pnpm test:coverage` — 89.62% statements, 89.31% branches, 93.35% functions
+- [x] `pnpm build`
+- [x] `pnpm size` — budget OK; `useParamSelection.js` is a new 0.4 kB chunk, the registry folds into existing chunks, no repricing needed
+
+Still open for a later phase: universal `StepControls` scrubbing, metadata unification (`algorithmData.js` still covers four families), component smoke tests for 9 of the 11 families.
 
 ### Phase 4 — Design system completion
 

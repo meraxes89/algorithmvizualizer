@@ -6,6 +6,7 @@ import { useTheme } from '../context/ThemeContext';
 import CommandPalette from './CommandPalette';
 import Logo from './Logo';
 import SoundControls from './SoundControls';
+import { algorithmFamilies } from '../registry';
 
 const Navbar = () => {
   const [showDropdown, setShowDropdown] = useState(false);
@@ -49,13 +50,15 @@ const Navbar = () => {
                     <Link to="/algorithms" className="block px-4 py-2 text-xs font-bold text-ink-3 uppercase tracking-wider hover:text-accent transition-colors">
                       Categories &rarr;
                     </Link>
-                    <Link to="/sorting" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Sorting Algorithms</Link>
-                    <Link to="/searching" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Searching Algorithms</Link>
-                    <Link to="/pathfinding" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Pathfinding Algorithms</Link>
-                    <Link to="/graph" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Graph Algorithms</Link>
-                    <Link to="/recursion" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Recursion & Backtracking</Link>
-                    <Link to="/trees" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Tree Algorithms</Link>
-                    <Link to="/dp" className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors">Dynamic Programming</Link>
+                    {algorithmFamilies.map((family) => (
+                      <Link
+                        key={family.id}
+                        to={family.path}
+                        className="block px-4 py-2 text-ink-2 hover:bg-paper-0/60 dark:hover:bg-paper-2/50 hover:text-accent transition-colors"
+                      >
+                        {family.name}
+                      </Link>
+                    ))}
                   </div>
                 )}
               </div>
@@ -127,12 +130,16 @@ const Navbar = () => {
             <div className="text-[10px] font-bold text-ink-3 uppercase tracking-widest mb-2">Navigation</div>
             <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-ink">Home</Link>
             <Link to="/algorithms" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-ink">All Categories</Link>
-            <Link to="/sorting" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Sorting</Link>
-            <Link to="/searching" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Searching</Link>
-            <Link to="/pathfinding" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Pathfinding</Link>
-            <Link to="/graph" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Graphs</Link>
-            <Link to="/recursion" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Recursion</Link>
-            <Link to="/trees" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50">Trees</Link>
+            {algorithmFamilies.map((family) => (
+              <Link
+                key={family.id}
+                to={family.path}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="block py-1.5 text-sm font-medium text-ink-2 pl-3 border-l-2 border-accent/50"
+              >
+                {family.shortName}
+              </Link>
+            ))}
             <Link to="/playground" onClick={() => setIsMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-ink">Playground</Link>
           </div>
         )}

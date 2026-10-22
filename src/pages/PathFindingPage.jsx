@@ -1,20 +1,21 @@
-import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import PathFindingVisualizer from '../components/PathFindingVisualizer';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { pathfindingAlgorithms } from '../algorithms/pathfinding';
 import { algorithmDatabase } from '../data/algorithmData';
+import { useParamSelection } from '../hooks/useParamSelection';
 
 const PathFindingPage = () => {
   const algorithms = pathfindingAlgorithms.map((entry) => ({
+    id: entry.id,
     name: entry.name,
-    key: entry.id,
     algorithm: entry.generator,
     info: algorithmDatabase.pathfinding?.[entry.id] ?? { name: entry.name },
   }));
 
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState(algorithms[0]);
+  const { selected: selectedAlgorithm, select: selectAlgorithm } =
+    useParamSelection(algorithms);
 
   return (
     <PageShell
@@ -26,15 +27,15 @@ const PathFindingPage = () => {
       tabs={
         <SegmentedTabs
           items={algorithms}
-          value={selectedAlgorithm.name}
-          onChange={setSelectedAlgorithm}
+          value={selectedAlgorithm.id}
+          onChange={selectAlgorithm}
           label="Pathfinding algorithms"
         />
       }
     >
       <PathFindingVisualizer
         algorithm={selectedAlgorithm.algorithm}
-        algorithmKey={selectedAlgorithm.key}
+        algorithmKey={selectedAlgorithm.id}
         algorithmInfo={selectedAlgorithm.info}
       />
     </PageShell>

@@ -1,106 +1,33 @@
-
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  ArrowRight,
-  Layers,
-  Search,
-  MapPin,
-  Network,
-  Boxes,
-  Trees,
-  Sparkles,
-  Zap,
-  Brain,
-  Swords,
-  Code2,
-  Trophy,
-} from 'lucide-react';
+import { ArrowRight, Sparkles, Zap } from 'lucide-react';
 import TiltCard from '../components/TiltCard';
+import { algorithmFamilies, tools } from '../registry';
+import { familyIcons, toolIcons } from '../components/ui/registryIcons';
 
 const EASE = [0.22, 1, 0.36, 1];
 
+// Every card and every algorithm name comes from the registry, so a
+// newly registered algorithm shows up here without an edit.
 const CATEGORIES = [
-  {
-    title: 'Sorting Algorithms',
-    description: 'Quick Sort, Merge Sort, Heap Sort and friends — bars, sound and every comparison on screen.',
-    Icon: Layers,
-    path: '/sorting',
-    tag: 'SORTING',
-    algorithms: ['Quick Sort', 'Merge Sort', 'Heap Sort', 'Bubble Sort', 'Selection Sort']
-  },
-  {
-    title: 'Searching Algorithms',
-    description: 'Linear scans versus logarithmic bisection with live range bounds tracking.',
-    Icon: Search,
-    path: '/searching',
-    tag: 'SEARCHING',
-    algorithms: ['Linear Search', 'Binary Search', 'Jump Search']
-  },
-  {
-    title: 'Pathfinding & 3D Drone',
-    description: 'Shortest paths through mazes and weighted grids — plus a 3D NYC skyscraper drone camera.',
-    Icon: MapPin,
-    path: '/pathfinding',
-    tag: 'PATHFINDING',
-    algorithms: ["Dijkstra's Algorithm", 'A* Search', 'BFS', 'DFS']
-  },
-  {
-    title: 'Graph Theory',
-    description: 'Minimum spanning trees and topological ordering on graphs you build yourself.',
-    Icon: Network,
-    path: '/graph',
-    tag: 'GRAPHS',
-    algorithms: ["Kruskal's MST", "Prim's MST", 'Topological Sort']
-  },
-  {
-    title: 'Recursion & Backtracking',
-    description: 'Tower of Hanoi and N-Queens unfolding frame by frame with a call stack inspector.',
-    Icon: Boxes,
-    path: '/recursion',
-    tag: 'RECURSION',
-    algorithms: ['Tower of Hanoi', 'N-Queens Problem']
-  },
-  {
-    title: 'Tree Data Structures',
-    description: 'BST insertions, AVL rotations, heaps, tries and segment trees — grown before your eyes.',
-    Icon: Trees,
-    path: '/trees',
-    tag: 'TREES',
-    algorithms: ['Binary Search Tree', 'AVL Rotations', 'Heap Operations', 'Trie Visualizer', 'Segment Tree']
-  },
-  {
-    title: 'Dynamic Programming',
-    description: 'Watch DP tables fill cell by cell — Fibonacci to knapsack to longest common subsequence.',
-    Icon: Brain,
-    path: '/dp',
-    tag: 'DP',
-    algorithms: ['Fibonacci', '0/1 Knapsack', 'LCS', 'Grid Paths']
-  },
-  {
-    title: 'Battle Arena',
-    description: 'Race sorting, searching and pathfinding algorithms head-to-head on identical inputs.',
-    Icon: Swords,
-    path: '/arena',
-    tag: 'ARENA',
-    algorithms: ['Live Races', 'Race Charts', 'Commentary']
-  },
-  {
-    title: 'Code Playground',
-    description: 'Multi-language Monaco editor with in-browser execution for JS and Python.',
-    Icon: Code2,
-    path: '/playground',
-    tag: 'PLAYGROUND',
-    algorithms: ['C++ · Java · Python · JS', 'Pyodide WASM', 'Multi-file VFS']
-  },
-  {
-    title: 'Algorithm Quiz',
-    description: 'Prove your intuition — complexity, patterns and edge cases, scored as you go.',
-    Icon: Trophy,
-    path: '/quiz',
-    tag: 'QUIZ',
-    algorithms: ['Complexity Drills', 'Pattern Recognition', 'Instant Scoring']
-  }
+  ...algorithmFamilies.map((family) => ({
+    title: family.name,
+    description: family.description,
+    Icon: familyIcons[family.id],
+    path: family.path,
+    tag: family.tag,
+    algorithms: family.algorithms.slice(0, 5).map((algorithm) => algorithm.name),
+    more: Math.max(0, family.algorithms.length - 5),
+  })),
+  ...tools.map((tool) => ({
+    title: tool.name,
+    description: tool.description,
+    Icon: toolIcons[tool.id] ?? Sparkles,
+    path: tool.path,
+    tag: tool.tag,
+    algorithms: tool.features,
+    more: 0,
+  })),
 ];
 
 const CategoriesPage = () => {
@@ -191,6 +118,11 @@ const CategoriesPage = () => {
                           <span>{algo}</span>
                         </div>
                       ))}
+                      {category.more > 0 && (
+                        <div className="text-[11px] font-medium text-ink-3">
+                          +{category.more} more in this room
+                        </div>
+                      )}
                     </div>
                   </div>
 
