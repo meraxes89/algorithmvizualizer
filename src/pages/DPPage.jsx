@@ -3,11 +3,11 @@ import { Brain } from 'lucide-react';
 import DPVisualizer from '../components/DPVisualizer';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
+import { dpAlgorithms } from '../algorithms/dp';
 
-const ALGORITHMS = [
-  { key: 'knapsack', label: '0/1 Knapsack' },
-  { key: 'lcs', label: 'Longest Common Subsequence' },
-];
+// The tabs come from the family registry, so a new dynamic program
+// appears here without touching the page.
+const ALGORITHMS = dpAlgorithms.map((entry) => ({ key: entry.id, label: entry.name }));
 
 const DPPage = () => {
   const [selectedAlgo, setSelectedAlgo] = useState('knapsack');

@@ -370,8 +370,10 @@ export type DPView = {
   readonly table: readonly (readonly number[])[];
   /** The cell currently being computed, or null. */
   readonly active: readonly [number, number] | null;
-  /** The items being considered, for problems that have them. */
+  /** The values of the items under consideration. */
   readonly items: readonly number[];
+  /** The weight of each item, for the problems that have one. */
+  readonly weights?: readonly number[];
 };
 
 export type DPStep = OfFamily<'dp'> &
