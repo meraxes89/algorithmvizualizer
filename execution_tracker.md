@@ -82,13 +82,19 @@
 - [x] **sorting** — 5 pure generators, golden + property tests, typed `SortingBars` renderer; the 5 callback modules, 4 proxy setters and the `setTimeout` chain are gone (`92bb435`)
 - [x] **searching** — 2 pure generators, golden + property tests, typed `SearchingBars` renderer; the 2 callback modules are gone (`92ea357`)
 - [x] **pathfinding** — 4 pure generators, golden + property tests, a shared grid model; the 4 callback modules **and the 6 inline copies inside the visualizer** are gone (`49aafa3`)
-- [ ] **graph** — 8 algorithms in `src/utils/GraphAlgorithms.js`, plus the Arena racing the registry instead of `raceTraces.js`
+- [x] **graph** — 8 pure generators, golden + invariant tests, a family registry; the 953-line `src/utils/GraphAlgorithms.js` and the visualizer's own table of algorithms are gone (`474b66d`)
+- [x] **the arena races the registry** — `raceTraces.js` and its nine private copies of the algorithms are gone; the pathfinding race now searches a grid with real weights, so its "Dijkstra" is a weighted search (`d3d516b`)
 - [ ] **trees / BST / AVL / heap**
 - [ ] **segment tree / trie**
 - [ ] **recursion engines**
 - [ ] **DP**
-- [ ] **arena composition**
 - [ ] the maze generator, still a plain `.js` module
+
+#### The golden path, dogfooded
+
+- [x] Heap Sort and Jump Search added the way the plan says a new algorithm should be added: the generator and its test, one line in the family registry, and the metadata — and they appear in the sorting page, the searching page and the arena with **zero** further edits (`d3d516b`)
+- [ ] Fibonacci-DP, which needs the DP family to be ported first
+
 
 #### Found by the safety net, not by reading
 
