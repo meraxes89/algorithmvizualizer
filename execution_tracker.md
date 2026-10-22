@@ -279,7 +279,7 @@ Still open for a later phase: visual screenshot regression on the 3D scenes, red
 - [x] `pnpm test:coverage` — 87.30% statements, 89.28% branches, 92.81% functions (86% gate)
 - [x] `GITHUB_PAGES=true pnpm build`
 - [x] `pnpm size` — bundle budget OK; no budget changes
-- [ ] CI run for the Phase 6 commit is green
+- [x] CI run 39811124486 on `39e4afd` — checks, build/bundle budget and the a11y route sweep all green
 
 ---
 
