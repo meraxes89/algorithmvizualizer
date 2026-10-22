@@ -6,7 +6,12 @@ const AVLVisualizer = lazy(() => import('../components/AVLVisualizer'));
 const HeapVisualizer = lazy(() => import('../components/HeapVisualizer'));
 const TrieVisualizer = lazy(() => import('../components/TrieVisualizer'));
 const SegmentTreeVisualizer = lazy(() => import('../components/SegmentTreeVisualizer'));
-import { preOrderTraversal, inOrderTraversal, postOrderTraversal, levelOrderTraversal } from '../algorithms/trees/traversals';
+import {
+  inOrderTraversal,
+  levelOrderTraversal,
+  postOrderTraversal,
+  preOrderTraversal,
+} from '../algorithms/trees/traversals/traversals';
 import { treeAlgorithmData } from '../data/treeAlgorithms';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';

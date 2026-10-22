@@ -12,6 +12,9 @@ export type SegmentNode = {
   val: number | null;
   left: SegmentNode | null;
   right: SegmentNode | null;
+  /** Laid-out coordinates, assigned by the layout helper. */
+  x?: number;
+  y?: number;
 };
 
 /** The kinds of segment tree. */
@@ -23,22 +26,11 @@ export const SEG_TYPES = {
 
 export type SegType = (typeof SEG_TYPES)[keyof typeof SEG_TYPES];
 
-type SegConfig = {
+export type SegConfig = {
   /** The value a range that contributes nothing combines to. */
   initial: number;
   combine: (a: number, b: number) => number;
   label: string;
-};
-
-const getConfig = (type: SegType): SegConfig => {
-  switch (type) {
-    case SEG_TYPES.MIN:
-      return { initial: Infinity, combine: Math.min, label: 'Min' };
-    case SEG_TYPES.MAX:
-      return { initial: -Infinity, combine: Math.max, label: 'Max' };
-    default:
-      return { initial: 0, combine: (a, b) => a + b, label: 'Sum' };
-  }
 };
 
 let nextId = 1;
@@ -47,6 +39,21 @@ const freshId = (): number => nextId++;
 /** Start the ids over, so a rebuilt tree starts from one. */
 export const resetSegmentTreeIdCounter = (): void => {
   nextId = 1;
+};
+
+/** The next free node id. The helpers build trees with it too. */
+export const freshSegmentId = (): number => freshId();
+
+/** The combining rules of each kind of segment tree. */
+export const getConfig = (type: SegType): SegConfig => {
+  switch (type) {
+    case SEG_TYPES.MIN:
+      return { initial: Infinity, combine: Math.min, label: 'Min' };
+    case SEG_TYPES.MAX:
+      return { initial: -Infinity, combine: Math.max, label: 'Max' };
+    default:
+      return { initial: 0, combine: (a, b) => a + b, label: 'Sum' };
+  }
 };
 
 /* ------------------------------------------------------------------ */

@@ -517,3 +517,49 @@ export function* trieDelete(
 
   return root;
 }
+
+/* ------------------------------------------------------------------ */
+/*  Building a trie from words                                        */
+/* ------------------------------------------------------------------ */
+
+/** A random selection of words to put in a trie. */
+export const generateRandomWords = (count = 5): string[] => {
+  const words = [
+    'cat',
+    'car',
+    'cart',
+    'bat',
+    'ball',
+    'dog',
+    'door',
+    'dot',
+    'apple',
+    'ape',
+    'app',
+    'bee',
+  ];
+  const shuffled = [...words].sort(() => 0.5 - Math.random());
+  return shuffled.slice(0, count);
+};
+
+/** Build a trie holding a list of words. */
+export const buildTrieFromWords = (words: readonly string[]): TrieNode => {
+  resetTrieIdCounter();
+
+  const root = createTrieNode('ROOT');
+
+  for (const word of words) {
+    let current = root;
+
+    for (const char of word.toLowerCase()) {
+      if (!current.children[char]) {
+        current.children[char] = createTrieNode(char);
+      }
+      current = current.children[char];
+    }
+
+    current.isEnd = true;
+  }
+
+  return root;
+};

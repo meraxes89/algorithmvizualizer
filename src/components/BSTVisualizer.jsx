@@ -1,14 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Shuffle, RotateCcw, Settings, BarChart3, MessageSquare } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   generateRandomBST,
-  layoutTree,
   getTreeStats,
-  bstInsertAnimated,
-  bstSearchAnimated,
-  bstDeleteAnimated,
-} from '../algorithms/trees/bstOperations';
+} from '../algorithms/trees/bst/bst';
+import { bstDelete, bstInsert, bstSearch } from '../algorithms/trees/bst/bst-operations';
+import { treeFromSnapshot } from '../algorithms/trees/tree';
+import { layoutTree } from '../algorithms/trees/layout';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 
 /* ------------------------------------------------------------------ */
 /*  BSTVisualizer – fully interactive BST playground                  */
@@ -17,16 +18,48 @@ import {
 const BSTVisualizer = React.memo(() => {
   // Tree state
   const [bstRoot, setBstRoot] = useState(null);
-  const [treeData, setTreeData] = useState({ nodes: [], edges: [] });
   const [stats, setStats] = useState({ height: 0, nodeCount: 0, min: '-', max: '-' });
 
-  // Animation state
-  const [activeNode, setActiveNode] = useState(null);
-  const [visitedNodes, setVisitedNodes] = useState([]);
-  const [foundNode, setFoundNode] = useState(null);
-  const [deletingNode, setDeletingNode] = useState(null);
-  const [successorNode, setSuccessorNode] = useState(null);
-  const [isRunning, setIsRunning] = useState(false);
+  // The trace of the operation being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'trees',
+    meta: { algorithm: 'BST' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const visitedNodes = view?.order ?? [];
+  const deletingNode = useMemo(
+    () =>
+      Object.entries(view?.states ?? {}).find(([, state]) => state === 'deleting')?.[0] ?? null,
+    [view]
+  );
+  const successorNode = useMemo(
+    () =>
+      Object.entries(view?.states ?? {}).find(([, state]) => state === 'successor')?.[0] ?? null,
+    [view]
+  );
+  const foundNode = useMemo(
+    () =>
+      Object.entries(view?.states ?? {}).find(([, state]) => state === 'found')?.[0] ?? null,
+    [view]
+  );
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
+
+  // The tree on screen is the one the current step carries.
+  const treeData = useMemo(() => {
+    const root = treeFromSnapshot(view?.nodes ?? {});
+    return root ? layoutTree(root) : { nodes: [], edges: [] };
+  }, [view]);
+
+  const isRunning = isPlaying;
 
   // UI state
   const [inputValue, setInputValue] = useState('');
@@ -34,14 +67,12 @@ const BSTVisualizer = React.memo(() => {
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
   const [showStats, setShowStats] = useState(true);
-  const [logs, setLogs] = useState([]);
+
 
   const logEndRef = useRef(null);
 
-  // Refresh layout & stats whenever root changes
+  // Refresh the stats whenever the tree changes.
   const refreshTree = useCallback((root) => {
-    const layout = layoutTree(root);
-    setTreeData(layout);
     setStats(getTreeStats(root));
   }, []);
 
@@ -58,16 +89,8 @@ const BSTVisualizer = React.memo(() => {
 
   /* ---------- helpers ---------- */
 
-  const addLog = useCallback((entry) => {
-    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
-  }, []);
-
   const clearAnimation = () => {
-    setActiveNode(null);
-    setVisitedNodes([]);
-    setFoundNode(null);
-    setDeletingNode(null);
-    setSuccessorNode(null);
+    setTrace([]);
   };
 
   const parsedValue = () => {
@@ -84,74 +107,47 @@ const BSTVisualizer = React.memo(() => {
     const root = generateRandomBST(7, 5, 95);
     setBstRoot(root);
     refreshTree(root);
-    setLogs([{ type: 'info', text: 'Generated a random BST with 7 nodes.', ts: Date.now() }]);
+    setTrace([]);
   };
 
   const handleReset = () => {
     if (isRunning) return;
     clearAnimation();
     setBstRoot(null);
-    setTreeData({ nodes: [], edges: [] });
+    setTrace([]);
     setStats({ height: 0, nodeCount: 0, min: '-', max: '-' });
-    setLogs([{ type: 'info', text: 'Tree cleared.', ts: Date.now() }]);
   };
 
-  const handleInsert = async () => {
+  const handleInsert = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    const newRoot = await bstInsertAnimated(bstRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      addLog,
-      speed,
-    });
+    const steps = collectSteps(bstInsert(bstRoot, val));
+    const newRoot = bstRoot;
 
     setBstRoot(newRoot);
     refreshTree(newRoot);
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(steps);
     setInputValue('');
   };
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await bstSearchAnimated(bstRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setFoundNode,
-      addLog,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(bstSearch(bstRoot, val)));
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    const newRoot = await bstDeleteAnimated(bstRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setDeletingNode,
-      setSuccessorNode,
-      addLog,
-      speed,
-    });
+    const steps = collectSteps(bstDelete(bstRoot, val));
+    const newRoot = bstRoot;
 
     setBstRoot(newRoot);
     refreshTree(newRoot);
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(steps);
     setInputValue('');
   };
 
@@ -508,7 +504,7 @@ const BSTVisualizer = React.memo(() => {
               <MessageSquare size={16} className="text-blue-500" />
               <span className="text-slate-800 dark:text-slate-100 font-semibold text-sm">Algorithm Log</span>
               <button
-                onClick={() => setLogs([])}
+                onClick={() => setTrace([])}
                 className="ml-auto text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
               >
                 Clear

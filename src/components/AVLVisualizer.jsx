@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Shuffle, RotateCcw, Settings, BarChart3, MessageSquare } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
-import {
-  generateRandomAVL,
-  layoutTree,
-  getTreeStats,
-  avlInsertAnimated,
-  avlDeleteAnimated,
-  avlSearchAnimated,
-} from '../algorithms/trees/avlOperations';
+import { generateRandomAVL, getTreeStats } from '../algorithms/trees/avl/avl';
+import { avlInsert } from '../algorithms/trees/avl/avl-insert';
+import { avlDelete, avlSearch } from '../algorithms/trees/avl/avl-operations';
+import { layoutTree } from '../algorithms/trees/layout';
+import { treeFromSnapshot } from '../algorithms/trees/tree';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 
 /* ------------------------------------------------------------------ */
 /*  AVLVisualizer – fully interactive AVL tree playground             */
@@ -17,16 +16,28 @@ import {
 const AVLVisualizer = React.memo(() => {
   // Tree state
   const [avlRoot, setAvlRoot] = useState(null);
-  const [treeData, setTreeData] = useState({ nodes: [], edges: [] });
   const [stats, setStats] = useState({ height: 0, nodeCount: 0, min: '-', max: '-' });
 
   // Animation state
-  const [activeNode, setActiveNode] = useState(null);
-  const [visitedNodes, setVisitedNodes] = useState([]);
-  const [foundNode, setFoundNode] = useState(null);
-  const [deletingNode, setDeletingNode] = useState(null);
-  const [rotatingNodes, setRotatingNodes] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
+  // The trace of the operation being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'trees',
+    meta: { algorithm: 'AVL' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const visitedNodes = view?.order ?? [];
+  const rotatingNodes = view?.rotating ?? [];
+  const nodeWithState = (state) =>
+    Object.entries(view?.states ?? {}).find(([, value]) => value === state)?.[0] ?? null;
+  const foundNode = nodeWithState('found');
+  const deletingNode = nodeWithState('deleting');
+  const isRunning = isPlaying;
 
   // We need a ref for the root so the refreshLayout callback always
   // sees the latest root during recursive animated operations.
@@ -38,24 +49,21 @@ const AVLVisualizer = React.memo(() => {
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
   const [showStats, setShowStats] = useState(true);
-  const [logs, setLogs] = useState([]);
+
 
   const logEndRef = useRef(null);
 
-  // Refresh layout & stats
+  // Refresh the stats. The layout comes from the current step.
   const refreshTree = useCallback((root) => {
-    const layout = layoutTree(root);
-    setTreeData(layout);
     setStats(getTreeStats(root));
   }, []);
 
-  // Callback for mid-animation relayout (rotations change tree structure)
-  const refreshLayout = useCallback(() => {
-    if (rootRef.current) {
-      const layout = layoutTree(rootRef.current);
-      setTreeData(layout);
-    }
-  }, []);
+  // The tree on screen is the one the current step carries, so a
+  // rotation is visible the moment it happens.
+  const treeData = useMemo(() => {
+    const root = treeFromSnapshot(view?.nodes ?? {});
+    return root ? layoutTree(root) : { nodes: [], edges: [] };
+  }, [view]);
 
   // Init
   useEffect(() => {
@@ -70,16 +78,13 @@ const AVLVisualizer = React.memo(() => {
 
   /* ---------- helpers ---------- */
 
-  const addLog = useCallback((entry) => {
-    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
-  }, []);
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
 
   const clearAnimation = () => {
-    setActiveNode(null);
-    setVisitedNodes([]);
-    setFoundNode(null);
-    setDeletingNode(null);
-    setRotatingNodes([]);
+    setTrace([]);
   };
 
   const parsedValue = () => {
@@ -97,7 +102,6 @@ const AVLVisualizer = React.memo(() => {
     setAvlRoot(root);
     rootRef.current = root;
     refreshTree(root);
-    setLogs([{ type: 'info', text: 'Generated a random AVL tree with 7 nodes.', ts: Date.now() }]);
   };
 
   const handleReset = () => {
@@ -105,72 +109,41 @@ const AVLVisualizer = React.memo(() => {
     clearAnimation();
     setAvlRoot(null);
     rootRef.current = null;
-    setTreeData({ nodes: [], edges: [] });
     setStats({ height: 0, nodeCount: 0, min: '-', max: '-' });
-    setLogs([{ type: 'info', text: 'Tree cleared.', ts: Date.now() }]);
   };
 
-  const handleInsert = async () => {
+  const handleInsert = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    const newRoot = await avlInsertAnimated(avlRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setRotatingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
+    const steps = collectSteps(avlInsert(avlRoot, val));
+    const newRoot = avlRoot;
 
     setAvlRoot(newRoot);
     rootRef.current = newRoot;
     refreshTree(newRoot);
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(steps);
     setInputValue('');
   };
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await avlSearchAnimated(avlRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setFoundNode,
-      addLog,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(avlSearch(avlRoot, val)));
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    const newRoot = await avlDeleteAnimated(avlRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setDeletingNode,
-      setRotatingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
+    const steps = collectSteps(avlDelete(avlRoot, val));
+    const newRoot = avlRoot;
 
     setAvlRoot(newRoot);
     rootRef.current = newRoot;
     refreshTree(newRoot);
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(steps);
     setInputValue('');
   };
 
@@ -558,7 +531,7 @@ const AVLVisualizer = React.memo(() => {
               <MessageSquare size={16} className="text-blue-500" />
               <span className="text-slate-800 dark:text-slate-100 font-semibold text-sm">Algorithm Log</span>
               <button
-                onClick={() => setLogs([])}
+                onClick={() => setTrace([])}
                 className="ml-auto text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
               >
                 Clear

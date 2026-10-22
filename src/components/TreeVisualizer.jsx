@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Play, RotateCcw, Settings, BookOpen } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 import ExplanationPanel from './educational/ExplanationPanel';
 
 // Helper to generate a complete binary tree with coordinates
@@ -47,10 +49,22 @@ const generateTree = (depth = 3) => {
 
 const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   const [treeData, setTreeData] = useState({ root: null, nodes: [], edges: [] });
-  const [activeNode, setActiveNode] = useState(null);
-  const [visitedNodes, setVisitedNodes] = useState([]);
-  const [isTraversing, setIsTraversing] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.FAST);
+
+  // The trace of the traversal being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.FAST,
+    source: 'trees',
+    meta: { algorithm: algorithmInfo?.name ?? '' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const visitedNodes = view?.order ?? [];
+  const isTraversing = isPlaying;
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
 
@@ -61,24 +75,13 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
   const resetTree = () => {
     if (isTraversing) return;
     setTreeData(generateTree(3));
-    setActiveNode(null);
-    setVisitedNodes([]);
+    setTrace([]);
   };
 
-  const handleTraverse = async () => {
+  const handleTraverse = () => {
     if (isTraversing || !treeData.root) return;
-    setIsTraversing(true);
-    setVisitedNodes([]);
-    setActiveNode(null);
 
-    if (algorithmInfo && algorithmInfo.inputRequired) {
-      await algorithm(treeData.root, algorithmInfo.inputValue, setActiveNode, setVisitedNodes, speed);
-    } else {
-      await algorithm(treeData.root, setActiveNode, setVisitedNodes, speed);
-    }
-
-    setActiveNode(null);
-    setIsTraversing(false);
+    setTrace(collectSteps(algorithm(treeData.root)));
   };
 
   return (

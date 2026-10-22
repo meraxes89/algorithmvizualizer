@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Plus, Trash2, Shuffle, RotateCcw, Settings, MessageSquare, ArrowUpToLine, ArrowDownToLine } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   generateRandomHeap,
   layoutHeapTree,
-  heapInsertAnimated,
-  heapDeleteAnimated,
-} from '../algorithms/trees/heapOperations';
+} from '../algorithms/trees/heap/heap';
+import { heapDelete, heapInsert } from '../algorithms/trees/heap/heap-operations';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 
 /* ------------------------------------------------------------------ */
 /*  HeapVisualizer – interactive Max/Min Heap playground              */
@@ -19,17 +20,28 @@ const HeapVisualizer = React.memo(() => {
   const [isMaxHeap, setIsMaxHeap] = useState(true);
 
   // Animation state
-  const [activeNode, setActiveNode] = useState(null);
-  const [comparingNodes, setComparingNodes] = useState([]);
-  const [swappingNodes, setSwappingNodes] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
+  // The trace of the operation being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'heap',
+    meta: { algorithm: 'Heap' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const comparingNodes = view?.comparing ?? [];
+  const swappingNodes = view?.swapping ?? [];
+  const isRunning = isPlaying;
 
   // UI state
   const [inputValue, setInputValue] = useState('');
   const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
-  const [logs, setLogs] = useState([]);
+
 
   const logEndRef = useRef(null);
 
@@ -52,14 +64,13 @@ const HeapVisualizer = React.memo(() => {
 
   /* ---------- helpers ---------- */
 
-  const addLog = useCallback((entry) => {
-    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
-  }, []);
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
 
   const clearAnimation = () => {
-    setActiveNode(null);
-    setComparingNodes([]);
-    setSwappingNodes([]);
+    setTrace([]);
   };
 
   const parsedValue = () => {
@@ -75,14 +86,12 @@ const HeapVisualizer = React.memo(() => {
     clearAnimation();
     const arr = generateRandomHeap(10, maxHeapFlag);
     refreshLayout(arr);
-    setLogs([{ type: 'info', text: `Generated a random ${maxHeapFlag ? 'Max' : 'Min'} Heap with 10 elements.`, ts: Date.now() }]);
   };
 
   const handleReset = () => {
     if (isRunning) return;
     clearAnimation();
     refreshLayout([]);
-    setLogs([{ type: 'info', text: 'Heap cleared.', ts: Date.now() }]);
   };
 
   const handleToggleHeapType = () => {
@@ -92,42 +101,28 @@ const HeapVisualizer = React.memo(() => {
     handleRandomHeap(newIsMax);
   };
 
-  const handleInsert = async () => {
+  const handleInsert = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await heapInsertAnimated(heapArray, val, isMaxHeap, {
-      setActiveNode,
-      setComparingNodes,
-      setSwappingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
+    const steps = collectSteps(heapInsert(heapArray, val, isMaxHeap));
+    const newArray = steps[steps.length - 1]?.view.values ?? heapArray;
 
-    clearAnimation();
-    setIsRunning(false);
+    setHeapArray([...newArray]);
+    refreshLayout([...newArray]);
+    setTrace(steps);
     setInputValue('');
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (isRunning || heapArray.length === 0) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await heapDeleteAnimated(heapArray, isMaxHeap, {
-      setActiveNode,
-      setComparingNodes,
-      setSwappingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
+    const steps = collectSteps(heapDelete(heapArray, isMaxHeap));
+    const newArray = steps[steps.length - 1]?.view.values ?? heapArray;
 
-    clearAnimation();
-    setIsRunning(false);
+    setHeapArray([...newArray]);
+    refreshLayout([...newArray]);
+    setTrace(steps);
   };
 
   const handleKeyDown = (e) => {
@@ -474,7 +469,7 @@ const HeapVisualizer = React.memo(() => {
               <MessageSquare size={16} className="text-blue-500" />
               <span className="text-slate-800 dark:text-slate-100 font-semibold text-sm">Algorithm Log</span>
               <button
-                onClick={() => setLogs([])}
+                onClick={() => setTrace([])}
                 className="ml-auto text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
               >
                 Clear

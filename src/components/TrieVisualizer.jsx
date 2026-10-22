@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Shuffle, RotateCcw, Settings, BarChart3, MessageSquare, TextCursorInput } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   buildTrieFromWords,
   generateRandomWords,
-  layoutTrie,
-  getTrieStats,
-  trieInsertAnimated,
-  trieSearchAnimated,
-  trieAutocompleteAnimated,
-  trieDeleteAnimated,
-} from '../algorithms/trees/trieOperations';
+} from '../algorithms/trees/trie/trie';
+import {
+  trieAutocomplete,
+  trieDelete,
+  trieInsert,
+  trieSearch,
+} from '../algorithms/trees/trie/trie';
+import { getTrieStats, layoutTrie } from '../algorithms/trees/trie/trie-layout';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 
 /* ------------------------------------------------------------------ */
 /*  TrieVisualizer – interactive Prefix Tree playground               */
@@ -23,11 +26,32 @@ const TrieVisualizer = React.memo(() => {
   const [stats, setStats] = useState({ wordCount: 0, nodeCount: 0, maxDepth: 0 });
 
   // Animation state
-  const [activeNode, setActiveNode] = useState(null);
-  const [visitedNodes, setVisitedNodes] = useState([]);
-  const [foundNodes, setFoundNodes] = useState([]);
-  const [deletingNode, setDeletingNode] = useState(null);
-  const [isRunning, setIsRunning] = useState(false);
+  // The trace of the operation being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'trie',
+    meta: { algorithm: 'Trie' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const visitedNodes = view?.order ?? [];
+  const foundNodes = view?.found ?? [];
+  const deletingNode = useMemo(
+    () =>
+      Object.entries(view?.states ?? {}).find(([, state]) => state === 'deleting')?.[0] ??
+      null,
+    [view]
+  );
+  const isRunning = isPlaying;
+
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
 
   // UI state
   const [inputValue, setInputValue] = useState('');
@@ -35,7 +59,7 @@ const TrieVisualizer = React.memo(() => {
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
   const [showStats, setShowStats] = useState(true);
-  const [logs, setLogs] = useState([]);
+
 
   const logEndRef = useRef(null);
 
@@ -59,15 +83,8 @@ const TrieVisualizer = React.memo(() => {
 
   /* ---------- helpers ---------- */
 
-  const addLog = useCallback((entry) => {
-    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
-  }, []);
-
   const clearAnimation = () => {
-    setActiveNode(null);
-    setVisitedNodes([]);
-    setFoundNodes([]);
-    setDeletingNode(null);
+    setTrace([]);
   };
 
   const parsedValue = () => {
@@ -84,7 +101,7 @@ const TrieVisualizer = React.memo(() => {
     const root = buildTrieFromWords(words);
     setTrieRoot(root);
     refreshLayout(root);
-    setLogs([{ type: 'info', text: `Generated Trie with random words: ${words.join(', ')}`, ts: Date.now() }]);
+    setTrace([]);
   };
 
   const handleReset = () => {
@@ -93,79 +110,35 @@ const TrieVisualizer = React.memo(() => {
     const emptyRoot = buildTrieFromWords([]);
     setTrieRoot(emptyRoot);
     refreshLayout(emptyRoot);
-    setLogs([{ type: 'info', text: 'Trie cleared.', ts: Date.now() }]);
   };
 
-  const handleInsert = async () => {
+  const handleInsert = () => {
     const val = parsedValue();
     if (!val || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await trieInsertAnimated(trieRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
-
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(collectSteps(trieInsert(trieRoot, val)));
     setInputValue('');
   };
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     const val = parsedValue();
     if (!val || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await trieSearchAnimated(trieRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setFoundNodes,
-      addLog,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(trieSearch(trieRoot, val)));
   };
 
-  const handleAutocomplete = async () => {
+  const handleAutocomplete = () => {
     const val = parsedValue();
     if (!val || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await trieAutocompleteAnimated(trieRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setFoundNodes,
-      addLog,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(trieAutocomplete(trieRoot, val)));
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     const val = parsedValue();
     if (!val || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await trieDeleteAnimated(trieRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setDeletingNode,
-      addLog,
-      refreshLayout,
-      speed,
-    });
-
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(collectSteps(trieDelete(trieRoot, val)));
     setInputValue('');
   };
 
@@ -567,7 +540,7 @@ const TrieVisualizer = React.memo(() => {
               <MessageSquare size={16} className="text-blue-500" />
               <span className="text-slate-800 font-semibold text-sm">Algorithm Log</span>
               <button
-                onClick={() => setLogs([])}
+                onClick={() => setTrace([])}
                 className="ml-auto text-xs text-slate-500 hover:text-slate-800 transition-colors"
               >
                 Clear

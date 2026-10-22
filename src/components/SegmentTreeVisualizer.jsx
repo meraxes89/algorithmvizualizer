@@ -1,7 +1,18 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Play, Settings, MessageSquare, Shuffle } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
-import { generateRandomArrayForSegTree, buildSegmentTreeSync, layoutSegmentTree, querySegmentTreeAnimated, updateSegmentTreeAnimated, SEG_TYPES } from '../algorithms/trees/segmentTreeOperations';
+import {
+  generateRandomArrayForSegTree,
+  buildSegmentTreeSync,
+  layoutSegmentTree,
+} from '../algorithms/trees/segment-tree/segment-tree-helpers';
+import {
+  SEG_TYPES,
+  querySegmentTree,
+  updateSegmentTree,
+} from '../algorithms/trees/segment-tree/segment-tree';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 
 /* ------------------------------------------------------------------ */
 /*  SegmentTreeVisualizer                                             */
@@ -15,11 +26,27 @@ const SegmentTreeVisualizer = React.memo(() => {
   const [treeType, setTreeType] = useState(SEG_TYPES.SUM);
 
   // Animation state
-  const [activeNode, setActiveNode] = useState(null);
-  const [visitedNodes, setVisitedNodes] = useState([]);
-  const [contributingNodes, setContributingNodes] = useState([]);
-  const [propagatingNodes, setPropagatingNodes] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
+  // The trace of the operation being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'trees',
+    meta: { algorithm: 'Segment Tree' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const visitedNodes = view?.order ?? [];
+  const contributingNodes = view?.contributing ?? [];
+  const propagatingNodes = view?.propagating ?? [];
+  const isRunning = isPlaying;
+
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
 
   // UI Inputs
   const [arrayInput, setArrayInput] = useState('');
@@ -32,7 +59,7 @@ const SegmentTreeVisualizer = React.memo(() => {
   const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
-  const [logs, setLogs] = useState([]);
+
 
   const logEndRef = useRef(null);
   
@@ -57,15 +84,8 @@ const SegmentTreeVisualizer = React.memo(() => {
 
   /* ---------- helpers ---------- */
 
-  const addLog = useCallback((entry) => {
-    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
-  }, []);
-
   const clearAnimation = () => {
-    setActiveNode(null);
-    setVisitedNodes([]);
-    setContributingNodes([]);
-    setPropagatingNodes([]);
+    setTrace([]);
   };
 
   /* ---------- operations ---------- */
@@ -84,7 +104,7 @@ const SegmentTreeVisualizer = React.memo(() => {
     clearAnimation();
     const arr = generateRandomArrayForSegTree(8, 1, 50);
     initTreeWithArray(arr, treeType);
-    setLogs([{ type: 'info', text: `Generated random array and built ${treeType} tree.`, ts: Date.now() }]);
+    setTrace([]);
   };
 
   const handleTypeChange = (e) => {
@@ -93,7 +113,7 @@ const SegmentTreeVisualizer = React.memo(() => {
     setTreeType(newType);
     clearAnimation();
     initTreeWithArray(baseArray, newType);
-    setLogs([{ type: 'info', text: `Switched tree type to ${newType.toUpperCase()}.`, ts: Date.now() }]);
+    setTrace([]);
   };
 
   const handleBuildUserArray = () => {
@@ -102,58 +122,33 @@ const SegmentTreeVisualizer = React.memo(() => {
     if (parts.length === 0) return;
     clearAnimation();
     initTreeWithArray(parts, treeType);
-    setLogs([{ type: 'success', text: `Built new tree from input array.`, ts: Date.now() }]);
+    setTrace([]);
   };
 
   const handleQuery = async () => {
     const l = parseInt(queryL, 10);
     const r = parseInt(queryR, 10);
     if (isNaN(l) || isNaN(r) || l > r || l < 0 || r >= baseArray.length || isRunning) {
-      addLog({ type: 'error', text: 'Invalid query range.' });
       return;
     }
-    
-    setIsRunning(true);
-    clearAnimation();
 
-    await querySegmentTreeAnimated(segRoot, treeType, l, r, {
-      setActiveNode,
-      setVisitedNodes,
-      setContributingNodes,
-      addLog,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(querySegmentTree(segRoot, treeType, l, r)));
   };
 
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     const idx = parseInt(updateIdx, 10);
     const val = parseInt(updateVal, 10);
     if (isNaN(idx) || isNaN(val) || idx < 0 || idx >= baseArray.length || isRunning) {
-      addLog({ type: 'error', text: 'Invalid update parameters.' });
       return;
     }
 
-    setIsRunning(true);
-    clearAnimation();
-
-    // Update base array locally
+    // Update the base array locally.
     const newArr = [...baseArray];
     newArr[idx] = val;
     setBaseArray(newArr);
     setArrayInput(newArr.join(', '));
 
-    await updateSegmentTreeAnimated(segRoot, treeType, idx, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setPropagatingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(updateSegmentTree(segRoot, treeType, idx, val)));
   };
 
   /* ---------- UI Node Styling ---------- */
@@ -547,7 +542,7 @@ const SegmentTreeVisualizer = React.memo(() => {
               <MessageSquare size={16} className="text-blue-500" />
               <span className="text-slate-800 font-semibold text-sm">Algorithm Log</span>
               <button
-                onClick={() => setLogs([])}
+                onClick={() => setTrace([])}
                 className="ml-auto text-xs text-slate-500 hover:text-slate-800 transition-colors"
               >
                 Clear

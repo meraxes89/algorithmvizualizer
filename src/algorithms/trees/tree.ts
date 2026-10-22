@@ -99,6 +99,51 @@ export const inorderList = (node: TreeNode | null, out: TreeNode[] = []): TreeNo
 export const treeStep = (step: TreeStep): TreeStep => step;
 
 /**
+ * Rebuild a tree from a flat snapshot.
+ *
+ * The snapshot is what a step carries, so this is how a visualizer gets
+ * a tree it can lay out back out of a step's view.
+ */
+export const treeFromSnapshot = (
+  snapshot: Readonly<Record<number, TreeNodeSnapshot>>,
+  rootId?: number
+): TreeNode | null => {
+  const entries = Object.values(snapshot);
+  if (entries.length === 0) return null;
+
+  const nodes = new Map<number, TreeNode>();
+  for (const entry of entries) {
+    nodes.set(entry.id, {
+      id: entry.id,
+      val: entry.val ?? 0,
+      left: null,
+      right: null,
+      ...(entry.height === undefined ? {} : { height: entry.height }),
+    });
+  }
+
+  // The root is the node nobody points at.
+  const pointedAt = new Set<number>();
+  for (const entry of entries) {
+    if (entry.left !== null) pointedAt.add(entry.left);
+    if (entry.right !== null) pointedAt.add(entry.right);
+  }
+
+  for (const entry of entries) {
+    const node = nodes.get(entry.id) as TreeNode;
+    if (entry.left !== null) node.left = nodes.get(entry.left) ?? null;
+    if (entry.right !== null) node.right = nodes.get(entry.right) ?? null;
+  }
+
+  if (rootId !== undefined) {
+    return nodes.get(rootId) ?? null;
+  }
+
+  const root = entries.find((entry) => !pointedAt.has(entry.id));
+  return root ? (nodes.get(root.id) as TreeNode) : null;
+};
+
+/**
  * The state an operation accumulates while it works.
  *
  * The algorithms used to push this into React state one callback at a

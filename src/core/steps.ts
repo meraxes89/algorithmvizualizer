@@ -189,7 +189,7 @@ export type GraphGenerator = Generator<GraphStep, void, undefined>;
 // Trees
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type TreeNodeState = 'idle' | 'active' | 'visited' | 'found';
+export type TreeNodeState = 'idle' | 'active' | 'visited' | 'found' | 'deleting' | 'successor';
 
 /** A line the algorithm logged. */
 export type TreeLogEntry = {
