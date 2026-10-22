@@ -96,6 +96,7 @@ export class TreeTrace {
   visited: number[] = [];
   log: TreeLogEntry[] = [];
   states: Record<number, TreeNodeState> = {};
+  rotating: number[] = [];
 
   /** The current view of the tree. */
   view(root: TreeNode | null): TreeView {
@@ -104,6 +105,7 @@ export class TreeTrace {
       states: { ...this.states },
       active: this.active,
       order: [...this.visited],
+      rotating: [...this.rotating],
       log: [...this.log],
     };
   }

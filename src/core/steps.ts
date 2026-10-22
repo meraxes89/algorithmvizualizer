@@ -185,7 +185,7 @@ export type TreeNodeState = 'idle' | 'active' | 'visited' | 'found';
 
 /** A line the algorithm logged. */
 export type TreeLogEntry = {
-  readonly type: 'info' | 'start' | 'compare' | 'success' | 'warn' | 'error';
+  readonly type: 'info' | 'start' | 'compare' | 'success' | 'warn' | 'error' | 'rotation';
   readonly text: string;
 };
 
@@ -216,6 +216,8 @@ export type TreeView = {
   readonly active: number | null;
   /** The order the nodes were visited in. */
   readonly order: readonly number[];
+  /** The nodes taking part in a rotation, for the balanced trees. */
+  readonly rotating?: readonly number[];
   /** Everything the algorithm has logged so far. */
   readonly log: readonly TreeLogEntry[];
 };
