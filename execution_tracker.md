@@ -84,16 +84,16 @@
 - [x] **pathfinding** — 4 pure generators, golden + property tests, a shared grid model; the 4 callback modules **and the 6 inline copies inside the visualizer** are gone (`49aafa3`)
 - [x] **graph** — 8 pure generators, golden + invariant tests, a family registry; the 953-line `src/utils/GraphAlgorithms.js` and the visualizer's own table of algorithms are gone (`474b66d`)
 - [x] **the arena races the registry** — `raceTraces.js` and its nine private copies of the algorithms are gone; the pathfinding race now searches a grid with real weights, so its "Dijkstra" is a weighted search (`d3d516b`)
-- [ ] **trees / BST / AVL / heap**
-- [ ] **segment tree / trie**
-- [ ] **recursion engines**
-- [ ] **DP**
-- [ ] the maze generator, still a plain `.js` module
+- [x] **trees — BST / AVL / heap** — the BST insert, search and delete, the four traversals, the AVL insert, search and delete with all four rotation cases, and the heap insert and delete, all as pure generators with property tests; the tree visualizers read the tree from the current step, so a rotation is visible the moment it happens; `bstOperations.js`, `avlOperations.js`, `heapOperations.js`, `traversals.js` and the orphan `avl.js` are gone (`7755a57`, `3ccb1ec`)
+- [x] **segment tree / trie** — build, range query and point update for the segment tree; insert, search, autocomplete and delete for the trie; both got views of their own because neither is a tree of pointers; `segmentTreeOperations.js` and `trieOperations.js` are gone (`7755a57`, `3ccb1ec`)
+- [x] **recursion engines** — the six tree-recursion algorithms and the four board searches as generators; the contract gained a node map for the call tree and a `board` family for the searches; `engine.js`, `gridEngine.js` and the two dead duplicate modules (`nQueens.js`, `towerOfHanoi.js`) are gone (`b6165ed`, `0dc8d16`)
+- [x] **DP** — the knapsack, the longest common subsequence and Fibonacci as generators, checked against brute force; the table snapshot lives in the generator now, one place instead of per component; `DPVisualizer` is playback-driven and its tabs come from the family registry (`9086385`)
+- [x] the maze generator — typed, not traced: a maze is built in one synchronous pass and the search is what gets played back (`80b601b`)
 
 #### The golden path, dogfooded
 
 - [x] Heap Sort and Jump Search added the way the plan says a new algorithm should be added: the generator and its test, one line in the family registry, and the metadata — and they appear in the sorting page, the searching page and the arena with **zero** further edits (`d3d516b`)
-- [ ] Fibonacci-DP, which needs the DP family to be ported first
+- [x] Fibonacci-DP — the third dogfood: generator, test, one registry line, metadata, and it appears on the DP page without the page being touched (the tabs are built from the registry now) (`9086385`)
 
 
 #### Found by the safety net, not by reading
@@ -102,6 +102,10 @@
 - [x] `usePlayback` had no test at all; function coverage was 81.57% against the 85% gate (`9abc1c2`)
 - [x] insertion sort wrote the array on a `mark` step instead of a `swap` step — caught by the property test
 - [x] A* expanded the whole grid because ties were broken arbitrarily
+- [x] the BST delete left the in-order successor pointing at itself, so the tree became a cycle and the in-order walk never ended — caught by the delete property test and fixed in the port (`e895c6c`)
+- [x] the subsets trace pushed two pseudo-call frames per level and popped one, so the displayed call stack grew faster than the real depth; the decisions are their own step kind now (`b6165ed`)
+- [x] the segment tree's node snapshot had no coordinates for the layout; the layout helper assigns them and the type says so
+- [x] the knight's tour numbers its squares from zero, not one — the test asserts what the algorithm actually does
 
 #### Rules added
 
@@ -113,7 +117,7 @@
 - [x] Golden traces pass for every ported family
 - [x] Component smoke tests pass for every ported family
 - [x] The old implementation is gone for every ported family — verified by grep
-- [ ] Every family ported
+- [x] Every family ported — sorting, searching, pathfinding, graph, trees (BST, AVL, heap, segment tree, trie), recursion (call tree and board searches) and DP; the only remaining algorithm module is the maze generator, which is a constructor rather than an animation and is typed
 
 ### Phase 3 — Registry drives the app
 
@@ -218,7 +222,7 @@ Audited against source on 2026-10-21. `[x]` means verified present in code. `[ ]
 - [-] `MatrixBackground` — component does not exist in this repo
 - [ ] `GraphAlgorithms` adjacency `Map` lookups — not implemented
 - [-] `stepTracker.js` removed — it was never wired in
-- [ ] DP deep-clone removal — `JSON.parse(JSON.stringify(...))` remains at `DPVisualizer.jsx:197,219`
+- [x] DP deep-clone removal — the table snapshot lives in the DP generator now, once per step, instead of in the component; the `JSON.parse(JSON.stringify(...))` at `DPVisualizer.jsx` is gone with the component's step generation (`9086385`)
 - [ ] Tree `Set` lookups — not implemented in Heap, Segment Tree or Trie visualizers
 - [-] `performanceBudget.js` removed — it was never imported
 
