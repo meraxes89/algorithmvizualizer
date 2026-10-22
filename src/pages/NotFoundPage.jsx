@@ -5,7 +5,7 @@ import { ArrowLeft, Compass } from 'lucide-react';
 import { EASE } from '../lib/motion';
 
 const NotFoundPage = () => (
-  <div className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
+  <main className="flex min-h-[70vh] flex-col items-center justify-center px-6 text-center">
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
@@ -33,7 +33,7 @@ const NotFoundPage = () => (
         <span>Back to Home</span>
       </Link>
     </motion.div>
-  </div>
+  </main>
 );
 
 export default NotFoundPage;

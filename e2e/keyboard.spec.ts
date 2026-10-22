@@ -33,7 +33,7 @@ test('command palette traps focus and closes on Escape', async ({ page }) => {
 test('algorithm menu opens from the keyboard and closes on Escape', async ({ page }) => {
   await page.goto('/');
 
-  const trigger = page.getByRole('button', { name: 'Algorithms' });
+  const trigger = page.getByRole('button', { name: 'Algorithms', exact: true });
   const menu = page.locator('#algorithms-menu');
 
   await trigger.focus();

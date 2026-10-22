@@ -348,10 +348,10 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
         </div>
         <div className="flex gap-3 text-xs shrink-0">
           <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md font-medium border border-blue-100 dark:border-blue-800">
-            <span className="font-bold opacity-75 mr-1">Time:</span> {details.timeComplexity}
+            <span className="font-bold mr-1">Time:</span> {details.timeComplexity}
           </div>
           <div className="bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2.5 py-1 rounded-md font-medium border border-blue-100 dark:border-blue-800">
-            <span className="font-bold opacity-75 mr-1">Space:</span> {details.spaceComplexity}
+            <span className="font-bold mr-1">Space:</span> {details.spaceComplexity}
           </div>
         </div>
       </div>
@@ -401,7 +401,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
             onClick={resetVisualization}
             className="flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
           >
-            <RotateCcw size={16} className="text-slate-600" />
+            <RotateCcw size={16} className="text-slate-600 dark:text-slate-300" />
             Reset
           </button>
 
@@ -410,7 +410,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
             disabled={steps.length > 0}
             className="flex items-center gap-1.5 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
           >
-            <Shuffle size={16} className="text-slate-600" />
+            <Shuffle size={16} className="text-slate-600 dark:text-slate-300" />
             Randomize
           </button>
 
@@ -514,7 +514,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
           {isWeighted && (
             <label className="flex items-center gap-1.5 font-medium">
-              <span className="text-slate-600">New edge weight</span>
+              <span className="text-slate-600 dark:text-slate-300">New edge weight</span>
               <input
                 type="number"
                 min="1"
@@ -529,7 +529,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
           {details.needsSource && vertices.length > 0 && (
             <div className="flex items-center gap-1.5 font-medium">
-              <span className="text-slate-600">Source:</span>
+              <span className="text-slate-600 dark:text-slate-300">Source:</span>
               <select
                 aria-label="Source node"
                 value={sourceId || ''}
@@ -545,7 +545,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
           {details.needsTarget && vertices.length > 0 && (
             <div className="flex items-center gap-1.5 font-medium">
-              <span className="text-slate-600">Target:</span>
+              <span className="text-slate-600 dark:text-slate-300">Target:</span>
               <select
                 aria-label="Target node"
                 value={targetId || ''}
@@ -925,7 +925,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
             <button
               onClick={() => setShowGraphBuilder(false)}
               aria-label="Close graph builder"
-              className="absolute top-4 right-4 text-slate-600 hover:text-slate-700 dark:hover:text-white z-50 text-xl font-bold px-3 py-1"
+              className="absolute top-4 right-4 text-slate-600 dark:text-slate-300 hover:text-slate-700 dark:hover:text-white z-50 text-xl font-bold px-3 py-1"
             >
               ✕
             </button>

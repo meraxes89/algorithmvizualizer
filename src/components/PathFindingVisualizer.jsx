@@ -429,7 +429,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
                 is3DMode
                   ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
-                  : 'bg-transparent border-transparent text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                  : 'bg-transparent border-transparent text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
               <Box size={15} className={is3DMode ? "text-cyan-700 dark:text-cyan-400" : ""} /> {is3DMode ? '3D' : '2D'}
@@ -445,7 +445,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
                   onClick={() => setSpeed(val)}
                   disabled={isPlaying}
                   className={`px-2 py-1 rounded text-[10px] font-black tracking-wider transition-all ${
-                    speed === val ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-600 hover:text-slate-600 dark:hover:text-slate-300'
+                    speed === val ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-600 dark:text-slate-300 hover:text-slate-600 dark:hover:text-slate-300'
                   }`}
                 >
                   {label}

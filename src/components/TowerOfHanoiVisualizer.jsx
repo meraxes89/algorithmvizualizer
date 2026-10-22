@@ -243,6 +243,9 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
         
         {/* Puzzle View */}
         <div 
+          role="group"
+          tabIndex={0}
+          aria-label="Visualization canvas"
           className="flex-1 flex flex-col items-center justify-center relative p-4 overflow-auto custom-scrollbar dark:bg-slate-900"
           style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >

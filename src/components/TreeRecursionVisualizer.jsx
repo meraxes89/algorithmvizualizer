@@ -369,6 +369,9 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
         
         {/* SVG Tree View */}
         <div 
+          role="group"
+          tabIndex={0}
+          aria-label="Visualization canvas"
           className="flex-1 relative overflow-auto custom-scrollbar dark:bg-slate-900"
           style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >
