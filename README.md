@@ -32,7 +32,7 @@ The interface includes light and dark themes, keyboard navigation, optional soun
 
 ## Quick start
 
-**Requirements:** Node.js 24 or newer, and pnpm 12 or newer. The exact pnpm version is pinned in `package.json`.
+**Requirements:** Node.js 24 or newer, and pnpm 12 or newer. The exact pnpm version is pinned in `package.json`; the toolchain and lockfile policy are recorded in [ADR 0004](docs/adr/0004-pnpm.md).
 
 ```bash
 git clone https://github.com/meraxes89/algorithmvizualizer.git
@@ -124,6 +124,7 @@ docs/              Architecture, contribution guide, ADRs and archive
 | :--- | :--- |
 | [Architecture](docs/ARCHITECTURE.md) | You want to understand the layers, the Step Trace Contract, playback, the registry or the theme system |
 | [Contributing](docs/CONTRIBUTING.md) | You are adding an algorithm, changing a visualizer, fixing accessibility or opening a pull request |
+| [Releasing](docs/RELEASING.md) | You are cutting a version tag or publishing a GitHub Release |
 | [ADR index](docs/adr/README.md) | You want the reasoning behind a structural decision |
 | [Archive](docs/archive/README.md) | You are looking for an earlier plan or design proposal |
 

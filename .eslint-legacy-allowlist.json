@@ -62,7 +62,6 @@
   "src/components/SoundControls.jsx",
   "src/components/TiltCard.jsx",
   "src/components/Toast.jsx",
-  "src/components/TowerOfHanoiVisualizer.jsx",
   "src/components/TreeRecursionVisualizer.jsx",
   "src/components/TreeVisualizer.jsx",
   "src/components/TrieVisualizer.jsx",

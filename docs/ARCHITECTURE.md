@@ -304,7 +304,7 @@ Shared invariants live in `src/test/`. For example, [`sortingInvariants.ts`](../
 
 ### The gates
 
-`pnpm test:coverage` enforces an 85% threshold for statements, branches, functions and lines on the typed surface. Legacy JavaScript is excluded until it is ported; each port pulls its files into the gate instead of lowering the threshold.
+`pnpm test:coverage` enforces an 86% threshold for statements, branches, functions and lines on the typed surface. Legacy JavaScript is excluded until it is ported; each port pulls its files into the gate instead of lowering the threshold.
 
 `pnpm e2e` uses Playwright and axe. It scans all fourteen routes in both themes, plus the open command palette and the open mobile navigation, and runs three keyboard flows. The scan uses axe's default rules with no exception list.
 
@@ -320,7 +320,7 @@ The deploy workflow runs after the checks workflow succeeds for the same commit 
 
 ### Why some things are not covered yet
 
-- Component-level smoke tests currently exist for the sorting and searching bar renderers. The other visualizers are covered at the algorithm layer and by route loading in the browser checks, not by dedicated component tests.
+- Component-level smoke tests currently exist for the sorting and searching bar renderers and the Tower of Hanoi visualizer, the first visualizer ported to strict TypeScript. The other visualizers are covered at the algorithm layer and by route loading in the browser checks, not by dedicated component tests.
 - The arena lineups and home-page suggestions are presentation lists that are not yet driven by the registry.
 - Metadata is split across `src/data/algorithmData.js`, `treeAlgorithms.js`, `recursionAlgorithms.js`, family registry descriptions and some visualizer-local copy. Unifying it is a separate migration.
 
@@ -361,7 +361,7 @@ The project is deliberately mid-migration. These are the main boundaries to know
 
 - **Two source lists for navigation.** Family registries own implementations; the app registry owns display. Tests keep them in sync, but adding an algorithm still requires both edits.
 - **Metadata is not unified.** `src/data/algorithmData.js` covers sorting, searching, trees and pathfinding. Tree and recursion pages have their own content tables; graph descriptions live with the graph registry, and DP descriptions live inside `DPVisualizer`. A single metadata layer is future work.
-- **Legacy visualizers remain.** Many `.jsx` components are still outside the strict TypeScript program. New code must be TypeScript; conversion happens family by family.
+- **Legacy visualizers remain.** Most `.jsx` components are still outside the strict TypeScript program. New code must be TypeScript; conversion happens one hot file at a time. `TowerOfHanoiVisualizer` and `animationHelpers` were the first Phase 6 ports.
 - **Arena and home surfaces have local lists.** The arena lineup and home-page suggestions do not yet read the app registry.
 - **The Playground depends on remote engines.** JavaScript and Python can run in the browser; compiled languages use Wandbox, Codex or a configured Piston endpoint. Availability is outside this repository's control.
 - **Native dialogs remain in the Playground.** File creation, deletion and reset still use browser `prompt`/`confirm` in that tool. The graph editor's `prompt`/`alert` flow has been retired.

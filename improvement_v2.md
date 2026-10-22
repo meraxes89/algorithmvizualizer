@@ -2,7 +2,7 @@
 
 > **Goal:** Turn this repo into a codebase strangers can navigate in an afternoon and extend in minutes.
 > **North-star test:** _A developer who has never seen this repo adds a new algorithm in ~30 minutes without touching the engine, sound, scrubbing, or docs — and cannot break anything else while doing it._
-> **Status:** Phases 0–5 complete; Phase 6 (continuous hardening) is next. See [`execution_tracker.md`](execution_tracker.md) for the item-level ledger. Successor to [`docs/archive/improvement_v1.md`](docs/archive/improvement_v1.md) (performance) — this plan is about *architecture, safety, and documentation*.
+> **Status:** Phases 0–5 complete; Phase 6 (continuous hardening) is in progress. See [`execution_tracker.md`](execution_tracker.md) for the item-level ledger. Successor to [`docs/archive/improvement_v1.md`](docs/archive/improvement_v1.md) (performance) — this plan is about *architecture, safety, and documentation*.
 
 ---
 

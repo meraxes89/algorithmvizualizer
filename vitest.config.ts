@@ -31,11 +31,13 @@ export default defineConfig({
       include: ['src/**/*.ts', 'src/**/*.tsx'],
       exclude: ['src/**/*.d.ts', 'src/test/**', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
 
+      // Ratchet upward one point at a time as files are ported and tested.
+      // Never lower a threshold to make a pull request green.
       thresholds: {
-        statements: 85,
-        branches: 85,
-        functions: 85,
-        lines: 85,
+        statements: 86,
+        branches: 86,
+        functions: 86,
+        lines: 86,
       },
     },
   },

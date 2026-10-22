@@ -19,7 +19,7 @@ The project is deliberately structured so that most changes are small: add a pur
 
 ## Set up
 
-**Requirements:** Node.js 24 or newer, and pnpm 12 or newer.
+**Requirements:** Node.js 24 or newer, and pnpm 12 or newer. The toolchain decision and the one-lockfile policy live in [ADR 0004](adr/0004-pnpm.md).
 
 ```bash
 git clone https://github.com/meraxes89/algorithmvizualizer.git
@@ -274,7 +274,7 @@ pnpm test src/components/visualizers/sorting/SortingBars.test.tsx
 
 ### Coverage
 
-`pnpm test:coverage` enforces 85% on statements, branches, functions and lines for the typed surface. The threshold is not a target to game; it is a floor that moves up as files are ported.
+`pnpm test:coverage` enforces 86% on statements, branches, functions and lines for the typed surface. The threshold is not a target to game; it is a floor that moves up as files are ported.
 
 If your change adds a new typed file, add a test for its behaviour. If a branch is genuinely unreachable, explain why in the pull request rather than excluding the file.
 
@@ -332,6 +332,10 @@ The application is performance-conscious, but the rule is "measure, then optimis
 - [ ] A screenshot or recording is included for a visible change.
 
 Use a conventional prefix in the pull request title where it helps: `feat:`, `fix:`, `refactor:`, `test:`, `docs:` or `chore:`. The repository history uses this pattern, but the content of the change matters more than the prefix.
+
+## Releases and maintenance
+
+Dependency updates arrive through [Dependabot](../.github/dependabot.yml) on a weekly grouped schedule; security updates are opened immediately. Release tags and GitHub Releases follow the maintainer checklist in [RELEASING.md](RELEASING.md). The workflow is deliberately manual at this size: no Changesets, and no release from an unmerged branch.
 
 ## Getting unstuck
 

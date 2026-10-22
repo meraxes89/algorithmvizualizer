@@ -249,9 +249,37 @@ Still open for a later phase: visual screenshot regression on the 3D scenes, red
 
 ### Phase 6 — Continuous hardening
 
-- [ ] Hot files migrated to real TS strictness
-- [ ] Coverage gate raised gradually
-- [ ] Dependabot/renovate, release tagging
+#### Automation and releases
+
+- [x] `.github/dependabot.yml` — weekly grouped npm updates split by production/development, weekly GitHub Actions updates, majors intentionally left as individual PRs
+- [x] `docs/RELEASING.md` — semver tag + GitHub Release checklist, first-release note, mirror policy and rollback rules
+- [ ] First tagged release — deliberately blocked until PR #2 merges; a tag must not point at an unmerged feature branch
+
+#### Type and coverage ratchet
+
+- [x] `TowerOfHanoiVisualizer` migrated from `.jsx` to strict `.tsx` with typed `PuzzleStep` state and a component test
+- [x] `animationHelpers` migrated from `.js` to `.ts`; four unused exports removed; grid, array and speed helpers now typed and tested
+- [x] Stale `TowerOfHanoiVisualizer.jsx` allowlist entry pruned
+- [x] Coverage gate raised from 85% to 86% across statements, branches, functions and lines
+- [x] Current coverage after the ports: 87.30% statements, 89.28% branches, 92.81% functions; 320 tests across 45 files
+- [ ] Next hot file — choose from the remaining visualizers after measuring churn, not by file size alone
+
+#### Documentation and operations
+
+- [x] ADR 0004 is the canonical toolchain/lockfile policy; README and CONTRIBUTING now link to it instead of repeating it
+- [x] README and CONTRIBUTING link the release checklist and dependency automation
+- [ ] Optional Lighthouse CI — deferred until the maintenance loop is stable
+- [ ] 3D screenshot regression, reduced-motion audit, metadata unification and the remaining component smoke tests — still open follow-ups
+
+#### Verification
+
+- [x] `pnpm lint` — 0 errors, 25 pre-existing warnings
+- [x] `pnpm typecheck`
+- [x] `pnpm test` — 320 passing across 45 files
+- [x] `pnpm test:coverage` — 87.30% statements, 89.28% branches, 92.81% functions (86% gate)
+- [x] `GITHUB_PAGES=true pnpm build`
+- [x] `pnpm size` — bundle budget OK; no budget changes
+- [ ] CI run for the Phase 6 commit is green
 
 ---
 
