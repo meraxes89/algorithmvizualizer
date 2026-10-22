@@ -183,14 +183,41 @@ export type GraphGenerator = Generator<GraphStep, void, undefined>;
 
 export type TreeNodeState = 'idle' | 'active' | 'visited' | 'found';
 
+/** A line the algorithm logged. */
+export type TreeLogEntry = {
+  readonly type: 'info' | 'start' | 'compare' | 'success' | 'warn' | 'error';
+  readonly text: string;
+};
+
+/**
+ * One node of a tree, flattened.
+ *
+ * The tree itself is a linked structure that the algorithms mutate as
+ * they work, so a step cannot hold it by reference — two steps would
+ * then show the same tree. Every step carries this flat snapshot
+ * instead, which is what makes a trace scrubbable.
+ */
+export type TreeNodeSnapshot = {
+  readonly id: number;
+  readonly val: number;
+  readonly left: number | null;
+  readonly right: number | null;
+  /** The height of the subtree, for the balanced trees. */
+  readonly height?: number;
+};
+
 /** The complete visual state of a tree operation. */
 export type TreeView = {
-  /** State of every node the algorithm has touched, by node id. */
-  readonly nodes: Readonly<Record<number, TreeNodeState>>;
+  /** Every node in the tree, by id. */
+  readonly nodes: Readonly<Record<number, TreeNodeSnapshot>>;
+  /** The state of every node the algorithm has touched, by id. */
+  readonly states: Readonly<Record<number, TreeNodeState>>;
   /** The node currently being worked on, or null. */
   readonly active: number | null;
   /** The order the nodes were visited in. */
   readonly order: readonly number[];
+  /** Everything the algorithm has logged so far. */
+  readonly log: readonly TreeLogEntry[];
 };
 
 export type TreeStep = OfFamily<'trees'> &
@@ -198,6 +225,7 @@ export type TreeStep = OfFamily<'trees'> &
     | { t: 'visit'; view: TreeView; node: number }
     | { t: 'active'; view: TreeView; node: number | null }
     | { t: 'mark'; view: TreeView; node: number; state: TreeNodeState }
+    | { t: 'log'; view: TreeView; entry: TreeLogEntry }
     | { t: 'done'; view: TreeView }
   );
 
