@@ -11,8 +11,7 @@ const sortStep: SortStep = {
 const graphStep: GraphStep = {
   family: 'graph',
   t: 'visit',
-  view: { vertices: {}, edges: {}, path: [] },
-  vertex: 3,
+  view: { vertices: {}, edges: {}, path: [], queue: [], stack: [] },
 };
 
 const event = (index = 0, total = 1) => ({

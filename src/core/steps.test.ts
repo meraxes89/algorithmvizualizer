@@ -10,7 +10,7 @@ const sortStep: SortStep = {
 const graphStep: GraphStep = {
   family: 'graph',
   t: 'done',
-  view: { vertices: {}, edges: {}, path: [] },
+  view: { vertices: {}, edges: {}, path: [], queue: [], stack: [] },
 };
 
 describe('isStepOfFamily', () => {

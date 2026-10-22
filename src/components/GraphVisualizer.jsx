@@ -1,88 +1,24 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Trash2, HelpCircle, Shuffle, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
 import { COLORS } from '../utils/animationHelpers';
-import * as GraphAlgos from '../utils/GraphAlgorithms';
+import { graphAlgorithms, getEdgeKey } from '../algorithms/graph';
+import { collectSteps } from '../core/playback';
 import InteractiveGraphBuilder from './educational/InteractiveGraphBuilder';
 import { triggerVictoryConfetti } from '../utils/confettiHelper';
 
 // Algorithm details including description, complexity, etc.
-const ALGORITHM_DETAILS = {
-  'BFS': {
-    name: 'Breadth-First Search (BFS)',
-    timeComplexity: 'O(V + E)',
-    spaceComplexity: 'O(V)',
-    description: 'Explores neighbors level-by-level using a Queue. Finds shortest paths in unweighted graphs.',
-    generator: GraphAlgos.generateBFS,
-    needsSource: true,
-    needsTarget: true,
-  },
-  'DFS': {
-    name: 'Depth-First Search (DFS)',
-    timeComplexity: 'O(V + E)',
-    spaceComplexity: 'O(V)',
-    description: 'Explores as deep as possible along each branch before backtracking. Uses a Stack or Recursion.',
-    generator: GraphAlgos.generateDFS,
-    needsSource: true,
-    needsTarget: true,
-  },
-  'Dijkstra': {
-    name: "Dijkstra's Algorithm",
-    timeComplexity: 'O((V + E) log V)',
-    spaceComplexity: 'O(V)',
-    description: 'Finds the single-source shortest path in weighted graphs with non-negative weights.',
-    generator: GraphAlgos.generateDijkstra,
-    needsSource: true,
-    needsTarget: true,
-  },
-  'Bellman-Ford': {
-    name: 'Bellman-Ford Algorithm',
-    timeComplexity: 'O(V × E)',
-    spaceComplexity: 'O(V)',
-    description: 'Finds the single-source shortest path in graphs. Detects negative weight cycles.',
-    generator: GraphAlgos.generateBellmanFord,
-    needsSource: true,
-    needsTarget: true,
-  },
-  'Floyd-Warshall': {
-    name: 'Floyd-Warshall Algorithm',
-    timeComplexity: 'O(V³)',
-    spaceComplexity: 'O(V²)',
-    description: 'All-pairs shortest path algorithm. Computes shortest paths between all pairs of nodes.',
-    generator: GraphAlgos.generateFloydWarshall,
-    needsSource: true,
-    needsTarget: true,
-  },
-  'Prim\'s MST': {
-    name: "Prim's Minimum Spanning Tree",
-    timeComplexity: 'O(E log V)',
-    spaceComplexity: 'O(V)',
-    description: 'Grows a Minimum Spanning Tree from a starting node by greedily adding the cheapest cut edge.',
-    generator: GraphAlgos.generatePrim,
-    needsSource: false,
-    needsTarget: false,
-    undirectedOnly: true,
-  },
-  'Kruskal\'s MST': {
-    name: "Kruskal's Minimum Spanning Tree",
-    timeComplexity: 'O(E log E)',
-    spaceComplexity: 'O(V)',
-    description: 'Finds a Minimum Spanning Tree by sorting edges by weight and unioning disjoint components.',
-    generator: GraphAlgos.generateKruskal,
-    needsSource: false,
-    needsTarget: false,
-    undirectedOnly: true,
-  },
-  'Topological Sort': {
-    name: 'Topological Sort',
-    timeComplexity: 'O(V + E)',
-    spaceComplexity: 'O(V)',
-    description: 'Linear ordering of vertices such that for every directed edge u → v, u comes before v in the ordering. Requires a DAG.',
-    generator: GraphAlgos.generateTopologicalSort,
-    needsSource: false,
-    needsTarget: false,
-    directedOnly: true,
-  }
-};
+// The algorithms come from the family registry, so the page, the arena
+// and anything else all run the same implementations.
+const ALGORITHM_DETAILS = Object.fromEntries(
+  graphAlgorithms.map((entry) => [
+    entry.id,
+    {
+      ...entry,
+      timeComplexity: 'O(V + E)',
+      spaceComplexity: 'O(V)',
+    },
+  ])
+);
 
 const GraphVisualizer = React.memo(({ algorithmInfo }) => {
   // Read algorithm type from context. Fall back to Dijkstra if not found.
@@ -325,17 +261,11 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     }
 
     setIsPlaying(false);
-    const gen = details.generator;
-    let computedSteps = [];
 
-    if (currentAlgoKey === 'BFS' || currentAlgoKey === 'DFS' || currentAlgoKey === 'Dijkstra' || currentAlgoKey === 'Bellman-Ford') {
-      computedSteps = gen(vertices, edges, sourceId, targetId, isDirected);
-    } else if (currentAlgoKey === 'Floyd-Warshall') {
-      computedSteps = gen(vertices, edges, sourceId, targetId, isDirected);
-    } else {
-      // MST algorithms and Topological Sort do not need source/target selection
-      computedSteps = gen(vertices, edges);
-    }
+    // MST algorithms and Topological Sort do not need source/target selection.
+    const computedSteps = details.needsSource
+      ? collectSteps(details.generator(vertices, edges, sourceId, targetId, isDirected))
+      : collectSteps(details.generator(vertices, edges, null, null, isDirected));
 
     setSteps(computedSteps);
     setCurrentStepIndex(0);
@@ -370,7 +300,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     if (details.needsTarget && nodeId === targetId) return COLORS.END;
 
     if (activeStep) {
-      const nodeStatus = activeStep.verticesState[nodeId];
+      const nodeStatus = activeStep.view.vertices[nodeId];
       if (nodeStatus === 'visiting') return COLORS.COMPARING;
       if (nodeStatus === 'visited') return COLORS.SORTED;
     }
@@ -379,8 +309,8 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
   const getEdgeColor = (edge) => {
     if (activeStep) {
-      const key = GraphAlgos.getEdgeKey(edge.from, edge.to, isDirected);
-      const edgeStatus = activeStep.edgesState[key];
+      const key = getEdgeKey(edge.from, edge.to, isDirected);
+      const edgeStatus = activeStep.view.edges[key];
       if (edgeStatus === 'considering') return COLORS.COMPARING;
       if (edgeStatus === 'accepted') return COLORS.SORTED;
       if (edgeStatus === 'rejected') return COLORS.SWAPPING;
@@ -391,8 +321,8 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
   const getEdgeWidth = (edge) => {
     if (activeStep) {
-      const key = GraphAlgos.getEdgeKey(edge.from, edge.to, isDirected);
-      const edgeStatus = activeStep.edgesState[key];
+      const key = getEdgeKey(edge.from, edge.to, isDirected);
+      const edgeStatus = activeStep.view.edges[key];
       if (edgeStatus === 'accepted') return 4;
       if (edgeStatus === 'considering') return 3.5;
     }
@@ -610,14 +540,14 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
             <span className="text-slate-500 dark:text-slate-400">Step {currentStepIndex + 1} of {steps.length}:</span>
             <span className="text-slate-800 dark:text-slate-100 font-semibold">{activeStep.description}</span>
           </div>
-          {activeStep.queue && activeStep.queue.length > 0 && (
+          {activeStep.view.queue.length > 0 && (
             <div className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-600 shadow-sm">
-              Queue: [{activeStep.queue.map(id => vertices.find(v => v.id === id)?.label || id).join(', ')}]
+              Queue: [{activeStep.view.queue.map(id => vertices.find(v => v.id === id)?.label || id).join(', ')}]
             </div>
           )}
-          {activeStep.stack && activeStep.stack.length > 0 && (
+          {activeStep.view.stack.length > 0 && (
             <div className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-600 shadow-sm">
-              Stack: [{activeStep.stack.map(id => vertices.find(v => v.id === id)?.label || id).join(', ')}]
+              Stack: [{activeStep.view.stack.map(id => vertices.find(v => v.id === id)?.label || id).join(', ')}]
             </div>
           )}
         </div>
@@ -709,7 +639,9 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
             const coords = getEdgeCoords(fromNode, toNode, 24);
             const midX = (fromNode.x + toNode.x) / 2;
             const midY = (fromNode.y + toNode.y) / 2;
-            const statusKey = activeStep ? activeStep.edgesState[GraphAlgos.getEdgeKey(edge.from, edge.to, isDirected)] : null;
+            const statusKey = activeStep
+              ? activeStep.view.edges[getEdgeKey(edge.from, edge.to, isDirected)]
+              : null;
 
             const markerId = isDirected
               ? `url(#arrow-${statusKey || 'default'})`

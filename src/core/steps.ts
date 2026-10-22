@@ -138,8 +138,10 @@ export type PathGenerator = Generator<PathStep, void, undefined>;
 // Graphs
 // ─────────────────────────────────────────────────────────────────────────────
 
-export type VertexState = 'idle' | 'frontier' | 'visiting' | 'visited' | 'in-path';
-export type EdgeState = 'idle' | 'active' | 'accepted' | 'rejected';
+export type VertexState = 'idle' | 'default' | 'frontier' | 'visiting' | 'visited' | 'in-path';
+
+export type EdgeState =
+  'idle' | 'default' | 'exploring' | 'considering' | 'active' | 'accepted' | 'rejected';
 
 /** The complete visual state of a graph traversal. */
 export type GraphView = {
@@ -149,19 +151,27 @@ export type GraphView = {
   readonly edges: Readonly<Record<string, EdgeState>>;
   /** The route from source to target, once one is found. */
   readonly path: readonly number[];
+  /** The worklist, for the algorithms that show one. */
+  readonly queue: readonly number[];
+  /** The stack, for the algorithms that show one. */
+  readonly stack: readonly number[];
+  /** The distance table, for the weighted algorithms. */
+  readonly distances?: Readonly<Record<number, number>>;
+  /** The all-pairs matrix, for Floyd-Warshall. */
+  readonly matrix?: Readonly<Record<number, Readonly<Record<number, number>>>>;
+  /** The in-degree table, for the topological sort. */
+  readonly indegrees?: Readonly<Record<number, number>>;
+  /** The order the vertices were emitted in. */
+  readonly order?: readonly number[];
+  /** The edges of the tree that was built, for the spanning tree algorithms. */
+  readonly resultEdges?: readonly { from: number; to: number; weight: number }[];
 };
 
 export type GraphStep = OfFamily<'graph'> &
   (
-    | { t: 'visit'; view: GraphView; vertex: number; description?: string }
-    | {
-        t: 'edge';
-        view: GraphView;
-        edge: string;
-        state: EdgeState;
-        description?: string;
-      }
-    | { t: 'path'; view: GraphView; path: readonly number[]; description?: string }
+    | { t: 'visit'; view: GraphView; description?: string }
+    | { t: 'edge'; view: GraphView; description?: string }
+    | { t: 'path'; view: GraphView; description?: string }
     | { t: 'done'; view: GraphView; description?: string }
   );
 
