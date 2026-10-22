@@ -1,10 +1,11 @@
 /**
  * The playback engine.
  *
- * This is the single place in the app where time is owned. Every
- * visualizer — all ten of them — drives its timeline through this
- * engine, so play, pause, single-step, scrub and speed behave the same
- * everywhere, and no component needs a `setTimeout` chain of its own.
+ * This is the single place in the app where algorithm playback time is
+ * owned. Every visualizer drives its timeline through this engine, so
+ * play, pause, single-step, scrub and speed behave the same everywhere,
+ * and no component needs a `setTimeout` chain of its own. The Battle Arena
+ * deliberately uses a shared race clock instead.
  *
  * The engine is deliberately framework-agnostic: it knows nothing about
  * React. `src/hooks/usePlayback.ts` is the thin React wrapper around it.
@@ -305,9 +306,8 @@ export class Playback {
   }
 
   /**
-   * Publish the current step so that side effects — sound, confetti, the
-   * favicon — can react to it without the algorithm ever knowing they
-   * exist.
+   * Publish the current step so that side effects (currently the sound
+   * engine) can react to it without the algorithm ever knowing they exist.
    */
   private publish(step: unknown, index: number): void {
     if (!isAnyStep(step)) {

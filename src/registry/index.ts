@@ -1,10 +1,11 @@
 /**
  * The app-wide registry.
  *
- * The navigation, the category page, the command palette and every
- * algorithm page's tab bar read their lists from here. Adding an
- * algorithm means adding one line to its family registry and one entry
- * here, and it appears in all of them.
+ * The navigation, the category page and the command palette read their
+ * lists from here. Tree and recursion operations also live here; the five
+ * families with implementation registries build their page tabs from
+ * those registries directly. Adding an algorithm means adding one line to
+ * its family registry and one display entry here.
  *
  * This module is deliberately display-only: names, ids and routes, no
  * generators. It is imported by the shell, which is in the initial

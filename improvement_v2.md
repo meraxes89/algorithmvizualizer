@@ -2,7 +2,7 @@
 
 > **Goal:** Turn this repo into a codebase strangers can navigate in an afternoon and extend in minutes.
 > **North-star test:** _A developer who has never seen this repo adds a new algorithm in ~30 minutes without touching the engine, sound, scrubbing, or docs — and cannot break anything else while doing it._
-> **Status:** Planning approved, execution not started. Successor to `improvement_v1.md` (performance) — this plan is about *architecture, safety, and documentation*.
+> **Status:** Phases 0–5 complete; Phase 6 (continuous hardening) is next. See [`execution_tracker.md`](execution_tracker.md) for the item-level ledger. Successor to [`docs/archive/improvement_v1.md`](docs/archive/improvement_v1.md) (performance) — this plan is about *architecture, safety, and documentation*.
 
 ---
 
@@ -12,7 +12,7 @@
 | :-: | :--- | :--- | :--- |
 | 1 | Type safety | **Incremental TypeScript** | `tsconfig` up front with `allowJs` + `checkJs` + `strict`; new files are `.ts/.tsx`; hot files (core contract, registry, one algorithm per family) converted deliberately. Step-schema types double as living documentation. |
 | 2 | Testing depth | **All-in** | Unit golden-trace tests + property-based tests for algorithms, component tests (Testing Library) for visualizers, Playwright e2e in desktop CI, axe-core a11y checks, bundle-size budget. "Nothing left behind." |
-| 3 | Execution | **Plan only (this document)** | No production code changes until execution is green-lit, phase by phase. |
+| 3 | Execution | **Phased delivery** | Each phase lands only when its acceptance criteria and the full verification gate pass. |
 | 4 | Source of truth for process | This file + `execution_tracker.md` | `execution_tracker.md` stays the per-item status ledger; this file owns the strategy. |
 
 **Environment constraints honored:** dev happens on-device (Termux/Android) — pnpm, Vitest, husky run locally; **Playwright and its browsers run in CI only (ubuntu, Node 24)**. CI lives in GitHub Actions (repo has `github` + `origin` GitLab remotes; GitHub workflow `.github/workflows/deploy.yml` is the pipeline to extend).

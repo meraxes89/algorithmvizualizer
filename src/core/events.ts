@@ -1,8 +1,8 @@
 /**
  * The step event bus.
  *
- * Side effects — the sound engine, the confetti burst, the animated
- * favicon — subscribe to step events. They are never passed into an
+ * Side effects subscribe to step events. The sound engine is the current
+ * subscriber; future effects can join it. They are never passed into an
  * algorithm and never called by one. An algorithm yields steps and
  * nothing else; anything that wants to react to a step listens here.
  *

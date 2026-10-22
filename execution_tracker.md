@@ -26,14 +26,14 @@
 - [x] Add `engines` (node >= 24, pnpm >= 12), `.nvmrc`, `.editorconfig` (`f063622`)
 - [x] Delete the dead-code list from audit §1.5 — done with the family ports: `nQueens.js`, `towerOfHanoi.js`, the tree re-export shims, orphan `avl.js` and the unused `RecursionVisualizer.jsx` are all gone
 - [x] Remove the stale `package-lock.json` — gone; `pnpm-lock.yaml` is the only lockfile
-- [ ] README bugs section — deferred to Phase 5 (docs rewrite)
+- [x] README bugs section — replaced by the honest Phase 5 rewrite
 
 #### Phase 0 acceptance
 
 - [x] Zero known P0 runtime bugs
 - [x] Production build green after every commit
 - [x] `grep`-verified dead-code list empty — the §1.5 list is gone
-- [ ] README bugs section gone — deferred to Phase 5
+- [x] README bugs section gone — Phase 5 rewrite
 
 ### Phase 1 — Safety net
 
@@ -211,15 +211,40 @@ Verification:
 - [x] `pnpm build`
 - [x] `pnpm size` — budget OK; `AVLVisualizer.js` and `renderLoop.js` repriced after legitimate growth, and budgets added for `SearchingBars.js`, `SortingBars.js`, `useCanvasPalette.js`, `layout.js` and `useParamSelection.js`
 - [x] `grep` hex count outside `src/theme/` — 0
-- [x] CI run 39781805100 on `efd1c87` — checks, build and the 33-test a11y job (30 axe scans + 3 keyboard flows) all green
+- [x] CI run 39783243026 on `4f3e43a` — checks, build and the 33-test a11y job (30 axe scans + 3 keyboard flows) all green
 
 Still open for a later phase: visual screenshot regression on the 3D scenes, reduced-motion audit beyond the current guards, universal `StepControls` scrubbing, metadata unification (`algorithmData.js` still covers four families), and component smoke tests for 9 of the 11 families.
 
 ### Phase 5 — Docs for strangers
 
-- [ ] `README.md` rewrite
-- [ ] `docs/ARCHITECTURE.md`, `docs/CONTRIBUTING.md`, `docs/adr/`
-- [ ] Legacy plan/tracker docs moved to `docs/archive/`
+#### Documentation set
+
+- [x] `README.md` rewritten around the live app, honest feature coverage, prerequisites, verification commands, the data-flow model, project layout and a direct documentation index
+- [x] `docs/ARCHITECTURE.md` — layer map, dependency rules, Step Trace Contract reference, playback and event bus, registry boundaries, theming, testing/CI, extension table, glossary and known boundaries
+- [x] `docs/CONTRIBUTING.md` — setup, the golden path from generator to registry to page, new-family checklist, enforced rules, testing, accessibility, performance and PR checklist
+- [x] ADR 0002 registry, ADR 0003 incremental TypeScript, ADR 0004 pnpm, ADR 0005 class-based dark mode and ADR 0006 playback engine; ADR 0001 remains the Step Trace Contract record
+- [x] `docs/adr/README.md` index and `docs/adr/TEMPLATE.md` for future decisions
+- [x] `.github/PULL_REQUEST_TEMPLATE.md` with the verification matrix and a docs/ADR checkbox
+- [x] `docs/archive/` index plus the three superseded documents: `improvement_v1.md`, `extreme_ui_ux_proposal.md` and `applied.md`
+- [x] Active `improvement_v2.md` and `execution_tracker.md` stay at the root by design; the archive README explains why the working ledger was not moved
+- [x] `improvement_v2.md` status/decision table updated to reflect phased delivery and the archived v1 path
+- [x] Stale source comments corrected where they contradicted the new docs (family-registry scope, app-registry tab ownership, playback scope, event-bus subscribers)
+
+#### Acceptance
+
+- [x] "Where do I add X?" is one click from the README to `docs/CONTRIBUTING.md` (golden path) or one click to `docs/ARCHITECTURE.md` (extension table), with ADRs one click further
+- [x] No maintained document links to a missing local file (the archived `improvement_v1.md` retains its historical `file://` links and is explicitly marked unmaintained)
+
+#### Verification
+
+- [x] `pnpm exec prettier --check` on the new and rewritten documents — all matched files use Prettier style
+- [x] Relative-link and anchor audit across the maintained Markdown — 13 files, 0 missing targets or anchors
+- [x] `pnpm lint` — 0 errors, 25 pre-existing warnings
+- [x] `pnpm typecheck`
+- [x] `pnpm test` — 311 passing across 43 files
+- [x] `pnpm test:coverage` — 87.36% statements, 89.49% branches, 92.83% functions
+- [x] `GITHUB_PAGES=true pnpm build`
+- [x] `pnpm size` — bundle budget OK; no new budget changes
 
 ### Phase 6 — Continuous hardening
 

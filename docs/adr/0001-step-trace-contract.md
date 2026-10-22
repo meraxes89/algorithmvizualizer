@@ -69,6 +69,14 @@ Three rules follow, and they are enforced by ESLint rather than by review
 - **R5 — one implementation per algorithm.** Every surface reads the same
   registry entry.
 
+> **Implementation note (2026-10-22, Phase 5):** the contract decisions
+> still hold. Two details have moved since this record was written: the
+> visualizer count is now fourteen, and R3 is only partly realised. The
+> sound engine subscribes to the step bus; the confetti burst and the
+> animated favicon are still called directly by `SortingVisualizer`.
+> Moving them onto the bus is recorded in the architecture guide as a
+> known boundary.
+
 ### A step carries the whole view
 
 Each step is a discriminated union of two things:

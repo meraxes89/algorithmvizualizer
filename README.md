@@ -1,219 +1,151 @@
-# ⚡ Algorithm Visualizer — 90–120 FPS Ultra-Performance Engine
+# Algorithm Visualizer
 
-> An interactive, ultra-high-performance computer science algorithm visualization platform. Built from the ground up for **constant 90–120 FPS** frame rates across low-end mobile devices and high-end displays using **React 18**, **Three.js WebGL InstancedMesh**, **HTML5 Canvas 2D Double-Buffering**, **Web Audio API**, and **Tailwind CSS**.
+[![Checks](https://github.com/meraxes89/algorithmvizualizer/actions/workflows/checks.yml/badge.svg)](https://github.com/meraxes89/algorithmvizualizer/actions/workflows/checks.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-<p align="center">
-  <a href="https://gitlab.com/sireenyadav/algorithmvizualizer">
-    <img src="https://img.shields.io/badge/GitLab-Repository-orange?logo=gitlab" alt="GitLab Repository" />
-  </a>
-  <img src="https://img.shields.io/badge/FPS-90--120_Constant-emerald?style=flat&logo=speedtest" alt="90-120 FPS Constant" />
-  <img src="https://img.shields.io/badge/React-18.3-61DAFB?logo=react" alt="React 18" />
-  <img src="https://img.shields.io/badge/Vite-5.4-646CFF?logo=vite" alt="Vite 5" />
-  <img src="https://img.shields.io/badge/Three.js-InstancedMesh-000000?logo=three.js" alt="Three.js WebGL" />
-  <img src="https://img.shields.io/badge/Audio-Web_Audio_API-emerald" alt="Web Audio API" />
-  <img src="https://img.shields.io/badge/TailwindCSS-3.4-38BDF8?logo=tailwindcss" alt="Tailwind CSS" />
-  <img src="https://img.shields.io/badge/License-MIT-green" alt="MIT License" />
-</p>
+Interactive, step-by-step visualizations for the algorithms people learn in a data structures and algorithms course.
 
----
+**[Open the live app](https://meraxes89.github.io/algorithmvizualizer/)** · [Architecture](docs/ARCHITECTURE.md) · [Contributing](docs/CONTRIBUTING.md) · [Decision records](docs/adr/README.md)
 
-## 🌟 Overview
+Algorithm Visualizer lets you watch sorting, searching, pathfinding, graph, tree, recursion, backtracking and dynamic-programming algorithms run one step at a time. Every algorithm visualizer drives its timeline through the same playback engine, so playback controls behave consistently wherever they are shown.
 
-**Algorithm Visualizer** bridges theoretical computer science with jaw-dropping, real-time visualization engineering. Rather than relying on simple DOM-manipulation minimum viable products, this project showcases high-performance graphics programming, custom 2D/3D render engines, polyphonic audio sonification, memory call-stack tracking, and interactive multi-language code execution.
+Under the hood, algorithms are pure generators that emit typed steps. The same step types power the page, comparison mode, the arena and the internal token gallery. That keeps the visual state, the explanation panels and the tests aligned instead of letting them drift apart.
 
-Every single component, animation loop, state subscription, and WebGL shader has been engineered to maintain an unyielding **90–120 FPS** frame rate without degrading visual fidelity or removing features.
+> **Adding an algorithm?** [The contributor guide](docs/CONTRIBUTING.md) walks through the generator, tests, family registry and display entry in order.
 
----
+## What you can explore
 
-## ⚡ Extreme Performance Engineering Architecture
-
-### 🎨 1. HTML5 Canvas 2D Grid Engine (`GridCanvasRenderer.js`)
-* Replaced heavy React DOM `<div>` grid layouts with a custom HTML5 Canvas 2D engine.
-* Uses flat 1D `Uint8Array` memory buffers with bitflag states (`BIT_WALL`, `BIT_VISITED`, `BIT_PATH`, `BIT_START`, `BIT_END`).
-* Employs **dirty-rect double buffering** so only modified grid cells are redrawn on each frame, reducing frame render times from **~16ms to under 0.2ms**.
-
-### 🧊 2. Three.js WebGL `InstancedMesh` Architecture
-* Single-draw-call WebGL pipeline for 3D Sorting and 3D Voxel Skyscraper Pathfinding visualizers.
-* Replaced thousands of individual `THREE.Mesh` allocations with a single `THREE.InstancedMesh`.
-* Dynamically updates instance matrix coordinates (`setMatrixAt`) and instance colors (`setColorAt`) on the GPU, dropping WebGL draw calls from **100+ down to 1**.
-
-### 📊 3. Adaptive Performance Budget Engine (`performanceBudget.js`)
-* Dynamic frame-rate monitoring system evaluating device capability in real-time over sliding 1-second windows.
-* Automatically scales performance tiers (`ULTRA_HIGH` 120 FPS, `HIGH` 90 FPS, `MEDIUM` 60 FPS, `LOW` 30 FPS for low-end mobile devices).
-* Dynamically adjusts DPR pixel ratios, particle density, and canvas resolution scaling on the fly.
-
-### 🚀 4. GPU Hardware-Accelerated Compositor Pipeline
-* **ScaleY Bar Transforms**: Array and sorting visualizers animate heights using `transform: scaleY()` with `transformOrigin: 'bottom'` instead of triggering browser layout recalculations (`height`).
-* **GPU `translate3d()` Cursor Glow**: Replaced full-screen 100vw × 100vh radial gradients with a fixed 400px hardware-accelerated viewport circle.
-* **Layout Thrashing Removal**: Cached `getBoundingClientRect()` and window dimensions inside `mouseenter` and `resize` events to eliminate synchronous DOM layout recalculations inside rAF loops.
-
-### ⚛️ 5. React 18 Component Tree & State Optimization
-* Universal memoization using `React.memo`, `useMemo`, and `useCallback` across all core visualizers, educational panels, and UI controls.
-* Replaced $O(N)$ `.includes()` array lookups with $O(1)$ `Set.has()` structures for active, comparing, swapping, and sorted element indices.
-* Ref-backed event listener binding to eliminate listener recreation churn on every re-render.
-
----
-
-## 🔥 Key Features
-
-### 🌐 3D Spatial WebGL & FPV Drone Camera Mode
-* Real-time 3D bar charts and 3D Voxel Pathfinding grids rendered with **Three.js** using `InstancedMesh` GPU batching.
-* **FPV Drone Fly-Through Camera**: Swoops down to eye-level height (`y = 1.3`) and glides smoothly frame-by-frame along shortest path nodes through 3D building corridors.
-* **Persistent WebGL Context**: Toggling FPV camera mode preserves the WebGL context without destroying or re-instantiating shaders.
-
-### 🧩 Guaranteed Solvable Maze Generator
-* Procedural path carving algorithm that guarantees 100% solvable mazes for Dijkstra, A*, BFS, and DFS every single time.
-
-### 🎵 Web Audio API Sonification Engine
-* Synthesizes dynamic pitch frequencies mapped pentatonically (200Hz – 1200Hz) to array values, comparisons, and swaps.
-* Includes customizable instrument timbres: **Marimba**, **Synth Lead**, **8-Bit Arcade**, and **Pure Sine Wave** with instant mute controls.
-
-### ⚔️ Multi-Category Algorithm Battle Arena
-* Real-time side-by-side execution races comparing algorithms on identical input data.
-* **Sorting Arena**: QuickSort vs. MergeSort vs. HeapSort vs. BubbleSort.
-* **Searching Arena**: Linear Search vs. Binary Search vs. Jump Search.
-* **Pathfinding Arena**: Dijkstra's Search vs. A* Heuristic Search vs. BFS on interactive 2D grid mazes.
-
-### 🧠 Memory Call Stack & Execution Inspector
-* Live Call Stack frame tracker showing active function signatures, parameter values, recursion depth, and stack push/pop transitions in real time.
-
-### 💻 Multi-Language Code Playground
-* Execute custom code in **C++**, **C**, **Java**, **JavaScript**, and **Python**.
-* **Python**: Runs 100% client-side in WebAssembly via **Pyodide**.
-* **C++ / C / Java**: Compiled remotely via **Wandbox** & self-hosted **Piston API** servers.
-
----
-
-## 📚 Algorithm Coverage
-
-| Category | Algorithms Implemented | Visual & Performance Features |
-| :--- | :--- | :--- |
-| **Sorting** | Quick Sort, Merge Sort, Heap Sort, Bubble Sort, Selection Sort, Insertion Sort | 2D/3D InstancedMesh, ScaleY Transforms, Set-Based Lookups, Audio Sonification |
-| **Searching** | Linear Search, Binary Search, Jump Search | Range Trimming, Target Highlighting, Index Trackers, ScaleY Transforms |
-| **Pathfinding** | Dijkstra's Search, A* Search, BFS, DFS | Canvas 2D Engine, 3D Voxel Skyscraper Mode, FPV Drone Cam, Guaranteed Mazes |
-| **Graph Theory** | Prim's MST, Kruskal's MST, Topological Sort, BFS/DFS | Interactive Node-Link Graphs, Edge Weight Highlights, Adjacency Maps |
-| **Trees & Data Structures** | BST, AVL Tree (Rotations), Max/Min Heap, Segment Tree, Trie (Prefix Tree) | Tree Node Balancing, Dynamic Pointer Transitions, Memoized SVG Atoms |
-| **Recursion & Backtracking** | Tower of Hanoi, N-Queens Problem | Disc Movements, Chess Board Placements, Call Stack Frames |
-| **Dynamic Programming** | Fibonacci, 0/1 Knapsack, Longest Common Subsequence (LCS) | Memoization Tables, Grid Cell State Filling, Shallow Row Cloning |
-
----
-
-## 🛠️ Technology Stack
-
-| Category | Technologies |
+| Area | What is inside |
 | :--- | :--- |
-| **Frontend Core** | React 18, React Router v6, JavaScript (ESNext) |
-| **2D & 3D Graphics** | Three.js (WebGL), `InstancedMesh` GPU Batching, HTML5 Canvas 2D Engine |
-| **Performance Engine** | Custom `GridCanvasRenderer.js`, `performanceBudget.js` (Adaptive Budgeting) |
-| **Audio Synthesis** | Web Audio API (Polyphonic Synthesizer) |
-| **Styling & Design** | Tailwind CSS, Lucide React Icons, Framer Motion, Glassmorphism CSS |
-| **Code Execution** | Monaco Editor (`@monaco-editor/react`), Pyodide WASM, Wandbox API |
-| **Deployment & Build** | Vite 5 (esbuild drop console/debugger), pnpm, Vercel SPA Rewrites |
+| **Sorting** | Bubble, Selection, Insertion, Merge, Quick and Heap Sort, with 2D bars and an optional Three.js view |
+| **Searching** | Linear, Binary and Jump Search, including the active range and the element being examined |
+| **Pathfinding** | BFS, DFS, Dijkstra and A* on editable weighted grids, with a 2D canvas and a 3D drone camera |
+| **Graphs** | BFS, DFS, Dijkstra, Bellman-Ford, Floyd-Warshall, Prim, Kruskal and Topological Sort on graphs you build |
+| **Trees** | Traversals, BST operations, AVL rotations, heaps, tries and segment trees |
+| **Recursion and backtracking** | Factorial, Fibonacci, permutations, combination sum, parentheses, subsets, N-Queens, Sudoku, rat-in-a-maze, Knight's Tour and Tower of Hanoi |
+| **Dynamic programming** | 0/1 Knapsack, Longest Common Subsequence and bottom-up Fibonacci |
+| **Tools** | Battle Arena races, a multi-language Playground, and a scored algorithm quiz |
 
----
+The interface includes light and dark themes, keyboard navigation, optional sound sonification and a command palette.
 
-## 📂 Directory Structure
+**Built with:** React 18 and Vite 5, strict TypeScript on the core, Tailwind CSS, Canvas 2D, Three.js, Vitest, fast-check, Playwright and axe.
+
+## Quick start
+
+**Requirements:** Node.js 24 or newer, and pnpm 12 or newer. The exact pnpm version is pinned in `package.json`.
+
+```bash
+git clone https://github.com/meraxes89/algorithmvizualizer.git
+cd algorithmvizualizer
+corepack enable
+pnpm install
+pnpm dev
+```
+
+Open <http://localhost:5173>.
+
+If Corepack is not available on your machine, install pnpm directly:
+
+```bash
+npm install --global pnpm@12
+```
+
+The visualizers do not need API keys. The Playground can run JavaScript and Python in the browser; compiled languages use a configurable remote execution engine, which you can choose in the Playground settings.
+
+## Verify a change
+
+Run the same gates the project uses locally:
+
+```bash
+pnpm lint          # layer boundaries, import cycles, new-file policy and token rules
+pnpm typecheck     # strict TypeScript over the typed surface
+pnpm test          # unit, golden-trace, property and component tests
+pnpm test:coverage # the same suite with the coverage gate
+pnpm build         # production bundle
+pnpm size          # per-chunk bundle budget (run after build)
+```
+
+End-to-end checks use Playwright and axe. They need a production build and a Chromium download:
+
+```bash
+pnpm build
+pnpm exec playwright install chromium
+pnpm e2e
+```
+
+CI runs the route-level accessibility sweep in both themes. There is no exceptions list: if a route is not axe-clean, the job fails.
+
+## How it fits together
 
 ```text
-AlgorithmVizualizer/
-├── public/                     # Static assets and icons
-├── src/
-│   ├── algorithms/             # Pure algorithm generators & step engines
-│   │   ├── sorting/            # Bubble, Quick, Merge, Heap, Selection, Insertion
-│   │   ├── searching/          # Linear, Binary, Jump Search
-│   │   ├── pathfinding/        # Dijkstra, A*, BFS, DFS
-│   │   ├── graph/              # Prim, Kruskal, Topological Sort
-│   │   ├── trees/              # BST, AVL, Heap, Segment Tree, Trie
-│   │   ├── recursion/          # Hanoi, N-Queens
-│   │   └── dp/                 # Fibonacci, Knapsack, LCS
-│   ├── components/             # Reusable UI components & Memoized Atoms
-│   │   ├── 3D/                 # Sorting3DVisualizer & PathFinding3DVisualizer (InstancedMesh)
-│   │   ├── atoms/              # ArrayBar, GridCell, TreeNode, GraphNode, DPTableCell, TrieNode
-│   │   ├── SoundControls.jsx   # Audio sonification toolbar
-│   │   ├── MemoryStackInspector.jsx  # Call stack inspector
-│   │   └── Navbar.jsx          # Header navigation bar
-│   ├── engines/
-│   │   └── GridCanvasRenderer.js  # HTML5 Canvas 2D double-buffered grid engine
-│   ├── pages/                  # Page routes
-│   │   ├── Home.jsx            # Landing page
-│   │   ├── ArenaPage.jsx       # Multi-category battle arena
-│   │   ├── QuizPage.jsx        # Challenge quiz mode
-│   │   ├── PlaygroundPage.jsx  # Multi-language code editor
-│   │   └── SortingPage.jsx     # Detailed sorting visualizer
-│   ├── utils/
-│   │   ├── performanceBudget.js  # Adaptive performance budget engine
-│   │   ├── threeDisposal.js     # WebGL GPU resource disposal helper
-│   │   └── soundEngine.js      # Web Audio API synthesizer
-│   ├── context/
-│   │   └── ThemeContext.jsx    # Dark / Light mode state provider
-│   ├── index.css               # Global CSS & Design System tokens
-│   └── App.jsx                 # Application router & routes
-├── vercel.json                 # Vercel SPA routing rewrites
-├── package.json
-├── pnpm-lock.yaml
-├── vite.config.js              # Vite build configuration with manualChunks code-splitting
-├── execution_tracker.md        # Masterplan progress tracker checklist
-├── improvement_v1.md           # Master architecture improvement plan
-└── README.md
+algorithm generator
+        │  yields typed steps
+        ▼
+     step trace  ──────────────►  tests and golden fixtures
+        │
+        ▼
+   playback engine  ── events ──►  sound engine
+        │
+        ▼
+   current step view  ─────────►  page, comparison mode, token gallery
 ```
 
----
+Four rules keep the system predictable:
 
-## 🚀 Getting Started
+1. **Algorithms are pure.** They are synchronous generators in `src/algorithms/`. They do not import React, touch the DOM, own timers or read browser storage.
+2. **Every step carries the complete view.** Seeking to step 300 is a lookup, not a replay from step 0.
+3. **One engine owns time.** `src/core/playback.ts` decides when a step happens; visualizers only render the step they are given. The Battle Arena advances the same generators on a shared race clock, which is the one deliberate exception.
+4. **Visualizers are presentational.** They render `step.view` and never fold deltas or keep a second copy of the algorithm's state.
 
-### Prerequisites
+The full data flow, layer rules and extension points are in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-Make sure you have **Node.js** (v18+) and **pnpm** installed on your system.
+## Project layout
 
-```bash
-# Check Node version
-node -v
+```text
+src/
+├── algorithms/    Pure generators and the family registries
+├── core/          Step contract, playback engine and typed event bus
+├── registry/      Display-only navigation, routes and algorithm metadata
+├── hooks/         React bindings for playback, URL selection and colours
+├── components/    Visualizers, renderers and shared interface components
+├── pages/         Route-level composition
+├── theme/         Accent inputs and the visualization-token resolver
+├── data/          Long-form algorithm descriptions and example code
+└── index.css      Canonical light and dark design tokens
 
-# Install pnpm globally if not already installed
-npm install -g pnpm
+e2e/               Playwright route scans and keyboard tests
+tools/             ESLint rules and the bundle-size checker
+docs/              Architecture, contribution guide, ADRs and archive
 ```
 
-### Installation
+## Documentation
 
-1. **Clone the Repository:**
+| Document | Read it when |
+| :--- | :--- |
+| [Architecture](docs/ARCHITECTURE.md) | You want to understand the layers, the Step Trace Contract, playback, the registry or the theme system |
+| [Contributing](docs/CONTRIBUTING.md) | You are adding an algorithm, changing a visualizer, fixing accessibility or opening a pull request |
+| [ADR index](docs/adr/README.md) | You want the reasoning behind a structural decision |
+| [Archive](docs/archive/README.md) | You are looking for an earlier plan or design proposal |
 
-```bash
-git clone https://gitlab.com/sireenyadav/algorithmvizualizer.git
-cd algorithmvizualizer
-```
+Maintainers also use [improvement_v2.md](improvement_v2.md) for the phased roadmap and [execution_tracker.md](execution_tracker.md) for the item-level status ledger.
 
-2. **Install Dependencies:**
+## Deployment
 
-```bash
-pnpm install
-```
+The GitHub Pages site is built and deployed automatically from `main`. The workflow runs after the checks pass for the same commit.
 
-3. **Start Development Server:**
+- `pnpm build` builds for a site served at `/`.
+- `GITHUB_PAGES=true pnpm build` builds for the project-page base path used by GitHub Pages.
 
-```bash
-pnpm run dev
-```
+GitHub is the source of truth for branches, pull requests and releases. The [GitLab repository](https://gitlab.com/sireenyadav/algorithmvizualizer) is a read-only mirror.
 
-Open your browser and navigate to `http://localhost:5173`.
+## Contributing
 
-4. **Build for Production:**
+Small, focused pull requests are easiest to review. Start with [CONTRIBUTING.md](docs/CONTRIBUTING.md). It includes the golden path for adding an algorithm, the rules the linter enforces, the testing strategy and the pull-request checklist.
 
-```bash
-pnpm run build
-```
+If you are changing a public behaviour, add or update a test. If you are changing a structural decision, add or update an ADR. The [PR template](.github/PULL_REQUEST_TEMPLATE.md) repeats the short version.
 
----
+## License
 
-## 📜 License
+[MIT](LICENSE) © 2025 Manish Kumar Sah.
 
-This project is open-source and available under the [MIT License](LICENSE).
-
----
-
-<div align="center">
-
-Crafted with extreme engineering & creativity by **[Sireen Yadav](https://gitlab.com/sireenyadav)**
-
-[GitLab Repository](https://gitlab.com/sireenyadav/algorithmvizualizer) · [Report Issue](https://gitlab.com/sireenyadav/algorithmvizualizer/-/issues)
-
-</div>
+Maintained by the Algorithm Visualizer contributors. See the [contributor graph](https://github.com/meraxes89/algorithmvizualizer/graphs/contributors).

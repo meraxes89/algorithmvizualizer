@@ -26,9 +26,10 @@ export type SortingAlgorithm = {
 /**
  * The sorting family.
  *
- * This is the family's own mini-registry. The app-wide registry in
- * `src/registry` derives from these, so adding an algorithm here is all
- * that is needed for it to appear everywhere.
+ * This is the family's own mini-registry. The display-only app-wide
+ * registry in `src/registry` mirrors these ids and names for navigation,
+ * the category grid and the palette; `registry.test.ts` keeps the two in
+ * sync.
  */
 export const sortingAlgorithms: readonly SortingAlgorithm[] = [
   { id: 'bubbleSort', name: 'Bubble Sort', generator: bubbleSort },
