@@ -7,6 +7,8 @@ import {
   runRatInMazeTrace,
   runKnightsTourTrace
 } from '../algorithms/recursion/gridEngine';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 
 /* ------------------------------------------------------------------ */
@@ -19,9 +21,20 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
   
   // Simulation State
   const [trace, setTrace] = useState([]);
-  const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
+
+  const {
+    index: currentStepIndex,
+    isPlaying,
+    play,
+    pause,
+    next,
+    reset: resetPlayback,
+  } = usePlayback(trace, {
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'board',
+    meta: { algorithm: algorithmId },
+  });
   
   // UI Panels
   const [showSettings, setShowSettings] = useState(false);
@@ -70,23 +83,6 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
   }, []);
 
   // Playback Loop
-  useEffect(() => {
-    if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setCurrentStepIndex(prev => {
-          if (prev >= trace.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, speed);
-    } else {
-      clearInterval(timerRef.current);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [isPlaying, speed, trace.length]);
-
   /* ---------- Operations ---------- */
 
   const handleRun = () => {
@@ -95,13 +91,13 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
     
     try {
       if (algorithmId === 'nQueens') {
-        newTrace = runNQueensTrace(parseInt(inputValue, 10) || 4);
+        newTrace = collectSteps(runNQueensTrace(parseInt(inputValue, 10) || 4));
       } else if (algorithmId === 'sudoku') {
-        newTrace = runSudokuTrace(defaultSudoku);
+        newTrace = collectSteps(runSudokuTrace(defaultSudoku));
       } else if (algorithmId === 'ratInMaze') {
-        newTrace = runRatInMazeTrace(defaultMaze);
+        newTrace = collectSteps(runRatInMazeTrace(defaultMaze));
       } else if (algorithmId === 'knightsTour') {
-        newTrace = runKnightsTourTrace(parseInt(inputValue, 10) || 5);
+        newTrace = collectSteps(runKnightsTourTrace(parseInt(inputValue, 10) || 5));
       }
     } catch (e) {
       console.error(e);
@@ -109,30 +105,27 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
     }
 
     setTrace(newTrace);
-    setCurrentStepIndex(0);
-    setIsPlaying(true);
+    play();
   };
 
   const handleReset = () => {
-    setIsPlaying(false);
-    clearInterval(timerRef.current);
+    resetPlayback();
     setTrace([]);
-    setCurrentStepIndex(-1);
   };
 
   const togglePlay = () => {
     if (trace.length === 0) {
       handleRun();
+    } else if (isPlaying) {
+      pause();
     } else {
-      setIsPlaying(!isPlaying);
+      play();
     }
   };
 
   const stepForward = () => {
-    setIsPlaying(false);
-    if (currentStepIndex < trace.length - 1) {
-      setCurrentStepIndex(prev => prev + 1);
-    }
+    pause();
+    next();
   };
 
   /* ---------- Rendering Helpers ---------- */
@@ -140,8 +133,8 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
   const meta = recursionAlgorithmsData[algorithmId] || {};
 
   const renderGrid = () => {
-    if (!currentStep || !currentStep.board) return null;
-    const board = currentStep.board;
+    if (!currentStep || !currentStep.view) return null;
+    const board = currentStep.view.board;
     const n = board.length;
     const m = board[0].length;
 
@@ -173,7 +166,7 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
               if (i % 3 === 2 && i !== 8) cellStyle += " border-b-slate-400 border-b-2";
             } else if (algorithmId === 'ratInMaze') {
               cellContent = cell === 1 ? '🐀' : '';
-              if (currentStep.maze[i][j] === 0) {
+              if (currentStep.view.maze?.[i][j] === 0) {
                 cellStyle = "bg-slate-800 border-slate-700"; // wall
               } else {
                 cellStyle = "bg-white border-slate-200"; // path
@@ -186,10 +179,10 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
             }
 
             if (isFocused) {
-              if (currentStep.type === 'PLACE') cellStyle += " ring-2 ring-blue-500 ring-inset bg-blue-100";
-              else if (currentStep.type === 'TRY') cellStyle += " ring-2 ring-yellow-500 ring-inset bg-yellow-100";
-              else if (currentStep.type === 'BACKTRACK') cellStyle += " ring-2 ring-red-500 ring-inset bg-red-100";
-              else if (currentStep.type === 'INVALID') cellStyle += " ring-2 ring-orange-500 ring-inset bg-orange-100";
+              if (currentStep.t === 'place') cellStyle += " ring-2 ring-blue-500 ring-inset bg-blue-100";
+              else if (currentStep.t === 'try') cellStyle += " ring-2 ring-yellow-500 ring-inset bg-yellow-100";
+              else if (currentStep.t === 'backtrack') cellStyle += " ring-2 ring-red-500 ring-inset bg-red-100";
+              else if (currentStep.t === 'invalid') cellStyle += " ring-2 ring-orange-500 ring-inset bg-orange-100";
             }
 
             return (

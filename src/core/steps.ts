@@ -44,6 +44,7 @@ export type StepFamily =
   | 'trie'
   | 'heap'
   | 'recursion'
+  | 'board'
   | 'dp';
 
 /** Tags every step of a family with that family, so `AnyStep` narrows. */
@@ -378,6 +379,47 @@ export type RecursionStep = OfFamily<'recursion'> &
 export type RecursionGenerator = Generator<RecursionStep, void, undefined>;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Boards
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The complete visual state of a backtracking search over a board.
+ *
+ * A board is not a tree, so it has a view of its own: the board itself,
+ * the call stack, and the cell being worked on.
+ */
+/** A board cell: a mark for most searches, a move number for the tour. */
+export type BoardCell = string | number;
+
+export type BoardView = {
+  /** The board, row by row. */
+  readonly board: readonly (readonly BoardCell[])[];
+  /** The call stack, innermost frame last. */
+  readonly stack: readonly RecursionFrame[];
+  /** The cell being worked on, or null. */
+  readonly active: readonly [number, number] | null;
+  /** The maze, for the searches that walk one. */
+  readonly maze?: readonly (readonly number[])[];
+  /** Everything the search has produced so far. */
+  readonly output: readonly unknown[];
+};
+
+export type BoardStep = OfFamily<'board'> & {
+  /** What happened. */
+  t: 'start' | 'try' | 'place' | 'invalid' | 'backtrack' | 'success' | 'fail' | 'done';
+  /** The complete visual state. */
+  view: BoardView;
+  /** The row being worked on, when the step is about a cell. */
+  row?: number;
+  /** The column being worked on, when the step is about a cell. */
+  col?: number;
+  /** A line of prose about the step. */
+  message?: string;
+};
+
+export type BoardGenerator = Generator<BoardStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Dynamic programming
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -417,6 +459,7 @@ export type StepByFamily = {
   trie: TrieStep;
   heap: HeapStep;
   recursion: RecursionStep;
+  board: BoardStep;
   dp: DPStep;
 };
 
@@ -430,6 +473,7 @@ export type GeneratorByFamily = {
   trie: TrieGenerator;
   heap: HeapGenerator;
   recursion: RecursionGenerator;
+  board: BoardGenerator;
   dp: DPGenerator;
 };
 
