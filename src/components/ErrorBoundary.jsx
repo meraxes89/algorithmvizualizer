@@ -44,7 +44,7 @@ class ErrorBoundary extends React.Component {
     if (reloading) {
       return (
         <div className="min-h-screen flex items-center justify-center">
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 animate-pulse">
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-600 dark:text-slate-400 animate-pulse">
             Updating to the latest version…
           </p>
         </div>
@@ -58,7 +58,7 @@ class ErrorBoundary extends React.Component {
             <h2 className="text-xl font-extrabold text-slate-900 dark:text-white mb-2 tracking-tight">
               Something went wrong.
             </h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed mb-6">
+            <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed mb-6">
               An unexpected error occurred while rendering this view. Reloading usually fixes it.
             </p>
             <button

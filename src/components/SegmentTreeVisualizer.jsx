@@ -162,24 +162,24 @@ const SegmentTreeVisualizer = React.memo(() => {
   };
 
   const getStrokeColor = (node) => {
-    if (activeNode === node.id) return '#fef3c7'; // active yellow
-    if (contributingNodes.includes(node.id)) return '#bbf7d0'; // green
-    if (propagatingNodes.includes(node.id)) return '#bfdbfe'; // light blue
-    if (visitedNodes.includes(node.id)) return '#a7f3d0';
-    return '#6366f1';
+    if (activeNode === node.id) return 'var(--viz-node-active-soft)'; // active yellow
+    if (contributingNodes.includes(node.id)) return 'var(--viz-node-found-soft)'; // green
+    if (propagatingNodes.includes(node.id)) return 'var(--viz-node-default-soft)'; // light blue
+    if (visitedNodes.includes(node.id)) return 'var(--viz-node-visited-soft)';
+    return 'var(--viz-default)';
   };
 
   /* ---------- Log Styling ---------- */
 
   const logColor = (type) => {
     switch (type) {
-      case 'start': return 'text-blue-600';
-      case 'compare': return 'text-amber-600';
-      case 'success': return 'text-emerald-600';
-      case 'error': return 'text-red-600';
-      case 'warn': return 'text-yellow-600';
+      case 'start': return 'text-blue-600 dark:text-blue-300';
+      case 'compare': return 'text-amber-800 dark:text-amber-300';
+      case 'success': return 'text-emerald-800 dark:text-emerald-300';
+      case 'error': return 'text-red-700 dark:text-red-400';
+      case 'warn': return 'text-yellow-700 dark:text-yellow-300';
       case 'info':
-      default: return 'text-slate-600';
+      default: return 'text-slate-600 dark:text-slate-300';
     }
   };
 
@@ -201,26 +201,26 @@ const SegmentTreeVisualizer = React.memo(() => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-t-lg shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">Segment Tree</h2>
-          <p className="text-xs opacity-90 mt-0.5">
+          <p className="text-xs mt-0.5">
             Range Queries &amp; Point Updates
           </p>
         </div>
         <div className="flex items-center gap-4">
-          <select
+          <select aria-label="Segment tree type"
              value={treeType}
              onChange={handleTypeChange}
              disabled={isRunning}
-             className="bg-white/20 border border-white/30 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-white transition-colors"
+             className="bg-black/20 border border-white/30 text-white text-sm rounded-lg px-3 py-1.5 focus:outline-none focus:border-white transition-colors"
           >
             <option value={SEG_TYPES.SUM} className="text-slate-800">Sum Tree</option>
             <option value={SEG_TYPES.MIN} className="text-slate-800">Min Tree</option>
             <option value={SEG_TYPES.MAX} className="text-slate-800">Max Tree</option>
           </select>
           <div className="flex flex-wrap gap-2 text-xs">
-            <div className="bg-white/20 px-2.5 py-1 rounded-full">
+            <div className="bg-black/20 px-2.5 py-1 rounded-full">
               <span className="font-semibold">Query:</span> O(log N)
             </div>
-            <div className="bg-white/20 px-2.5 py-1 rounded-full">
+            <div className="bg-black/20 px-2.5 py-1 rounded-full">
               <span className="font-semibold">Update:</span> O(log N)
             </div>
           </div>
@@ -229,26 +229,26 @@ const SegmentTreeVisualizer = React.memo(() => {
 
       {/* Controls Bar 1: Array Build */}
       <div className="bg-slate-50 px-4 py-2 flex flex-wrap items-center gap-3 border-b border-slate-200">
-        <span className="text-slate-500 text-xs font-semibold uppercase tracking-wider w-16">Array</span>
-        <input
+        <span className="text-slate-600 text-xs font-semibold uppercase tracking-wider w-16">Array</span>
+        <input aria-label="Array values"
           type="text"
           value={arrayInput}
           onChange={(e) => setArrayInput(e.target.value)}
           placeholder="e.g. 5, 2, 9, 1, 7"
           disabled={isRunning}
-          className="flex-1 max-w-sm px-3 py-1.5 bg-white text-slate-800 rounded border border-slate-200 focus:border-indigo-400 focus:outline-none text-sm placeholder-slate-400 disabled:opacity-50 shadow-sm"
+          className="flex-1 max-w-sm px-3 py-1.5 bg-white text-slate-800 rounded border border-slate-200 focus:border-indigo-400 focus:outline-none text-sm placeholder-slate-500 disabled:opacity-50 shadow-sm"
         />
         <button
           onClick={handleBuildUserArray}
           disabled={isRunning}
-          className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-500 text-white px-3 py-1.5 rounded text-sm font-semibold transition-colors"
+          className="bg-indigo-500 hover:bg-indigo-600 disabled:bg-slate-200 disabled:text-slate-600 text-white px-3 py-1.5 rounded text-sm font-semibold transition-colors"
         >
           Build
         </button>
         <button
           onClick={handleRandomArray}
           disabled={isRunning}
-          className="flex items-center gap-1.5 bg-purple-500 hover:bg-purple-600 disabled:bg-slate-200 disabled:text-slate-500 text-white px-3 py-1.5 rounded text-sm font-semibold transition-colors"
+          className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-200 disabled:text-slate-600 text-white px-3 py-1.5 rounded text-sm font-semibold transition-colors"
         >
           <Shuffle size={14} /> Random
         </button>
@@ -260,7 +260,7 @@ const SegmentTreeVisualizer = React.memo(() => {
         {/* Point Update */}
         <div className="flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
           <span className="text-slate-600 text-xs font-semibold px-2 border-r border-slate-200">Point Update</span>
-          <input
+          <input aria-label="Index to update"
             type="number"
             min={0}
             max={baseArray.length - 1}
@@ -268,20 +268,20 @@ const SegmentTreeVisualizer = React.memo(() => {
             onChange={(e) => setUpdateIdx(e.target.value)}
             placeholder="Idx"
             disabled={isRunning}
-            className="w-14 px-2 py-1 bg-slate-50 text-slate-800 rounded border border-slate-200 focus:border-blue-400 focus:outline-none text-sm placeholder-slate-400"
+            className="w-14 px-2 py-1 bg-slate-50 text-slate-800 rounded border border-slate-200 focus:border-blue-400 focus:outline-none text-sm placeholder-slate-500"
           />
-          <input
+          <input aria-label="Value to update"
             type="number"
             value={updateVal}
             onChange={(e) => setUpdateVal(e.target.value)}
             placeholder="Val"
             disabled={isRunning}
-            className="w-16 px-2 py-1 bg-slate-50 text-slate-800 rounded border border-slate-200 focus:border-blue-400 focus:outline-none text-sm placeholder-slate-400"
+            className="w-16 px-2 py-1 bg-slate-50 text-slate-800 rounded border border-slate-200 focus:border-blue-400 focus:outline-none text-sm placeholder-slate-500"
           />
           <button
             onClick={handleUpdate}
             disabled={isRunning || updateIdx === '' || updateVal === ''}
-            className="bg-blue-500 hover:bg-blue-600 disabled:bg-slate-200 disabled:text-slate-500 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-slate-200 disabled:text-slate-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
           >
             Update
           </button>
@@ -290,7 +290,7 @@ const SegmentTreeVisualizer = React.memo(() => {
         {/* Range Query */}
         <div className="flex items-center gap-2 bg-white p-1.5 rounded-lg border border-slate-200 shadow-sm">
           <span className="text-slate-600 text-xs font-semibold px-2 border-r border-slate-200">Range Query</span>
-          <input
+          <input aria-label="Query range start"
             type="number"
             min={0}
             max={baseArray.length - 1}
@@ -298,9 +298,9 @@ const SegmentTreeVisualizer = React.memo(() => {
             onChange={(e) => setQueryL(e.target.value)}
             placeholder="L"
             disabled={isRunning}
-            className="w-14 px-2 py-1 bg-slate-50 text-slate-800 rounded border border-slate-200 focus:border-emerald-400 focus:outline-none text-sm placeholder-slate-400"
+            className="w-14 px-2 py-1 bg-slate-50 text-slate-800 rounded border border-slate-200 focus:border-emerald-400 focus:outline-none text-sm placeholder-slate-500"
           />
-          <input
+          <input aria-label="Query range end"
             type="number"
             min={0}
             max={baseArray.length - 1}
@@ -308,12 +308,12 @@ const SegmentTreeVisualizer = React.memo(() => {
             onChange={(e) => setQueryR(e.target.value)}
             placeholder="R"
             disabled={isRunning}
-            className="w-14 px-2 py-1 bg-slate-50 text-slate-800 rounded border border-slate-200 focus:border-emerald-400 focus:outline-none text-sm placeholder-slate-400"
+            className="w-14 px-2 py-1 bg-slate-50 text-slate-800 rounded border border-slate-200 focus:border-emerald-400 focus:outline-none text-sm placeholder-slate-500"
           />
           <button
             onClick={handleQuery}
             disabled={isRunning || queryL === '' || queryR === ''}
-            className="flex items-center gap-1 bg-emerald-500 hover:bg-emerald-600 disabled:bg-slate-200 disabled:text-slate-500 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
+            className="flex items-center gap-1 bg-emerald-700 hover:bg-emerald-700 disabled:bg-slate-200 disabled:text-slate-600 text-white px-3 py-1 rounded text-sm font-semibold transition-colors"
           >
             <Play size={14} /> Query
           </button>
@@ -368,10 +368,10 @@ const SegmentTreeVisualizer = React.memo(() => {
           
           {/* Base Array Representation */}
           <div className="h-20 border-b border-slate-200 flex flex-col items-center justify-center p-2 bg-white">
-            <div className="text-slate-500 text-[10px] font-semibold mb-1 tracking-wider uppercase">Base Array</div>
+            <div className="text-slate-600 text-[10px] font-semibold mb-1 tracking-wider uppercase">Base Array</div>
             <div className="flex items-center gap-1.5 overflow-x-auto w-full px-4 justify-center">
               {baseArray.length === 0 ? (
-                 <span className="text-slate-400 text-sm">Empty</span>
+                 <span className="text-slate-600 text-sm">Empty</span>
               ) : (
                 baseArray.map((val, idx) => {
                   // Determine if this array element is part of the current operation
@@ -386,7 +386,7 @@ const SegmentTreeVisualizer = React.memo(() => {
                       <div className={`w-10 h-10 flex items-center justify-center border-2 rounded ${isTarget ? 'bg-indigo-100 border-indigo-500 text-indigo-700 scale-110' : 'bg-slate-50 border-slate-200 text-slate-700'} font-mono font-bold transition-all duration-300`}>
                         {val}
                       </div>
-                      <div className="text-slate-400 text-[10px] mt-1">{idx}</div>
+                      <div className="text-slate-600 text-[10px] mt-1">{idx}</div>
                     </div>
                   );
                 })
@@ -397,38 +397,38 @@ const SegmentTreeVisualizer = React.memo(() => {
           {/* SVG Tree */}
           <div 
             className="flex-1 overflow-auto relative p-4"
-            style={{ backgroundColor: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+            style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
           >
              {baseArray.length === 0 ? (
-               <div className="absolute inset-0 flex items-center justify-center text-slate-500 text-lg font-medium select-none">
-                 Enter an array and click <span className="text-indigo-600 mx-1">Build</span>
+               <div className="absolute inset-0 flex items-center justify-center text-slate-600 dark:text-slate-400 text-lg font-medium select-none">
+                 Enter an array and click <span className="text-indigo-700 dark:text-indigo-400 mx-1">Build</span>
                </div>
              ) : (
                 <div style={{ minWidth: treeData.svgWidth || 800, minHeight: treeData.svgHeight || 460 }} className="flex items-center justify-center h-full">
                   <svg viewBox={`0 0 ${treeData.svgWidth || 800} ${treeData.svgHeight || 460}`} preserveAspectRatio="xMidYMid meet" className="w-full h-full">
                     <defs>
                       <filter id="seg-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                      <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.4" />
+                      <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="var(--viz-shadow)" floodOpacity="0.4" />
                     </filter>
                     <radialGradient id="seg-grad-default" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#60a5fa" />
-                      <stop offset="100%" stopColor="#2563eb" />
+                      <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                      <stop offset="100%" stopColor="var(--viz-node-default-to)" />
                     </radialGradient>
                     <radialGradient id="seg-grad-active" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#fcd34d" />
-                      <stop offset="100%" stopColor="#d97706" />
+                      <stop offset="0%" stopColor="var(--viz-node-active-from)" />
+                      <stop offset="100%" stopColor="var(--viz-node-active-to)" />
                     </radialGradient>
                     <radialGradient id="seg-grad-visited" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#34d399" />
-                      <stop offset="100%" stopColor="#059669" />
+                      <stop offset="0%" stopColor="var(--viz-node-visited-from)" />
+                      <stop offset="100%" stopColor="var(--viz-node-visited-to)" />
                     </radialGradient>
                     <radialGradient id="seg-grad-contributing" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#6ee7b7" />
-                      <stop offset="100%" stopColor="#10b981" />
+                      <stop offset="0%" stopColor="var(--viz-node-found-from)" />
+                      <stop offset="100%" stopColor="var(--viz-sorted)" />
                     </radialGradient>
                     <radialGradient id="seg-grad-propagating" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#93c5fd" />
-                      <stop offset="100%" stopColor="#2563eb" />
+                      <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                      <stop offset="100%" stopColor="var(--viz-node-default-to)" />
                     </radialGradient>
                   </defs>
 
@@ -445,7 +445,7 @@ const SegmentTreeVisualizer = React.memo(() => {
                         y1={edge.from.y}
                         x2={edge.to.x}
                         y2={edge.to.y}
-                        stroke={isActivePath ? '#fbbf24' : '#cbd5e1'}
+                        stroke={isActivePath ? 'var(--viz-compare)' : 'var(--viz-edge)'}
                         strokeWidth={isActivePath ? 4 : 2}
                         className="transition-all duration-300"
                       />
@@ -496,7 +496,7 @@ const SegmentTreeVisualizer = React.memo(() => {
                           y={node.y + 1}
                           textAnchor="middle"
                           dy=".38em"
-                          fill="white"
+                          fill="var(--viz-node-text)"
                           fontSize="16"
                           fontWeight="800"
                           fontFamily="monospace"
@@ -512,14 +512,14 @@ const SegmentTreeVisualizer = React.memo(() => {
                            width={40}
                            height={16}
                            rx={4}
-                           fill="#e2e8f0"
+                           fill="var(--viz-surface-2)"
                            opacity={0.9}
                         />
                         <text
                           x={node.x}
                           y={node.y + 35}
                           textAnchor="middle"
-                          fill="#64748b"
+                          fill="var(--viz-ink-muted)"
                           fontSize="10"
                           fontWeight="700"
                           fontFamily="monospace"
@@ -543,14 +543,14 @@ const SegmentTreeVisualizer = React.memo(() => {
               <span className="text-slate-800 font-semibold text-sm">Algorithm Log</span>
               <button
                 onClick={() => setTrace([])}
-                className="ml-auto text-xs text-slate-500 hover:text-slate-800 transition-colors"
+                className="ml-auto text-xs text-slate-600 hover:text-slate-800 transition-colors"
               >
                 Clear
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-xs font-mono">
               {logs.length === 0 && (
-                <p className="text-slate-500 text-center mt-6">
+                <p className="text-slate-600 text-center mt-6">
                   Perform an operation to see step‑by‑step logs here.
                 </p>
               )}
@@ -569,19 +569,19 @@ const SegmentTreeVisualizer = React.memo(() => {
       {/* Legend */}
       <div className="bg-slate-50 p-3 flex flex-wrap gap-4 justify-center text-sm rounded-b-lg border-t border-slate-200">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-active)' }} />
           <span className="text-slate-600">Idle Node</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#facc15' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-path)' }} />
           <span className="text-slate-600">Active Path</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-sorted)' }} />
           <span className="text-slate-600">Contributing (Query)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-active)' }} />
           <span className="text-slate-600">Propagating (Update)</span>
         </div>
       </div>

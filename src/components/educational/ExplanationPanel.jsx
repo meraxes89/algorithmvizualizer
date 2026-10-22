@@ -15,6 +15,7 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
       {/* Toggle Button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
+        aria-label={isExpanded ? 'Collapse explanation' : 'Expand explanation'}
         className="absolute -left-12 top-1/2 -translate-y-1/2 bg-paper-1 dark:bg-paper-1 text-ink p-2 rounded-l-lg shadow-[0_0_15px_rgba(0,0,0,0.1)] hover:bg-paper-0/60 dark:hover:bg-paper-2/60 transition-colors border-y border-l border-line-subtle"
       >
         {isExpanded ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
@@ -24,6 +25,7 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
       {isExpanded && (
         <button
           onClick={onClose}
+          aria-label="Close explanation"
           className="absolute top-4 right-4 text-ink-3 hover:text-ink transition-colors"
         >
           <X size={20} />
@@ -55,7 +57,7 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
           {algorithmInfo.purpose && (
             <div className="mb-6">
               <h4 className="text-lg font-semibold text-ink mb-2 flex items-center gap-2">
-                <Zap size={18} className="text-amber-500" />
+                <Zap size={18} className="text-amber-800 dark:text-amber-300" />
                 Purpose
               </h4>
               <p className="text-ink-2 text-sm leading-relaxed">{algorithmInfo.purpose}</p>
@@ -66,7 +68,7 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
           {algorithmInfo.workingPrinciple && (
             <div className="mb-6">
               <h4 className="text-lg font-semibold text-ink mb-2 flex items-center gap-2">
-                <BookOpen size={18} className="text-emerald-500" />
+                <BookOpen size={18} className="text-emerald-800 dark:text-emerald-300" />
                 Working Principle
               </h4>
               <p className="text-ink-2 text-sm leading-relaxed">{algorithmInfo.workingPrinciple}</p>
@@ -82,7 +84,7 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
             <div className="space-y-2">
               {algorithmInfo.bestCase && (
                 <div className="flex items-center gap-2">
-                  <CheckCircle size={16} className="text-emerald-500" />
+                  <CheckCircle size={16} className="text-emerald-800 dark:text-emerald-300" />
                   <span className="text-ink-2 text-sm">
                     <span className="font-semibold text-ink">Best:</span> {algorithmInfo.bestCase}
                   </span>
@@ -90,7 +92,7 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
               )}
               {algorithmInfo.averageCase && (
                 <div className="flex items-center gap-2">
-                  <Clock size={16} className="text-amber-500" />
+                  <Clock size={16} className="text-amber-800 dark:text-amber-300" />
                   <span className="text-ink-2 text-sm">
                     <span className="font-semibold text-ink">Average:</span> {algorithmInfo.averageCase}
                   </span>
@@ -98,7 +100,7 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
               )}
               {algorithmInfo.worstCase && (
                 <div className="flex items-center gap-2">
-                  <AlertTriangle size={16} className="text-red-500" />
+                  <AlertTriangle size={16} className="text-red-700 dark:text-red-400" />
                   <span className="text-ink-2 text-sm">
                     <span className="font-semibold text-ink">Worst:</span> {algorithmInfo.worstCase}
                   </span>
@@ -138,13 +140,13 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
           {algorithmInfo.advantages && algorithmInfo.advantages.length > 0 && (
             <div className="mb-6">
               <h4 className="text-lg font-semibold text-ink mb-2 flex items-center gap-2">
-                <CheckCircle size={18} className="text-emerald-500" />
+                <CheckCircle size={18} className="text-emerald-800 dark:text-emerald-300" />
                 Advantages
               </h4>
               <ul className="space-y-1">
                 {algorithmInfo.advantages.map((adv, idx) => (
                   <li key={idx} className="text-ink-2 text-sm flex items-start gap-2">
-                    <span className="text-emerald-500 mt-1">✓</span>
+                    <span className="text-emerald-800 dark:text-emerald-300 mt-1">✓</span>
                     {adv}
                   </li>
                 ))}
@@ -156,13 +158,13 @@ const ExplanationPanel = React.memo(({ algorithmInfo, isOpen, onClose }) => {
           {algorithmInfo.disadvantages && algorithmInfo.disadvantages.length > 0 && (
             <div className="mb-6">
               <h4 className="text-lg font-semibold text-ink mb-2 flex items-center gap-2">
-                <AlertTriangle size={18} className="text-red-500" />
+                <AlertTriangle size={18} className="text-red-700 dark:text-red-400" />
                 Disadvantages
               </h4>
               <ul className="space-y-1">
                 {algorithmInfo.disadvantages.map((dis, idx) => (
                   <li key={idx} className="text-ink-2 text-sm flex items-start gap-2">
-                    <span className="text-red-500 mt-1">✗</span>
+                    <span className="text-red-700 dark:text-red-400 mt-1">✗</span>
                     {dis}
                   </li>
                 ))}

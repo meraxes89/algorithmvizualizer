@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { readVizColors } from '../theme/vizTokens';
 
 const KONAMI_CODE = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
 
@@ -10,6 +11,8 @@ const MatrixCanvas = React.memo(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d', { alpha: false });
+    if (!ctx) return;
+
 
     let width = (canvas.width = window.innerWidth);
     let height = (canvas.height = window.innerHeight);
@@ -29,7 +32,7 @@ const MatrixCanvas = React.memo(() => {
       ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(0, 0, width, height);
 
-      ctx.fillStyle = '#10b981';
+      ctx.fillStyle = readVizColors().sorted;
       ctx.font = `${fontSize}px monospace`;
 
       for (let i = 0; i < drops.length; i++) {
@@ -66,6 +69,7 @@ const MatrixCanvas = React.memo(() => {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 z-[10000] pointer-events-none w-full h-full"
+      aria-hidden="true"
     />
   );
 });

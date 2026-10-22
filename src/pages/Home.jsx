@@ -315,7 +315,7 @@ const Home = () => {
                   <f.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[15px] text-ink mb-1.5">{f.title}</h4>
+                  <h3 className="font-semibold text-[15px] text-ink mb-1.5">{f.title}</h3>
                   <p className="text-[13px] text-ink-2 leading-relaxed">{f.desc}</p>
                 </div>
               </div>

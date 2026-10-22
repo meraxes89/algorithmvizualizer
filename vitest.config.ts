@@ -1,7 +1,9 @@
+import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
 import { alias } from './vite.aliases';
 
 export default defineConfig({
+  plugins: [react()],
   resolve: {
     // The same aliases the app build uses, so a test can import a module
     // by the same path the source does.

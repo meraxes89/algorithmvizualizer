@@ -1,3 +1,4 @@
+import { readVizColors } from '../theme/vizTokens';
 let faviconCanvas = null;
 let faviconCtx = null;
 let faviconInterval = null;
@@ -24,13 +25,15 @@ const setFavicon = (url) => {
 };
 
 const drawBars = () => {
+  if (!faviconCtx) return;
+
   faviconCtx.clearRect(0, 0, 32, 32);
   const barWidth = 32 / currentArray.length;
   const maxVal = Math.max(...currentArray);
   
   currentArray.forEach((val, idx) => {
     const height = (val / maxVal) * 28;
-    faviconCtx.fillStyle = '#6366f1';
+    faviconCtx.fillStyle = readVizColors().default;
     faviconCtx.fillRect(idx * barWidth, 32 - height, barWidth - 1, height);
   });
   

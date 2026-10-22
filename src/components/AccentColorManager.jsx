@@ -1,17 +1,7 @@
 import { useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-
-const CATEGORY_ACCENTS = {
-  '/sorting': { light: '#4F46E5', dark: '#818CF8' },
-  '/pathfinding': { light: '#0891B2', dark: '#22D3EE' },
-  '/graph': { light: '#059669', dark: '#34D399' },
-  '/trees': { light: '#B45309', dark: '#FBBF24' },
-  '/recursion': { light: '#7C3AED', dark: '#A78BFA' },
-  '/dp': { light: '#E11D48', dark: '#FB7185' }
-};
-
-const BRAND_DEFAULT = { light: '#BC4B1F', dark: '#E5814B' };
+import { BRAND_DEFAULT, CATEGORY_ACCENTS, ON_ACCENT } from '../theme/accentPalettes';
 
 function hexToRgbTriplet(hex) {
   const n = hex.replace('#', '');
@@ -28,7 +18,7 @@ function shade(hex, amount) {
     const next = amount >= 0 ? v + (255 - v) * amount : v * (1 + amount);
     return Math.max(0, Math.min(255, Math.round(next)));
   });
-  return `#${channels.map((v) => v.toString(16).padStart(2, '0')).join('')}`;
+  return `rgb(${channels.join(', ')})`;
 }
 
 const AccentColorManager = () => {
@@ -50,7 +40,7 @@ const AccentColorManager = () => {
     const hex = entry[mode];
     const rgb = hexToRgbTriplet(hex);
     const strongHex = shade(hex, isDark ? 0.18 : -0.22);
-    const onAccent = isDark ? '#201512' : '#FFF7F0';
+    const onAccent = isDark ? ON_ACCENT.dark : ON_ACCENT.light;
 
     const root = document.documentElement;
     root.style.setProperty('--accent', hex);

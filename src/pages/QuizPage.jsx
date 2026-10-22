@@ -117,7 +117,7 @@ const QuizPage = () => {
       width="narrow"
       stage={false}
       actions={
-        <div className="flex items-center gap-1.5 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-600 dark:text-amber-400">
+        <div className="flex items-center gap-1.5 rounded-xl border border-amber-500/25 bg-amber-500/10 px-3 py-2 text-xs font-bold text-amber-800 dark:text-amber-400">
           <Flame className="w-4 h-4" />
           <span>Streak: {streak}</span>
         </div>
@@ -149,7 +149,7 @@ const QuizPage = () => {
 
               if (selectedOption !== null) {
                 if (isCorrect) {
-                  btnStyle = 'border-emerald-500/60 bg-emerald-500/15 text-emerald-700 dark:text-emerald-300';
+                  btnStyle = 'border-emerald-500/60 bg-emerald-500/15 text-emerald-800 dark:text-emerald-300';
                 } else if (isPicked) {
                   btnStyle = 'border-rose-500/60 bg-rose-500/15 text-rose-700 dark:text-rose-300';
                 }
@@ -163,8 +163,8 @@ const QuizPage = () => {
                   className={`flex w-full items-center justify-between rounded-2xl border p-4 text-left text-sm font-semibold transition-all ${btnStyle}`}
                 >
                   <span>{opt}</span>
-                  {selectedOption !== null && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-                  {selectedOption !== null && isPicked && !isCorrect && <XCircle className="w-5 h-5 text-rose-500" />}
+                  {selectedOption !== null && isCorrect && <CheckCircle2 className="w-5 h-5 text-emerald-800 dark:text-emerald-400" />}
+                  {selectedOption !== null && isPicked && !isCorrect && <XCircle className="w-5 h-5 text-rose-700 dark:text-rose-400" />}
                 </button>
               );
             })}

@@ -8,29 +8,29 @@
    Dark:  midnight espresso
    ============================================ */
 :root {
-  --paper-0: #F6F1E8;
-  --paper-1: #FCFAF4;
-  --paper-2: #FFFFFF;
+  --paper-0: #f6f1e8;
+  --paper-1: #fcfaf4;
+  --paper-2: #ffffff;
   --paper-0-rgb: 246 241 232;
   --paper-1-rgb: 252 250 244;
   --paper-2-rgb: 255 255 255;
 
-  --ink-1: #211B14;
-  --ink-2: #6D6353;
-  --ink-3: #A79C89;
+  --ink-1: #211b14;
+  --ink-2: #6d6353;
+  --ink-3: #746a5a;
   --ink-1-rgb: 33 27 20;
   --ink-2-rgb: 109 99 83;
-  --ink-3-rgb: 167 156 137;
+  --ink-3-rgb: 116 106 90;
 
   --line-subtle: rgba(33, 27, 20, 0.08);
   --line-strong: rgba(33, 27, 20, 0.18);
 
-  --accent: #BC4B1F;
-  --accent-strong: #99390F;
-  --accent-rgb: 188 75 31;
+  --accent: #aa4218;
+  --accent-strong: #99390f;
+  --accent-rgb: 170 66 24;
   --accent-strong-rgb: 153 57 15;
-  --accent-soft: rgba(188, 75, 31, 0.10);
-  --on-accent: #FFF7F0;
+  --accent-soft: rgba(170, 66, 24, 0.1);
+  --on-accent: #fff7f0;
 
   --bg-primary: var(--paper-0);
   --bg-secondary: var(--paper-1);
@@ -53,25 +53,25 @@
 }
 
 .dark {
-  --paper-0: #14110D;
-  --paper-1: #1C1813;
+  --paper-0: #14110d;
+  --paper-1: #1c1813;
   --paper-2: #252019;
   --paper-0-rgb: 20 17 13;
   --paper-1-rgb: 28 24 19;
   --paper-2-rgb: 37 32 25;
 
-  --ink-1: #F1EBDF;
-  --ink-2: #B5AA97;
-  --ink-3: #776E5E;
+  --ink-1: #f1ebdf;
+  --ink-2: #b5aa97;
+  --ink-3: #9a8f7d;
   --ink-1-rgb: 241 235 223;
   --ink-2-rgb: 181 170 151;
-  --ink-3-rgb: 119 110 94;
+  --ink-3-rgb: 154 143 125;
 
   --line-subtle: rgba(241, 235, 223, 0.08);
   --line-strong: rgba(241, 235, 223, 0.17);
 
-  --accent: #E5814B;
-  --accent-strong: #F09A64;
+  --accent: #e5814b;
+  --accent-strong: #f09a64;
   --accent-rgb: 229 129 75;
   --accent-strong-rgb: 240 154 100;
   --accent-soft: rgba(229, 129, 75, 0.13);
@@ -89,12 +89,172 @@
   --accent-indigo: var(--accent);
   --glow-primary: rgba(229, 129, 75, 0.16);
 
-  --mesh-color-1: rgba(229, 129, 75, 0.10);
+  --mesh-color-1: rgba(229, 129, 75, 0.1);
   --mesh-color-2: rgba(190, 132, 40, 0.08);
   --mesh-color-3: rgba(120, 108, 60, 0.07);
   --mesh-color-4: rgba(200, 92, 40, 0.07);
 
   --chromatic-1: rgba(229, 129, 75, 0.45);
+}
+
+/* ============================================
+   VISUALIZATION TOKENS
+   Semantic colours for algorithm state. Components use these instead of
+   hardcoded hexes; canvas and WebGL read them at runtime through
+   src/theme/vizTokens.ts.
+   ============================================ */
+:root {
+  /* Surfaces and structure */
+  --viz-canvas: #f8fafc;
+  --viz-canvas-dot: #cbd5e1;
+  --viz-surface: #ffffff;
+  --viz-surface-2: #e2e8f0;
+  --viz-surface-3: #1e293b;
+  --viz-edge: #cbd5e1;
+  --viz-ink: #334155;
+  --viz-ink-muted: #64748b;
+  --viz-muted: #64748b;
+  --viz-node-text: #ffffff;
+  --viz-on-bright: #1a1612;
+  --viz-node: #475569;
+  --viz-shadow: rgba(0, 0, 0, 0.45);
+  --viz-overlay: rgba(255, 255, 255, 0.85);
+  --viz-grid: #e6ddcf;
+
+  /* State colours */
+  --viz-idle: #94a3b8;
+  --viz-default: #6366f1;
+  --viz-info-text: #1d4ed8;
+  --viz-active: #3b82f6;
+  --viz-compare: #f59e0b;
+  --viz-swap: #f43f5e;
+  --viz-sorted: #10b981;
+  --viz-sorted-strong: #059669;
+  --viz-visited: #38bdf8;
+  --viz-path: #facc15;
+  --viz-pivot: #a855f7;
+  --viz-pivot-strong: #8b5cf6;
+  --viz-warning: #f97316;
+  --viz-danger: #ef4444;
+  --viz-danger-strong: #dc2626;
+  --viz-wall: #334155;
+  --viz-start: #10b981;
+  --viz-end: #f43f5e;
+
+  /* Node gradients and their highlight rings */
+  --viz-node-default-from: #60a5fa;
+  --viz-node-default-to: #2563eb;
+  --viz-node-active-from: #fcd34d;
+  --viz-node-active-to: #d97706;
+  --viz-node-found-from: #6ee7b7;
+  --viz-node-found-to: #10b981;
+  --viz-node-visited-from: #34d399;
+  --viz-node-visited-to: #059669;
+  --viz-node-delete-from: #fca5a5;
+  --viz-node-delete-to: #ef4444;
+  --viz-node-warn-from: #fdba74;
+  --viz-node-warn-to: #ea580c;
+  --viz-node-pivot-from: #c4b5fd;
+  --viz-node-pivot-to: #8b5cf6;
+  --viz-node-default-soft: #c7d2fe;
+  --viz-node-active-soft: #fde68a;
+  --viz-node-found-soft: #bbf7d0;
+  --viz-node-visited-soft: #a7f3d0;
+  --viz-node-delete-soft: #fecaca;
+  --viz-node-pivot-soft: #e9d5ff;
+
+  /* Code viewer */
+  --code-bg: #1e1e1e;
+  --code-bg-chrome: #252526;
+  --code-muted: #858585;
+
+  /* Brand mark */
+  --logo-blue-1: #2563eb;
+  --logo-blue-2: #3b82f6;
+  --logo-blue-3: #1d4ed8;
+  --logo-green-1: #10b981;
+  --logo-green-2: #059669;
+  --logo-cyan-1: #06b6d4;
+  --logo-cyan-2: #0891b2;
+  --logo-line-1: #3b82f6;
+  --logo-line-2: #10b981;
+
+  /* Three.js scenes */
+  --viz-3d-bg: #f8fafc;
+  --viz-3d-grid-center: #a5b4fc;
+  --viz-3d-grid-line: #e2e8f0;
+  --viz-3d-light: #ffffff;
+  --viz-3d-sky: #87ceeb;
+  --viz-3d-ground: #444444;
+  --viz-3d-ground-grid: #cbd5e1;
+  --viz-3d-building: #e2e8f0;
+  --viz-3d-node: #cbd5e1;
+}
+
+.dark {
+  --viz-canvas: #14110d;
+  --viz-canvas-dot: rgba(241, 235, 223, 0.14);
+  --viz-surface: #252019;
+  --viz-surface-2: #3a332a;
+  --viz-surface-3: #0f0d0a;
+  --viz-edge: #4a4238;
+  --viz-ink: #f1ebdf;
+  --viz-ink-muted: #b5aa97;
+  --viz-muted: #94a3b8;
+  --viz-node: #64748b;
+  --viz-shadow: rgba(0, 0, 0, 0.6);
+  --viz-overlay: rgba(255, 255, 255, 0.85);
+  --viz-grid: #4a4238;
+
+  --viz-idle: #776e5e;
+  --viz-default: #818cf8;
+  --viz-info-text: #93c5fd;
+  --viz-active: #60a5fa;
+  --viz-compare: #fbbf24;
+  --viz-swap: #fb7185;
+  --viz-sorted: #34d399;
+  --viz-sorted-strong: #10b981;
+  --viz-visited: #38bdf8;
+  --viz-path: #facc15;
+  --viz-pivot: #a78bfa;
+  --viz-pivot-strong: #8b5cf6;
+  --viz-warning: #fb923c;
+  --viz-danger: #f87171;
+  --viz-danger-strong: #ef4444;
+  --viz-wall: #64748b;
+  --viz-start: #34d399;
+  --viz-end: #fb7185;
+
+  --viz-3d-bg: #000000;
+  --viz-3d-grid-center: #6366f1;
+  --viz-3d-grid-line: #18181b;
+  --viz-3d-light: #ffffff;
+  --viz-3d-sky: #38bdf8;
+  --viz-3d-ground: #1e293b;
+  --viz-3d-ground-grid: #334155;
+  --viz-3d-building: #1e293b;
+  --viz-3d-node: #94a3b8;
+}
+
+/* Skip link: visible only when focused, so keyboard users can bypass the nav. */
+.skip-link {
+  position: fixed;
+  top: -100px;
+  left: 1rem;
+  z-index: 1000;
+  border-radius: 0.75rem;
+  background: var(--ink-1);
+  color: var(--paper-1);
+  padding: 0.75rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 1rem;
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
 
 /* ============================================
@@ -107,25 +267,40 @@
 }
 
 @media (hover: hover) and (pointer: fine) {
-  html, body {
+  html,
+  body {
     cursor: none !important;
   }
 }
 
 body {
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    'Roboto',
+    sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   background: var(--bg-primary);
   color: var(--text-primary);
   overflow-x: hidden;
   min-height: 100vh;
   letter-spacing: -0.01em;
-  transition: background-color 0.3s cubic-bezier(0.23, 1, 0.32, 1), color 0.3s ease;
+  transition:
+    background-color 0.3s cubic-bezier(0.23, 1, 0.32, 1),
+    color 0.3s ease;
 }
 
-h1, h2, h3, h4, h5, h6, .font-heading {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.font-heading {
   font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
   letter-spacing: -0.02em;
   font-weight: 700;
@@ -135,7 +310,11 @@ html.dark {
   color-scheme: dark;
 }
 
-code, kbd, samp, pre, .font-mono {
+code,
+kbd,
+samp,
+pre,
+.font-mono {
   font-family: 'JetBrains Mono', source-code-pro, Menlo, Monaco, Consolas, monospace;
   font-variant-numeric: tabular-nums;
   font-size: 0.9em;
@@ -189,7 +368,6 @@ code, kbd, samp, pre, .font-mono {
    ULTRA-PREMIUM KINETIC ANIMATIONS
    ============================================ */
 
-
 .premium-border-mesh {
   position: absolute;
   inset: -1.5px;
@@ -229,15 +407,33 @@ code, kbd, samp, pre, .font-mono {
 
 /* Micro-Visualizer Animations */
 @keyframes bars-swap {
-  0%, 100% { transform: translateY(0); height: 10px; }
-  50% { transform: translateY(-5px); height: 20px; }
+  0%,
+  100% {
+    transform: translateY(0);
+    height: 10px;
+  }
+  50% {
+    transform: translateY(-5px);
+    height: 20px;
+  }
 }
 
 @keyframes path-solve {
-  0% { left: 0; opacity: 0; }
-  10% { opacity: 1; }
-  90% { left: 100%; opacity: 1; }
-  100% { left: 100%; opacity: 0; }
+  0% {
+    left: 0;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    left: 100%;
+    opacity: 1;
+  }
+  100% {
+    left: 100%;
+    opacity: 0;
+  }
 }
 
 /* ============================================
@@ -247,13 +443,14 @@ code, kbd, samp, pre, .font-mono {
   position: relative;
   background: linear-gradient(180deg, var(--paper-2) 0%, var(--paper-1) 100%);
   border-radius: 20px;
-  box-shadow: 
+  box-shadow:
     0 1px 2px rgba(33, 27, 20, 0.04),
-    0 8px 24px -12px rgba(33, 27, 20, 0.10),
+    0 8px 24px -12px rgba(33, 27, 20, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
-  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1), 
-              box-shadow 0.3s ease,
-              border-color 0.3s ease;
+  transition:
+    transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1),
+    box-shadow 0.3s ease,
+    border-color 0.3s ease;
   overflow: hidden;
   background-clip: padding-box;
   border: 1px solid var(--line-subtle);
@@ -278,9 +475,19 @@ code, kbd, samp, pre, .font-mono {
   inset: 0;
   border-radius: inherit;
   padding: 1px;
-  background: conic-gradient(from 180deg, var(--chromatic-1), rgba(146, 100, 34, 0.18), rgba(93, 84, 42, 0.15), var(--chromatic-1));
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  background: conic-gradient(
+    from 180deg,
+    var(--chromatic-1),
+    rgba(146, 100, 34, 0.18),
+    rgba(93, 84, 42, 0.15),
+    var(--chromatic-1)
+  );
+  -webkit-mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
+  mask:
+    linear-gradient(#fff 0 0) content-box,
+    linear-gradient(#fff 0 0);
   -webkit-mask-composite: xor;
   mask-composite: exclude;
   pointer-events: none;
@@ -290,7 +497,7 @@ code, kbd, samp, pre, .font-mono {
 
 .dark .glass-card {
   background: linear-gradient(180deg, rgba(37, 32, 25, 0.72) 0%, rgba(28, 24, 19, 0.85) 100%);
-  box-shadow: 
+  box-shadow:
     0 10px 40px -10px rgba(0, 0, 0, 0.6),
     inset 0 1px 0 rgba(241, 235, 223, 0.07);
 }
@@ -300,11 +507,17 @@ code, kbd, samp, pre, .font-mono {
 }
 
 .dark .glass-card::before {
-  background: conic-gradient(from 180deg, var(--chromatic-1), rgba(190, 132, 40, 0.35), rgba(200, 92, 40, 0.35), var(--chromatic-1));
+  background: conic-gradient(
+    from 180deg,
+    var(--chromatic-1),
+    rgba(190, 132, 40, 0.35),
+    rgba(200, 92, 40, 0.35),
+    var(--chromatic-1)
+  );
 }
 
 .glass-card:hover {
-  box-shadow: 
+  box-shadow:
     0 2px 4px rgba(33, 27, 20, 0.05),
     0 20px 44px -16px rgba(33, 27, 20, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
@@ -317,7 +530,7 @@ code, kbd, samp, pre, .font-mono {
 }
 
 .dark .glass-card:hover {
-  box-shadow: 
+  box-shadow:
     0 20px 50px -10px rgba(0, 0, 0, 0.7),
     0 0 30px -8px var(--glow-primary),
     inset 0 1px 0 rgba(241, 235, 223, 0.12);
@@ -349,7 +562,11 @@ code, kbd, samp, pre, .font-mono {
   color: var(--paper-0);
   border: 1px solid transparent;
   cursor: pointer;
-  transition: background-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.2s ease;
+  transition:
+    background-color 0.25s ease,
+    color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.2s ease;
   box-shadow: 0 2px 10px rgba(33, 27, 20, 0.12);
 }
 
@@ -357,7 +574,9 @@ code, kbd, samp, pre, .font-mono {
   background: var(--accent);
   color: var(--on-accent);
   transform: translateY(-1px);
-  box-shadow: 0 6px 20px -4px var(--glow-primary), 0 4px 14px -6px rgba(33, 27, 20, 0.25);
+  box-shadow:
+    0 6px 20px -4px var(--glow-primary),
+    0 4px 14px -6px rgba(33, 27, 20, 0.25);
 }
 
 .btn-secondary {
@@ -385,7 +604,7 @@ code, kbd, samp, pre, .font-mono {
 /* ============================================
    CUSTOM SLIDERS & RANGE INPUTS
    ============================================ */
-input[type="range"] {
+input[type='range'] {
   -webkit-appearance: none;
   appearance: none;
   background: transparent;
@@ -393,13 +612,13 @@ input[type="range"] {
   width: 100%;
 }
 
-input[type="range"]::-webkit-slider-track {
+input[type='range']::-webkit-slider-track {
   background: var(--border-glass-hover);
   height: 4px;
   border-radius: 2px;
 }
 
-input[type="range"]::-webkit-slider-thumb {
+input[type='range']::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
   width: 16px;
@@ -409,11 +628,11 @@ input[type="range"]::-webkit-slider-thumb {
   border: 2px solid var(--bg-primary);
   cursor: pointer;
   margin-top: -6px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: transform 0.1s ease;
 }
 
-input[type="range"]::-webkit-slider-thumb:hover {
+input[type='range']::-webkit-slider-thumb:hover {
   transform: scale(1.1);
 }
 
@@ -483,7 +702,6 @@ input[type="range"]::-webkit-slider-thumb:hover {
   color: inherit;
 }
 
-
 /* ============================================
    MOTION DISCIPLINE (REDUCED MOTION + TAB HIDDEN)
    ============================================ */
@@ -512,8 +730,12 @@ html[data-tab-hidden] .animate-pulse {
    PAPER STUDIO — HOMEPAGE MOTION SYSTEM
    ============================================ */
 @keyframes marquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
 }
 
 .animate-marquee {

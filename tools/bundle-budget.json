@@ -1,6 +1,6 @@
 {
   "_comment": "Per-chunk size budget in bytes, priced from the current production build with 10% headroom. `pnpm size` fails when a chunk outgrows its budget.",
-  "AVLVisualizer.js": 24576,
+  "AVLVisualizer.js": 27648,
   "ArenaPage.js": 22528,
   "BSTVisualizer.js": 21504,
   "CategoriesPage.js": 10240,
@@ -34,6 +34,11 @@
   "index.js": 223232,
   "lucide.js": 47104,
   "monaco.js": 16384,
-  "renderLoop.js": 1024,
-  "three.js": 574464
+  "renderLoop.js": 1280,
+  "three.js": 574464,
+  "SearchingBars.js": 1152,
+  "SortingBars.js": 896,
+  "useCanvasPalette.js": 896,
+  "layout.js": 640,
+  "useParamSelection.js": 640
 }

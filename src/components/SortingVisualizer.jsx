@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import { Play, Shuffle, Settings, BookOpen, Code2, FileText, Box, Layers, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { generateRandomArray, SPEED_PRESETS, COLORS } from '../utils/animationHelpers';
+import { generateRandomArray, SPEED_PRESETS } from '../utils/animationHelpers';
 import StepControls from './educational/StepControls';
 import ExplanationPanel from './educational/ExplanationPanel';
 const CodeViewer = lazy(() => import('./educational/CodeViewer'));
@@ -16,6 +16,7 @@ import { useGesture } from '@use-gesture/react';
 import { usePlayback } from '../hooks/usePlayback';
 import { collectSteps } from '../core/playback';
 import { SortingBars } from './visualizers/sorting/SortingBars';
+import { viz } from '../theme/vizTokens';
 
 // A stable empty list, so the derived index lists do not change identity
 // on every render.
@@ -23,10 +24,10 @@ const EMPTY_INDICES = [];
 
 // The colours the bars are painted with.
 const SORT_COLORS = {
-  default: COLORS.DEFAULT || '#a5b4fc',
-  comparing: COLORS.COMPARING || '#f472b6',
-  swapping: COLORS.SWAPPING || '#f43f5e',
-  sorted: COLORS.SORTED || '#fb923c',
+  default: viz.idle,
+  comparing: viz.compare,
+  swapping: viz.swap,
+  sorted: viz.sorted,
 };
 
 const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource = 'sorting' }) => {
@@ -189,7 +190,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource
             <span>Size:</span>
             <span className="text-accent">{array.length}</span>
           </div>
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-800/50 text-amber-700 dark:text-amber-300 text-xs font-mono font-bold">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200/50 dark:border-amber-800/50 text-amber-800 dark:text-amber-300 text-xs font-mono font-bold">
             <span>Comparing:</span>
             <span className="text-amber-900 dark:text-amber-100">{comparingIndices.length}</span>
           </div>
@@ -266,7 +267,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource
               <label className="text-ink text-[11px] font-bold mb-2 flex justify-between">
                 Array Size <span className="text-accent">{arraySize}</span>
               </label>
-              <input
+              <input aria-label="Array size"
                 type="range"
                 min="10"
                 max="100"
@@ -306,19 +307,19 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource
         {/* Compact Horizontal Legend Dock */}
         <div className="pointer-events-auto flex items-center gap-2.5 sm:gap-3 bg-paper-1/90 dark:bg-paper-0/90 backdrop-blur-xl border border-line-subtle px-3 sm:px-4 py-1 rounded-full shadow-lg text-[10px] sm:text-[11px] font-bold text-ink-2 overflow-x-auto max-w-full scrollbar-hide">
           <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.DEFAULT || '#94a3b8' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: SORT_COLORS.default }}></div>
             <span className="uppercase tracking-wider">Unsorted</span>
           </div>
           <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.COMPARING || '#fbbf24' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: SORT_COLORS.comparing }}></div>
             <span className="uppercase tracking-wider">Comparing</span>
           </div>
           <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.SWAPPING || '#f43f5e' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: SORT_COLORS.swapping }}></div>
             <span className="uppercase tracking-wider">Swapping</span>
           </div>
           <div className="flex items-center gap-1.5 whitespace-nowrap">
-            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS.SORTED || '#34d399' }}></div>
+            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: SORT_COLORS.sorted }}></div>
             <span className="uppercase tracking-wider">Sorted</span>
           </div>
         </div>
@@ -351,11 +352,11 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource
               title="Toggle 3D Mode"
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
                 is3DMode
-                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
+                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
                   : 'bg-transparent border-transparent text-ink-3 hover:bg-paper-2/70 hover:text-ink'
               }`}
             >
-              <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
+              <Box size={15} className={is3DMode ? "text-cyan-700 dark:text-cyan-400" : ""} /> {is3DMode ? '3D' : '2D'}
             </button>
 
             <SoundControls className="scale-90" />
@@ -413,7 +414,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource
         <div className="absolute bottom-28 right-4 sm:right-6 h-[60%] w-[90%] sm:w-[400px] z-40">
           <div className="w-full h-full bg-paper-1/95 dark:bg-paper-0/95 border border-line-subtle shadow-2xl rounded-2xl overflow-hidden relative">
             <div className="absolute top-2 right-2 z-50">
-              <button onClick={() => setShowCodeViewer(false)} className="bg-paper-0 dark:bg-paper-2/70 text-ink-3 hover:text-ink p-1.5 rounded-full"><BookOpen size={14} /></button>
+              <button onClick={() => setShowCodeViewer(false)} aria-label="Close code viewer" className="bg-paper-0 dark:bg-paper-2/70 text-ink-3 hover:text-ink p-1.5 rounded-full"><BookOpen size={14} /></button>
             </div>
             <Suspense fallback={<div className="flex h-full items-center justify-center text-xs font-semibold text-ink-3">Loading source…</div>}>
               <CodeViewer

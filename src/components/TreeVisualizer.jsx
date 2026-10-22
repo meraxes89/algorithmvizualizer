@@ -90,7 +90,7 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       <div className="bg-white border-b border-slate-200 px-6 py-5 flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-extrabold text-slate-900 tracking-tight">{algorithmInfo.name}</h2>
-          <p className="text-[13px] text-slate-500 leading-relaxed mt-0.5">{algorithmInfo.description}</p>
+          <p className="text-[13px] text-slate-600 leading-relaxed mt-0.5">{algorithmInfo.description}</p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           <div className="bg-blue-50 text-blue-700 px-2.5 py-1 rounded-md font-medium border border-blue-100">
@@ -178,7 +178,7 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
           <defs>
             {/* Drop shadow filter for nodes */}
             <filter id="node-shadow" x="-30%" y="-30%" width="160%" height="160%">
-              <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#94a3b8" floodOpacity="0.3" />
+              <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="var(--viz-muted)" floodOpacity="0.3" />
             </filter>
             {/* Glow filter for active node */}
             <filter id="node-glow" x="-40%" y="-40%" width="180%" height="180%">
@@ -190,16 +190,16 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
             </filter>
             {/* Gradient fills */}
             <radialGradient id="grad-default" cx="35%" cy="30%" r="65%">
-              <stop offset="0%" stopColor="#60a5fa" />
-              <stop offset="100%" stopColor="#2563eb" />
+              <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+              <stop offset="100%" stopColor="var(--viz-node-default-to)" />
             </radialGradient>
             <radialGradient id="grad-visited" cx="35%" cy="30%" r="65%">
-              <stop offset="0%" stopColor="#34d399" />
-              <stop offset="100%" stopColor="#059669" />
+              <stop offset="0%" stopColor="var(--viz-node-visited-from)" />
+              <stop offset="100%" stopColor="var(--viz-node-visited-to)" />
             </radialGradient>
             <radialGradient id="grad-active" cx="35%" cy="30%" r="65%">
-              <stop offset="0%" stopColor="#fcd34d" />
-              <stop offset="100%" stopColor="#d97706" />
+              <stop offset="0%" stopColor="var(--viz-node-active-from)" />
+              <stop offset="100%" stopColor="var(--viz-node-active-to)" />
             </radialGradient>
           </defs>
 
@@ -211,7 +211,7 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
               y1={edge.from.y}
               x2={edge.to.x}
               y2={edge.to.y}
-              stroke="#cbd5e1"
+              stroke="var(--viz-edge)"
               strokeWidth="3"
               strokeLinecap="round"
             />
@@ -222,7 +222,7 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
             const isVisited = visitedNodes.includes(node.id);
             const isActive  = activeNode === node.id;
             const gradId    = isActive ? 'grad-active' : isVisited ? 'grad-visited' : 'grad-default';
-            const strokeClr = isActive ? '#fef3c7' : isVisited ? '#a7f3d0' : '#bfdbfe';
+            const strokeClr = isActive ? 'var(--viz-node-active-soft)' : isVisited ? 'var(--viz-node-visited-soft)' : 'var(--viz-node-default-soft)';
 
             return (
               <g
@@ -259,7 +259,7 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
                   y={node.y}
                   textAnchor="middle"
                   dy=".38em"
-                  fill="white"
+                  fill="var(--viz-node-text)"
                   fontSize="22"
                   fontWeight="800"
                   fontFamily="monospace"
@@ -276,15 +276,15 @@ const TreeVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
       {/* Legend */}
       <div className="bg-slate-50 border-t border-slate-200 px-6 py-4 flex flex-wrap gap-6 justify-center text-[12px] font-medium text-slate-600 rounded-b-lg">
         <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm shadow-sm" style={{ backgroundColor: '#3b82f6' }}></div>
+          <div className="w-3.5 h-3.5 rounded-sm shadow-sm" style={{ backgroundColor: 'var(--viz-active)' }}></div>
           <span>Unvisited</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm shadow-sm" style={{ backgroundColor: '#f59e0b' }}></div>
+          <div className="w-3.5 h-3.5 rounded-sm shadow-sm" style={{ backgroundColor: 'var(--viz-compare)' }}></div>
           <span>Processing</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3.5 h-3.5 rounded-sm shadow-sm" style={{ backgroundColor: '#10b981' }}></div>
+          <div className="w-3.5 h-3.5 rounded-sm shadow-sm" style={{ backgroundColor: 'var(--viz-sorted)' }}></div>
           <span>Visited</span>
         </div>
       </div>

@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useMemo } from 'react';
 import * as THREE from 'three';
 import { ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useVizColors } from '../../hooks/useVizColors';
 import { disposeScene } from '../../utils/threeDisposal';
 import { createVisibilityRenderLoop } from '../../utils/renderLoop';
 
@@ -10,6 +11,7 @@ const tempColor = new THREE.Color();
 
 const Sorting3DVisualizer = React.memo(({ array = [], comparing = [], swapped = [], pivot = null }) => {
   const { isDark } = useTheme();
+  const colors = useVizColors();
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
   const cameraRef = useRef(null);
@@ -65,15 +67,15 @@ const Sorting3DVisualizer = React.memo(({ array = [], comparing = [], swapped = 
 
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, isDark ? 1.2 : 1.5);
+    const ambientLight = new THREE.AmbientLight(colors.threeLight, isDark ? 1.2 : 1.5);
     scene.add(ambientLight);
 
-    const mainLight = new THREE.DirectionalLight(0x38bdf8, 1.2);
+    const mainLight = new THREE.DirectionalLight(colors.threeSky, 1.2);
     mainLight.position.set(25, 45, 25);
     scene.add(mainLight);
 
-    const gridCenterColor = isDark ? 0x6366f1 : 0xa5b4fc;
-    const gridLineColor = isDark ? 0x18181b : 0xe2e8f0;
+    const gridCenterColor = colors.threeGridCenter;
+    const gridLineColor = colors.threeGridLine;
     const gridHelper = new THREE.GridHelper(120, 40, gridCenterColor, gridLineColor);
     gridHelper.position.y = 0;
     scene.add(gridHelper);
@@ -127,7 +129,7 @@ const Sorting3DVisualizer = React.memo(({ array = [], comparing = [], swapped = 
       }
       renderer.dispose();
     };
-  }, [isDark]);
+  }, [isDark, colors]);
 
   // Update InstancedMesh instances instead of destroying/creating Meshes!
   useEffect(() => {
@@ -157,20 +159,20 @@ const Sorting3DVisualizer = React.memo(({ array = [], comparing = [], swapped = 
       instancedMesh.setMatrixAt(idx, dummy.matrix);
 
       if (swappedSet.has(idx)) {
-        tempColor.set('#f43f5e'); // Swapping rose
+        tempColor.set(colors.swap);
       } else if (comparingSet.has(idx)) {
-        tempColor.set('#f59e0b'); // Comparing amber
+        tempColor.set(colors.compare);
       } else if (idx === pivot) {
-        tempColor.set('#a855f7'); // Pivot purple
+        tempColor.set(colors.pivot);
       } else {
-        tempColor.set(isDark ? '#6366f1' : '#3b82f6'); // Default indigo/blue
+        tempColor.set(colors.default);
       }
       instancedMesh.setColorAt(idx, tempColor);
     });
 
     instancedMesh.instanceMatrix.needsUpdate = true;
     if (instancedMesh.instanceColor) instancedMesh.instanceColor.needsUpdate = true;
-  }, [array, comparingSet, swappedSet, pivot, isDark]);
+  }, [array, comparingSet, swappedSet, pivot, colors]);
 
   return (
     <div className="relative w-full h-full min-h-[400px]">

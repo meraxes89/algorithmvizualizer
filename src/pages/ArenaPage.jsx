@@ -3,7 +3,6 @@ import { Play, Pause, RotateCcw, Swords, Trophy, CheckCircle2, Search as SearchI
 import SoundControls from '../components/SoundControls';
 import { soundEngine } from '../utils/soundEngine';
 import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
-import { useTheme } from '../context/ThemeContext';
 import RaceChart from '../components/RaceChart';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '../components/Toast';
@@ -12,6 +11,7 @@ import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { sortingAlgorithms } from '../algorithms/sorting';
 import { searchingAlgorithms } from '../algorithms/searching';
 import { pathfindingAlgorithms } from '../algorithms/pathfinding';
+import { viz } from '../theme/vizTokens';
 
 const RACE_HISTORY_CAP = 300;
 const GRID_ROWS = 8;
@@ -94,12 +94,12 @@ const RACE_START = { row: 1, col: 1 };
 const RACE_END = { row: GRID_ROWS - 2, col: GRID_COLS - 2 };
 
 const strokeColorFor = (color = '') =>
-  color.includes('blue') || color.includes('indigo') ? '#6366f1' :
-  color.includes('purple') ? '#a855f7' :
-  color.includes('emerald') ? '#10b981' :
-  color.includes('amber') || color.includes('orange') ? '#f59e0b' :
-  color.includes('cyan') ? '#06b6d4' :
-  color.includes('rose') ? '#f43f5e' : '#94a3b8';
+  color.includes('blue') || color.includes('indigo') ? viz.default :
+  color.includes('purple') ? viz.pivot :
+  color.includes('emerald') ? viz.sorted :
+  color.includes('amber') || color.includes('orange') ? viz.compare :
+  color.includes('cyan') ? viz.visited :
+  color.includes('rose') ? viz.swap : viz.muted;
 
 /**
  * Fold a contract step into the arena's runner state.
@@ -144,7 +144,6 @@ const applyRaceStep = (runner, step) => {
 };
 
 const ArenaPage = () => {
-  const { isDark } = useTheme();
   const [activeCategory, setActiveCategory] = useState('sorting'); // 'sorting' | 'searching' | 'pathfinding'
   const [arraySize, setArraySize] = useState(30);
   const [speed, setSpeed] = useState(40);
@@ -399,7 +398,7 @@ const ArenaPage = () => {
           {activeCategory !== 'pathfinding' && (
             <div className="flex items-center gap-3">
               <span className="w-24 text-xs font-semibold text-ink-2">Data Size: {arraySize}</span>
-              <input
+              <input aria-label="Data size"
                 type="range"
                 min="15"
                 max="50"
@@ -413,7 +412,7 @@ const ArenaPage = () => {
 
           <div className="flex items-center gap-3">
             <span className="w-24 text-xs font-semibold text-ink-2">Speed: {speed}%</span>
-            <input
+            <input aria-label="Speed"
               type="range"
               min="1"
               max="95"
@@ -430,8 +429,8 @@ const ArenaPage = () => {
           )}
 
           {winner && (
-            <div className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
-              <Trophy className="w-4 h-4 text-amber-500" /> Winner: {winner}
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-bold text-amber-800 dark:text-amber-400">
+              <Trophy className="w-4 h-4 text-amber-800 dark:text-amber-400" /> Winner: {winner}
             </div>
           )}
         </div>
@@ -458,14 +457,14 @@ const ArenaPage = () => {
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${algInfo.color}`} />
-                      <h3 className="text-sm font-bold text-ink">{algInfo.name}</h3>
+                      <h2 className="text-sm font-bold text-ink">{algInfo.name}</h2>
                       <span className="rounded-full border border-line-subtle bg-paper-1 px-2 py-0.5 font-mono text-[10px] text-ink-3">
                         {algInfo.complexity}
                       </span>
                     </div>
 
                     {runner.finished && (
-                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-400">
                         <CheckCircle2 className="w-3 h-3" /> Finished
                       </span>
                     )}
@@ -586,14 +585,14 @@ const ArenaPage = () => {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="glass-card flex h-[300px] flex-col p-5 lg:col-span-2">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
+            <h2 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
               <BarChart2 className="w-4 h-4 text-accent" />
               Live Operations Race
-            </h3>
+            </h2>
             <div className="min-h-0 w-full flex-1">
               <RaceChart
                 history={raceHistory}
-                gridColor={isDark ? '#4a4238' : '#e6ddcf'}
+                gridColor={viz.grid}
                 series={Object.entries(getActiveDict()).map(([key, algInfo]) => ({
                   key,
                   name: algInfo.name,
@@ -604,7 +603,7 @@ const ArenaPage = () => {
           </div>
 
           <div className="glass-card flex h-[300px] flex-col bg-accent-soft p-5">
-            <h3 className="mb-2 text-sm font-bold text-ink">Live Commentary</h3>
+            <h2 className="mb-2 text-sm font-bold text-ink">Live Commentary</h2>
             <div className="flex flex-1 flex-col items-center justify-center text-center">
               <motion.p
                 key={commentary}

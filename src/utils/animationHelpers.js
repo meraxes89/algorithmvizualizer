@@ -40,20 +40,6 @@ export const SPEED_PRESETS = {
   INSTANT: 1
 };
 
-// Color schemes for visualizations
-export const COLORS = {
-  DEFAULT: '#94a3b8',      // Metallic Platinum Silver
-  COMPARING: '#fbbf24',    // Electric Sunburst Gold
-  SWAPPING: '#f43f5e',     // Laser Crimson Rose
-  SORTED: '#34d399',       // Mint Emerald Complete
-  PIVOT: '#a855f7',        // Plasma Purple
-  VISITED: '#38bdf8',      // Vibrant Sky Cyan
-  PATH: '#facc15',         // Gold Path
-  WALL: '#334155',         // Slate Gray
-  START: '#34d399',        // Emerald Start
-  END: '#f43f5e',          // Rose End
-};
-
 // Create initial grid for pathfinding
 export const createInitialGrid = (rows = 20, cols = 50) => {
   const grid = [];

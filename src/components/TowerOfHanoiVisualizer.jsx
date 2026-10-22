@@ -126,7 +126,7 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
         </div>
 
         {/* Peg Label */}
-        <div className="absolute -bottom-8 text-slate-500 dark:text-slate-400 font-bold text-sm">Peg {pegName}</div>
+        <div className="absolute -bottom-8 text-slate-600 dark:text-slate-400 font-bold text-sm">Peg {pegName}</div>
       </div>
     );
   };
@@ -151,15 +151,15 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-t-lg shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">{meta.name || "Tower of Hanoi"}</h2>
-          <p className="text-xs opacity-90 mt-0.5">
+          <p className="text-xs mt-0.5">
             Visualize the classic recursive puzzle
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Time:</span> {meta.complexities?.time}
           </div>
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Space:</span> {meta.complexities?.space}
           </div>
         </div>
@@ -170,7 +170,7 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
         
         <div className="flex items-center gap-2 bg-white dark:bg-slate-700 p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
           <span className="text-slate-600 dark:text-slate-300 text-xs font-semibold px-2 border-r border-slate-200 dark:border-slate-600">Disks</span>
-          <input
+          <input aria-label="Number of disks"
             type="number"
             min="1"
             max="8"
@@ -191,7 +191,7 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
 
         <button
           onClick={togglePlay}
-          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
         >
           {isPlaying ? <Pause size={14} /> : <Play size={14} />}
           {isPlaying ? 'Pause' : 'Play'}
@@ -200,7 +200,7 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
         <button
           onClick={stepForward}
           disabled={isPlaying || currentStepIndex >= trace.length - 1}
-          className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
         >
           <FastForward size={14} /> Step
         </button>
@@ -244,11 +244,11 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
         {/* Puzzle View */}
         <div 
           className="flex-1 flex flex-col items-center justify-center relative p-4 overflow-auto custom-scrollbar dark:bg-slate-900"
-          style={{ backgroundColor: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+          style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >
           {trace.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-500 dark:text-slate-400 text-lg font-medium select-none">
-              Click <span className="text-blue-600 mx-1">Run</span> to visualize Tower of Hanoi
+            <div className="absolute inset-0 flex items-center justify-center text-slate-600 dark:text-slate-400 text-lg font-medium select-none">
+              Click <span className="text-blue-600 dark:text-blue-400 mx-1">Run</span> to visualize Tower of Hanoi
             </div>
           ) : (
             renderPuzzle()

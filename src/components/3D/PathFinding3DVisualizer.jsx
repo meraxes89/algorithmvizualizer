@@ -2,11 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import * as THREE from 'three';
 import { Box, Camera, Video, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useTheme } from '../../context/ThemeContext';
+import { useVizColors } from '../../hooks/useVizColors';
 import { disposeScene } from '../../utils/threeDisposal';
 import { createVisibilityRenderLoop } from '../../utils/renderLoop';
 
 const PathFinding3DVisualizer = ({ grid = [] }) => {
   const { isDark } = useTheme();
+  const colors = useVizColors();
   const [isFPV, setIsFPV] = useState(true);
   const mountRef = useRef(null);
   const sceneRef = useRef(null);
@@ -164,8 +166,8 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     const height = container.clientHeight || 480;
 
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(isDark ? 0x000000 : 0xf8fafc);
-    if (isDark) scene.fog = new THREE.FogExp2(0x000000, 0.012);
+    scene.background = new THREE.Color(colors.threeBg);
+    if (isDark) scene.fog = new THREE.FogExp2(colors.threeBg, 0.012);
     sceneRef.current = scene;
 
     const camera = new THREE.PerspectiveCamera(65, width / height, 0.1, 500);
@@ -196,10 +198,10 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
 
     container.appendChild(renderer.domElement);
 
-    const ambientLight = new THREE.AmbientLight(0xffffff, isDark ? 1.0 : 1.2);
+    const ambientLight = new THREE.AmbientLight(colors.threeLight, isDark ? 1.0 : 1.2);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, isDark ? 1.6 : 1.3);
+    const dirLight = new THREE.DirectionalLight(colors.threeLight, isDark ? 1.6 : 1.3);
     dirLight.position.set(25, 50, 25);
     dirLight.castShadow = !lowTier;
     if (!lowTier) {
@@ -209,16 +211,16 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     scene.add(dirLight);
 
     const hemiLight = new THREE.HemisphereLight(
-      isDark ? 0x38bdf8 : 0x87ceeb,
-      isDark ? 0x1e293b : 0x444444,
+      colors.threeSky,
+      colors.threeGround,
       0.6
     );
     scene.add(hemiLight);
 
     const gridHelper = new THREE.GridHelper(
       60, 30,
-      isDark ? 0x334155 : 0xcbd5e1,
-      isDark ? 0x1e293b : 0xe2e8f0
+      colors.threeGroundGrid,
+      colors.threeBuilding
     );
     gridHelper.position.y = -0.01;
     scene.add(gridHelper);
@@ -229,7 +231,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     const boxGeo = new THREE.BoxGeometry(tileSize * 0.88, 1, tileSize * 0.88);
 
     const glassMat = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x94a3b8 : 0xcbd5e1,
+      color: colors.threeNode,
       transparent: true,
       opacity: 0.35,
       roughness: 0.2,
@@ -238,16 +240,16 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     });
 
     const visitedMat = new THREE.MeshStandardMaterial({
-      color: isDark ? 0x38bdf8 : 0x06b6d4,
-      emissive: isDark ? 0x0ea5e9 : 0x06b6d4,
+      color: colors.visited,
+      emissive: colors.visited,
       emissiveIntensity: 0.9,
       roughness: 0.3,
       metalness: 0.2,
     });
 
     const pathMat = new THREE.MeshStandardMaterial({
-      color: 0xfbbf24,
-      emissive: 0xf59e0b,
+      color: colors.path,
+      emissive: colors.compare,
       emissiveIntensity: 1.2,
       roughness: 0.2,
       metalness: 0.3,
@@ -434,7 +436,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
       pathMat.dispose();
       groundMat.dispose();
     };
-  }, [isDark, grid.length]); 
+  }, [isDark, colors, grid.length]);
 
   // Fast Instanced Mesh Updates (Synchronized Yellow Path Reveal with Helicopter Progress)
   useEffect(() => {
@@ -465,7 +467,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
           dummy.scale.set(1, h, 1);
           dummy.updateMatrix();
           wall.setMatrixAt(wI, dummy.matrix);
-          col.setHex(isDark ? 0x94a3b8 : 0xcbd5e1);
+          col.set(colors.threeNode);
           wall.setColorAt(wI, col);
           wI++;
         } else if (node.isStart) {
@@ -473,7 +475,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
           dummy.scale.set(1, 4.0, 1);
           dummy.updateMatrix();
           path.setMatrixAt(pI, dummy.matrix);
-          col.setHex(0x10b981);
+          col.set(colors.start);
           path.setColorAt(pI, col);
           pI++;
         } else if (node.isEnd) {
@@ -481,7 +483,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
           dummy.scale.set(1, 4.0, 1);
           dummy.updateMatrix();
           path.setMatrixAt(pI, dummy.matrix);
-          col.setHex(0xf43f5e);
+          col.set(colors.end);
           path.setColorAt(pI, col);
           pI++;
         } else if (node.isPath) {
@@ -489,7 +491,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
           dummy.scale.set(1, 2.2, 1);
           dummy.updateMatrix();
           path.setMatrixAt(pI, dummy.matrix);
-          col.setHex(0xfbbf24);
+          col.set(colors.path);
           path.setColorAt(pI, col);
           pI++;
         } else if (node.isVisited) {
@@ -497,7 +499,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
           dummy.scale.set(1, 1.5, 1);
           dummy.updateMatrix();
           visited.setMatrixAt(vI, dummy.matrix);
-          col.setHex(isDark ? 0x38bdf8 : 0x06b6d4);
+          col.set(colors.visited);
           visited.setColorAt(vI, col);
           vI++;
         } else {
@@ -505,7 +507,7 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
           dummy.scale.set(1, 0.05, 1);
           dummy.updateMatrix();
           ground.setMatrixAt(gI, dummy.matrix);
-          col.setHex(isDark ? 0x1e293b : 0xf1f5f9);
+          col.set(colors.threeBuilding);
           ground.setColorAt(gI, col);
           gI++;
         }
@@ -529,14 +531,14 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
     ground.instanceMatrix.needsUpdate = true;
     if (ground.instanceColor) ground.instanceColor.needsUpdate = true;
 
-  }, [grid, isDark]);
+  }, [grid, colors]);
 
   return (
     <div className="relative w-full h-[480px] rounded-2xl overflow-hidden border border-slate-200 dark:border-zinc-800/80 bg-slate-50 dark:bg-black shadow-sm transition-colors duration-200">
       {/* Overlay Badge & FPV Drone Switch */}
       <div className="absolute top-3 left-3 z-10 flex flex-wrap items-center gap-2 max-w-[calc(100%-110px)]">
         <div className="bg-white/80 dark:bg-zinc-950/80 backdrop-blur-md border border-slate-200 dark:border-zinc-800/80 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-slate-700 dark:text-slate-300 flex items-center gap-1.5 shadow-sm truncate">
-          <Box className="w-3.5 h-3.5 text-indigo-600 dark:text-cyan-400 shrink-0" />
+          <Box className="w-3.5 h-3.5 text-indigo-700 dark:text-cyan-400 shrink-0" />
           <span className="hidden sm:inline">3D Glassmorphic City Render</span>
           <span className="sm:hidden">3D Render</span>
         </div>
@@ -545,11 +547,11 @@ const PathFinding3DVisualizer = ({ grid = [] }) => {
           onClick={() => setIsFPV(!isFPV)}
           className={`px-2.5 py-1 rounded-lg text-[11px] font-bold flex items-center gap-1.5 transition-all border shadow-sm shrink-0 ${
             isFPV
-              ? 'bg-rose-500 text-white border-rose-400 shadow-rose-500/30 animate-pulse'
+              ? 'bg-rose-600 text-white border-rose-400 shadow-rose-500/30 animate-pulse'
               : 'bg-white/80 dark:bg-zinc-900/80 border-slate-200 dark:border-zinc-800 text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-zinc-800'
           }`}
         >
-          {isFPV ? <Video className="w-3.5 h-3.5 text-white" /> : <Camera className="w-3.5 h-3.5 text-rose-500" />}
+          {isFPV ? <Video className="w-3.5 h-3.5 text-white" /> : <Camera className="w-3.5 h-3.5 text-rose-700 dark:text-rose-300" />}
           <span>{isFPV ? 'FPV Active' : 'FPV Cam'}</span>
         </button>
       </div>

@@ -262,12 +262,12 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
   };
 
   const getStrokeColor = (nodeId) => {
-    if (nodeId === activeNodeId) return '#fef3c7'; // yellow
+    if (nodeId === activeNodeId) return 'var(--viz-node-active-soft)'; // yellow
     const state = visibleNodesMap.get(nodeId);
-    if (!state) return '#bfdbfe';
-    if (state.type === 'SUCCESS' || state.type === 'RETURN') return '#bbf7d0'; // green
-    if (state.type === 'BACKTRACK') return '#fecaca'; // red
-    return '#a7f3d0';
+    if (!state) return 'var(--viz-node-default-soft)';
+    if (state.type === 'SUCCESS' || state.type === 'RETURN') return 'var(--viz-node-found-soft)'; // green
+    if (state.type === 'BACKTRACK') return 'var(--viz-node-delete-soft)'; // red
+    return 'var(--viz-node-visited-soft)';
   };
 
   const meta = recursionAlgorithmsData[algorithmId] || {};
@@ -278,15 +278,15 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-t-lg shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">{meta.name || "Recursion Tree"}</h2>
-          <p className="text-xs opacity-90 mt-0.5">
+          <p className="text-xs mt-0.5">
             Visualize the Call Stack and Backtracking paths
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Time:</span> {meta.complexities?.time}
           </div>
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Space:</span> {meta.complexities?.space}
           </div>
         </div>
@@ -297,7 +297,7 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
         
         <div className="flex items-center gap-2 bg-white dark:bg-slate-700 p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
           <span className="text-slate-600 dark:text-slate-300 text-xs font-semibold px-2 border-r border-slate-200 dark:border-slate-600">Input</span>
-          <input
+          <input aria-label="Input arguments"
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -317,7 +317,7 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
 
         <button
           onClick={togglePlay}
-          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
         >
           {isPlaying ? <Pause size={14} /> : <Play size={14} />}
           {isPlaying ? 'Pause' : 'Play'}
@@ -326,7 +326,7 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
         <button
           onClick={stepForward}
           disabled={isPlaying || currentStepIndex >= trace.length - 1}
-          className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
         >
           <FastForward size={14} /> Step
         </button>
@@ -370,11 +370,11 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
         {/* SVG Tree View */}
         <div 
           className="flex-1 relative overflow-auto custom-scrollbar dark:bg-slate-900"
-          style={{ backgroundColor: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+          style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >
           {trace.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-500 dark:text-slate-400 text-lg font-medium select-none">
-              Click <span className="text-blue-600 mx-1">Run</span> to trace recursion tree
+            <div className="absolute inset-0 flex items-center justify-center text-slate-600 dark:text-slate-400 text-lg font-medium select-none">
+              Click <span className="text-blue-600 dark:text-blue-400 mx-1">Run</span> to trace recursion tree
             </div>
           ) : (
             <div style={{ minWidth: treeLayout.finalWidth, minHeight: treeLayout.finalHeight, padding: '16px' }}>
@@ -385,27 +385,27 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
               >
                 <defs>
                   <filter id="rec-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.4" />
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="var(--viz-shadow)" floodOpacity="0.4" />
                   </filter>
                   <radialGradient id="rec-grad-default" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#2563eb" />
+                    <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-default-to)" />
                   </radialGradient>
                   <radialGradient id="rec-grad-visited" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#818cf8" />
-                    <stop offset="100%" stopColor="#4f46e5" />
+                    <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-default-to)" />
                   </radialGradient>
                   <radialGradient id="rec-grad-active" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#fcd34d" />
-                    <stop offset="100%" stopColor="#d97706" />
+                    <stop offset="0%" stopColor="var(--viz-node-active-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-active-to)" />
                   </radialGradient>
                   <radialGradient id="rec-grad-success" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#34d399" />
-                    <stop offset="100%" stopColor="#059669" />
+                    <stop offset="0%" stopColor="var(--viz-node-visited-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-visited-to)" />
                   </radialGradient>
                   <radialGradient id="rec-grad-backtrack" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#fca5a5" />
-                    <stop offset="100%" stopColor="#ef4444" />
+                    <stop offset="0%" stopColor="var(--viz-node-delete-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-delete-to)" />
                   </radialGradient>
                 </defs>
 
@@ -422,11 +422,11 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
                   const fromNode = treeLayout.nodes.find(n => n.id === edge.from);
                   const toNode = treeLayout.nodes.find(n => n.id === edge.to);
 
-                  let stroke = '#cbd5e1';
-                  if (isActive) stroke = '#fcd34d';
-                  else if (isBacktracking) stroke = '#ef4444';
-                  else if (isReturned) stroke = '#10b981';
-                  else stroke = '#3b82f6';
+                  let stroke = 'var(--viz-edge)';
+                  if (isActive) stroke = 'var(--viz-node-active-from)';
+                  else if (isBacktracking) stroke = 'var(--viz-node-delete-to)';
+                  else if (isReturned) stroke = 'var(--viz-sorted)';
+                  else stroke = 'var(--viz-active)';
 
                   return (
                     <line
@@ -495,7 +495,7 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
                         y={node.y + 1}
                         textAnchor="middle"
                         dy=".35em"
-                        fill="white"
+                        fill="var(--viz-node-text)"
                         fontSize="12"
                         fontWeight="700"
                         fontFamily="monospace"
@@ -507,8 +507,8 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
                       {/* Return Value badge */}
                       {retVal && (
                         <g transform={`translate(${node.x + (node.nodeWidth / 2) - 10}, ${node.y - 15})`}>
-                          <circle cx={0} cy={0} r={12} fill="#1e293b" stroke="#10b981" strokeWidth={1.5} />
-                          <text x={0} y={0} textAnchor="middle" dy=".3em" fill="#10b981" fontSize="10" fontWeight="bold">
+                          <circle cx={0} cy={0} r={12} fill="var(--viz-surface-3)" stroke="var(--viz-sorted)" strokeWidth={1.5} />
+                          <text x={0} y={0} textAnchor="middle" dy=".3em" fill="var(--viz-sorted)" fontSize="10" fontWeight="bold">
                             {retVal === 'null' ? '∅' : retVal.substring(0, 3)}
                           </text>
                         </g>
@@ -527,19 +527,19 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
       {/* Legend */}
       <div className="bg-slate-50 dark:bg-slate-800 p-3 flex flex-wrap gap-4 justify-center text-sm rounded-b-lg border-t border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-active)' }} />
           <span className="text-slate-600 dark:text-slate-300">Active Frame</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-sorted)' }} />
           <span className="text-slate-600 dark:text-slate-300">Returned / Success</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded border-2 border-[#ef4444] border-dashed bg-transparent" />
+          <div className="w-4 h-4 rounded border-2 border-[var(--viz-danger)] border-dashed bg-transparent" />
           <span className="text-slate-600 dark:text-slate-300">Backtracked</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fcd34d' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-node-active-from)' }} />
           <span className="text-slate-600 dark:text-slate-300">Current Executing</span>
         </div>
       </div>

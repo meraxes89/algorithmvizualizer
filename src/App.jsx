@@ -28,6 +28,7 @@ const PlaygroundPage = lazy(() => import('./pages/PlaygroundPage'));
 const DPPage = lazy(() => import('./pages/DPPage'));
 const ArenaPage = lazy(() => import('./pages/ArenaPage'));
 const QuizPage = lazy(() => import('./pages/QuizPage'));
+const DevGallery = lazy(() => import('./pages/DevGallery'));
 
 import DioramaWrapper from './components/DioramaWrapper';
 
@@ -93,6 +94,7 @@ const AnimatedRoutes = () => {
           <Route path="/playground" element={<PageWrapper><PlaygroundPage /></PageWrapper>} />
           <Route path="/arena" element={<PageWrapper><ArenaPage /></PageWrapper>} />
           <Route path="/quiz" element={<PageWrapper><QuizPage /></PageWrapper>} />
+          <Route path="/_dev" element={<PageWrapper><DevGallery /></PageWrapper>} />
           <Route path="*" element={<PageWrapper><NotFoundPage /></PageWrapper>} />
         </Routes>
       </Suspense>
@@ -172,12 +174,19 @@ function App() {
         <CustomCursor />
         <ScrollToTop />
         <div className="min-h-screen bg-paper text-ink selection:bg-accent-soft font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
+          <nav aria-label="Skip navigation">
+            <a href="#main-content" className="skip-link">
+              Skip to content
+            </a>
+          </nav>
           <Navbar />
-          <DioramaWrapper>
-            <ErrorBoundary>
-              <AnimatedRoutes />
-            </ErrorBoundary>
-          </DioramaWrapper>
+          <div id="main-content" tabIndex={-1} className="outline-none">
+            <DioramaWrapper>
+              <ErrorBoundary>
+                <AnimatedRoutes />
+              </ErrorBoundary>
+            </DioramaWrapper>
+          </div>
           <OnboardingTour />
           <ToastContainer />
           <EasterEgg />

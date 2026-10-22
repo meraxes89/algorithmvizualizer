@@ -243,10 +243,10 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
       <div className="w-full z-10 p-4 sm:p-6 pb-3 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white/60 dark:bg-zinc-950/80 backdrop-blur-xl border-b border-slate-200/50 dark:border-zinc-800/80">
         <div>
           <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 dark:text-white tracking-tight flex items-center gap-2">
-            <Activity className="w-5 h-5 text-indigo-500" />
+            <Activity className="w-5 h-5 text-indigo-700 dark:text-indigo-400" />
             {algorithmInfo?.name || 'Pathfinding Algorithm'}
           </h2>
-          <p className="text-[11px] sm:text-xs font-medium text-slate-500 dark:text-slate-400 mt-0.5 max-w-xl">
+          <p className="text-[11px] sm:text-xs font-medium text-slate-600 dark:text-slate-400 mt-0.5 max-w-xl">
             {algorithmInfo?.description || 'Finds the shortest path between the start and end nodes.'}
           </p>
         </div>
@@ -254,18 +254,18 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
         {/* Telemetry & Info Badges */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
-            <span className="opacity-60 mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo?.timeComplexity || 'O(V+E)'}</span>
+            <span className="mr-1">Time:</span> <span className="font-mono font-bold">{algorithmInfo?.timeComplexity || 'O(V+E)'}</span>
           </div>
           <div className="bg-white/80 dark:bg-zinc-900/80 text-slate-700 dark:text-slate-300 px-2.5 py-1 rounded-lg border border-slate-200/50 dark:border-zinc-800/80 shadow-sm">
-            <span className="opacity-60 mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo?.spaceComplexity || 'O(V)'}</span>
+            <span className="mr-1">Space:</span> <span className="font-mono font-bold">{algorithmInfo?.spaceComplexity || 'O(V)'}</span>
           </div>
           {stats && (
             <>
               <div className="bg-indigo-500/10 text-indigo-700 dark:text-indigo-400 px-2.5 py-1 rounded-lg border border-indigo-500/20 shadow-sm flex items-center gap-1">
-                <span className="opacity-70">Visited:</span> <OdometerCounter value={stats.visited} />
+                <span>Visited:</span> <OdometerCounter value={stats.visited} />
               </div>
-              <div className="bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20 shadow-sm flex items-center gap-1">
-                <span className="opacity-70">Path:</span> <OdometerCounter value={stats.path} />
+              <div className="bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 px-2.5 py-1 rounded-lg border border-emerald-500/20 shadow-sm flex items-center gap-1">
+                <span>Path:</span> <OdometerCounter value={stats.path} />
               </div>
             </>
           )}
@@ -385,17 +385,17 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
                 disabled={isPlaying}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] sm:text-[12px] font-bold text-indigo-700 dark:text-indigo-300 hover:bg-indigo-100/50 dark:hover:bg-indigo-900/50 transition-colors disabled:opacity-50 whitespace-nowrap"
               >
-                <Sparkles size={14} className="text-indigo-500" /> Generate Maze
+                <Sparkles size={14} className="text-indigo-700 dark:text-indigo-400" /> Generate Maze
               </button>
               <div className="w-px h-4 bg-indigo-200 dark:bg-indigo-800"></div>
-              <select
+              <select aria-label="Maze type"
                 value={selectedMazeType}
                 onChange={(e) => {
                   setSelectedMazeType(e.target.value);
                   handleGenerateMaze(e.target.value);
                 }}
                 disabled={isPlaying}
-                className="bg-transparent text-[11px] font-bold text-indigo-600 dark:text-indigo-400 px-2 py-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
+                className="bg-transparent text-[11px] font-bold text-indigo-700 dark:text-indigo-400 px-2 py-1.5 focus:outline-none cursor-pointer disabled:opacity-50"
               >
                 <option value="dfs" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">DFS</option>
                 <option value="recursive_division" className="bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200">Div</option>
@@ -407,7 +407,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
               onClick={handleReset}
               disabled={isPlaying}
               title="Reset Board"
-              className="p-2 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
+              className="p-2 text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white rounded-xl transition-all"
             >
               <RotateCcw size={16} />
             </button>
@@ -416,7 +416,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
               onClick={handleClearWalls}
               disabled={isPlaying}
               title="Clear Walls"
-              className="p-2 text-slate-500 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-600 dark:hover:text-rose-400 rounded-xl transition-all"
+              className="p-2 text-slate-600 dark:text-slate-400 hover:bg-rose-50 dark:hover:bg-rose-900/30 hover:text-rose-700 dark:hover:text-rose-400 rounded-xl transition-all"
             >
               <Eraser size={16} />
             </button>
@@ -428,11 +428,11 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
               title="Toggle 3D Mode"
               className={`flex items-center gap-1 px-2.5 py-1.5 rounded-xl text-[11px] sm:text-[12px] font-bold transition-all border whitespace-nowrap ${
                 is3DMode
-                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-600 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
-                  : 'bg-transparent border-transparent text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
+                  ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-700 dark:text-cyan-400 shadow-sm shadow-cyan-500/10'
+                  : 'bg-transparent border-transparent text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
               }`}
             >
-              <Box size={15} className={is3DMode ? "text-cyan-500" : ""} /> {is3DMode ? '3D' : '2D'}
+              <Box size={15} className={is3DMode ? "text-cyan-700 dark:text-cyan-400" : ""} /> {is3DMode ? '3D' : '2D'}
             </button>
 
             <SoundControls className="scale-90" />
@@ -445,7 +445,7 @@ const PathFindingVisualizer = React.memo(({ algorithmInfo, algorithmKey: algorit
                   onClick={() => setSpeed(val)}
                   disabled={isPlaying}
                   className={`px-2 py-1 rounded text-[10px] font-black tracking-wider transition-all ${
-                    speed === val ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm' : 'text-slate-400 hover:text-slate-600 dark:hover:text-slate-300'
+                    speed === val ? 'bg-white dark:bg-slate-700 text-indigo-700 dark:text-indigo-400 shadow-sm' : 'text-slate-600 hover:text-slate-600 dark:hover:text-slate-300'
                   }`}
                 >
                   {label}

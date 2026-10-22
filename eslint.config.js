@@ -155,6 +155,27 @@ export default tseslint.config(
     },
   },
 
+  // ── Design tokens: no raw hex colours outside the theme layer ──────────
+  {
+    files: ['src/**/*.{js,jsx,ts,tsx}'],
+    ignores: ['src/theme/**'],
+    rules: {
+      'no-restricted-syntax': [
+        'error',
+        {
+          selector: 'Literal[value=/#[0-9a-fA-F]{3,8}/]',
+          message:
+            'Use a design token instead of a hex colour: viz.* / var(--viz-*) for visualization state, or a --paper/--ink/--accent token for chrome. Theme inputs belong in src/theme.',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/#[0-9a-fA-F]{3,8}/]',
+          message:
+            'Use a design token instead of a hex colour: viz.* / var(--viz-*) for visualization state, or a --paper/--ink/--accent token for chrome. Theme inputs belong in src/theme.',
+        },
+      ],
+    },
+  },
+
   // ── Node-side tooling and configuration ─────────────────────────────────
   {
     files: [

@@ -57,7 +57,7 @@
 
 #### Deferred
 
-- [ ] Playwright e2e job — no e2e specs exist until the Phase 2 ports land
+- [x] Playwright e2e job — Phase 4 added `e2e/` with an axe route sweep and keyboard specs
 - [ ] Prettier sweep over the 94 legacy files that are not formatted — a separate, explicit decision
 - [ ] `react-hooks/exhaustive-deps` warnings (17) and `react-refresh` warnings (2) — warnings today, errors when the components are rewritten
 - [ ] `checkJs` over the legacy surface — **measured, not enabled**: `tsc` over `.js` + `.ts` reports **104 errors in 9 files** (`editor/executors.js` 33, `soundEngine.js` 17, `animationHelpers.js` 12, `animatedFavicon.js` 12, `completions.js` 10, `confettiHelper.js` 9, and four more); over `.jsx` as well it is **1,511 errors**, dominated by the unported visualizers. Enabling it today would fail the gate on files the migration has not reached, so the plan's per-file rule stands: each file is checked as it converts. The `onFinish` regression is the argument for doing it sooner — it lived in a `.jsx` file that no checker read.
@@ -168,10 +168,51 @@ Still open for a later phase: universal `StepControls` scrubbing, metadata unifi
 
 ### Phase 4 — Design system completion
 
-- [ ] Semantic viz-token block replacing `COLORS` and the scattered hexes
-- [ ] `/_dev` gallery route
-- [ ] `prompt()` / `alert()` retired in `GraphVisualizer`
-- [ ] a11y pass wired to the CI axe gate
+#### Token contract
+
+- [x] Semantic `--viz-*` block in `src/index.css` for surfaces/ink, state colours, node gradients, code/logo and 3D scenes; light and dark values
+- [x] `src/theme/vizTokens.ts` exports `viz` (CSS references) and `readVizColors()` (resolved values). `useVizColors()` re-reads after the theme class changes, so canvas and Three.js do not hold stale colours
+- [x] `COLORS` removed from `animationHelpers`; sorting, searching, pathfinding, graph and tree visualizers use tokens directly
+- [x] Route accents and confetti colours live in `src/theme/accentPalettes.ts` and `src/theme/confettiPalette.ts`; no component owns a hex value
+- [x] Hex literals outside `src/theme/` = 0, enforced by an ESLint `no-restricted-syntax` rule that catches both string and template literals
+- [x] Contrast pass: `--ink-3`, `--accent` and the six route accents were darkened to AA; muted Tailwind text moved from 400/500 to 600; coloured text and white-on-colour buttons moved to safe steps; graph node labels switch to dark ink on bright state fills
+
+#### Gallery and inputs
+
+- [x] Lazy `/_dev` gallery: state/surface swatches, node gradients, SortingBars/SearchingBars and deep links to all seven families
+- [x] `GraphVisualizer` inline edge-weight input replaces `prompt()`; invalid weights are rejected with a toast and keep the pending source selection
+- [x] `GraphVisualizer` `alert()` replaced with a toast
+- [x] Canvas guards added where a 2D context can be unavailable (grid, favicon, home canvases, easter egg)
+
+#### Accessibility
+
+- [x] Command palette: `dialog`/`combobox`/`listbox` semantics, `aria-activedescendant`, scroll-into-view for the active result, focus trap and focus restoration, labelled clear control
+- [x] Navbar: keyboard-operable Algorithms disclosure (`aria-expanded`/`aria-controls`, Escape), named primary/skip/quick landmarks, mobile menu state, labelled theme toggle
+- [x] Toasts: `aria-live` region, `status`/`alert` roles, labelled dismiss button
+- [x] Onboarding tour: dialog semantics and labelled close button
+- [x] Skip link + skip-navigation landmark; `#main-content` focus target
+- [x] Inputs/selects named across tree, graph, pathfinding, sorting, searching, playground, arena and test-case controls; icon-only buttons named; Arena heading order fixed
+- [x] Local structural axe smoke on all 12 page components (jsdom, contrast disabled); no structural violations
+
+#### CI gate
+
+- [x] `@playwright/test` + `@axe-core/playwright` added; `playwright.config.ts` builds from `vite preview`
+- [x] `e2e/a11y.spec.ts` scans all 14 routes in light and dark, plus the open command palette and mobile navigation
+- [x] `e2e/keyboard.spec.ts` covers palette focus trapping/restoration, the Algorithms disclosure and the mobile menu state
+- [x] `a11y` job in `.github/workflows/checks.yml`: build → install Chromium → `pnpm e2e`
+- [x] Playwright cannot run on the Android/Termux development host (`Unsupported platform: android`); the Ubuntu CI job is the executor, not a local skip
+
+Verification:
+
+- [x] `pnpm lint` — 0 errors, 25 warnings
+- [x] `pnpm typecheck`
+- [x] `pnpm test` — 311 passing across 43 files (+2 token/hook tests)
+- [x] `pnpm test:coverage` — 86.90% statements, 89.34% branches, 92.83% functions
+- [x] `pnpm build`
+- [x] `pnpm size` — budget OK; `AVLVisualizer.js` and `renderLoop.js` repriced after legitimate growth, and budgets added for `SearchingBars.js`, `SortingBars.js`, `useCanvasPalette.js`, `layout.js` and `useParamSelection.js`
+- [x] `grep` hex count outside `src/theme/` — 0
+
+Still open for a later phase: visual screenshot regression on the 3D scenes, reduced-motion audit beyond the current guards, universal `StepControls` scrubbing, metadata unification (`algorithmData.js` still covers four families), and component smoke tests for 9 of the 11 families.
 
 ### Phase 5 — Docs for strangers
 

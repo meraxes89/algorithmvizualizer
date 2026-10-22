@@ -49,7 +49,12 @@ const ToastContainer = () => {
   };
 
   return (
-    <div className="fixed bottom-24 right-4 z-[9999] flex flex-col gap-3 pointer-events-none w-full max-w-sm">
+    <div
+      role="region"
+      aria-label="Notifications"
+      aria-live="polite"
+      className="fixed bottom-24 right-4 z-[9999] flex flex-col gap-3 pointer-events-none w-full max-w-sm"
+    >
       <AnimatePresence>
         {toasts.map((t) => (
           <motion.div
@@ -59,6 +64,7 @@ const ToastContainer = () => {
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
             layout
+            role={t.type === 'error' ? 'alert' : 'status'}
             className={`pointer-events-auto flex items-center justify-between p-4 pr-12 rounded-2xl shadow-2xl backdrop-blur-xl border ${
               t.type === 'success' ? 'bg-emerald-50/90 dark:bg-emerald-950/80 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200' :
               t.type === 'error' ? 'bg-rose-50/90 dark:bg-rose-950/80 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200' :
@@ -66,13 +72,14 @@ const ToastContainer = () => {
             }`}
           >
             <div className="flex items-center gap-3">
-              {t.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-500" />}
-              {t.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-500" />}
-              {t.type === 'info' && <Info className="w-5 h-5 text-indigo-500" />}
+              {t.type === 'success' && <CheckCircle2 className="w-5 h-5 text-emerald-800 dark:text-emerald-300" />}
+              {t.type === 'error' && <AlertCircle className="w-5 h-5 text-rose-700 dark:text-rose-300" />}
+              {t.type === 'info' && <Info className="w-5 h-5 text-indigo-700 dark:text-indigo-300" />}
               <span className="text-sm font-semibold">{t.message}</span>
             </div>
-            <button 
+            <button
               onClick={() => removeToast(t.id)}
+              aria-label="Dismiss notification"
               className="absolute right-4 top-1/2 -translate-y-1/2 p-1 rounded-lg hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
             >
               <X size={16} />

@@ -4,12 +4,13 @@ import { SortingBars, type SortColors } from './SortingBars';
 import { bubbleSort } from '@algorithms/sorting/bubble-sort/bubble-sort';
 import { collectSteps } from '@core/playback';
 import type { SortStep } from '@core/steps';
+import { viz } from '../../../theme/vizTokens';
 
 const colors: SortColors = {
-  default: '#a5b4fc',
-  comparing: '#f472b6',
-  swapping: '#f43f5e',
-  sorted: '#fb923c',
+  default: viz.idle,
+  comparing: viz.compare,
+  swapping: viz.swap,
+  sorted: viz.sorted,
 };
 
 const trace = collectSteps(bubbleSort([5, 2, 8, 1]));
@@ -70,7 +71,7 @@ describe('SortingBars', () => {
       .getByTestId('sorting-bars')
       .querySelector('[data-state="comparing"]') as HTMLElement;
 
-    expect(comparing.style.backgroundColor).toBe('rgb(244, 114, 182)');
+    expect(comparing.style.backgroundColor).toBe(viz.compare);
   });
 
   it('scales the bars by their value', () => {

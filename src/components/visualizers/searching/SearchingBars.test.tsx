@@ -4,12 +4,13 @@ import { SearchingBars, type SearchColors } from './SearchingBars';
 import { binarySearch } from '@algorithms/searching/binary-search/binary-search';
 import { collectSteps } from '@core/playback';
 import type { SearchStep } from '@core/steps';
+import { viz } from '../../../theme/vizTokens';
 
 const colors: SearchColors = {
-  default: '#a7f3d0',
-  range: '#34d399',
-  current: '#f43f5e',
-  found: '#10b981',
+  default: viz.nodeVisitedSoft,
+  range: viz.nodeVisitedFrom,
+  current: viz.swap,
+  found: viz.sorted,
 };
 
 const trace = collectSteps(binarySearch([2, 4, 6, 8, 10], 6));
@@ -68,6 +69,6 @@ describe('SearchingBars', () => {
       .getByTestId('searching-bars')
       .querySelector('[data-state="found"]') as HTMLElement;
 
-    expect(found.style.backgroundColor).toBe('rgb(16, 185, 129)');
+    expect(found.style.backgroundColor).toBe(viz.sorted);
   });
 });

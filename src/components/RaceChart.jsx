@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react';
+import { viz } from '../theme/vizTokens';
 
 const VIEW_W = 100;
 const VIEW_H = 100;
 const MAX_DRAWN_POINTS = 300;
 
-const RaceChart = ({ history, series, gridColor = '#94a3b8' }) => {
+const RaceChart = ({ history, series, gridColor = viz.grid }) => {
   const points = useMemo(() => {
     if (!history || history.length === 0) return [];
     if (history.length <= MAX_DRAWN_POINTS) return history;
@@ -44,7 +45,7 @@ const RaceChart = ({ history, series, gridColor = '#94a3b8' }) => {
   if (points.length < 2) {
     return (
       <div className="w-full h-full flex items-center justify-center">
-        <p className="text-xs font-medium text-slate-400 dark:text-slate-500 animate-pulse">
+        <p className="text-xs font-medium text-slate-600 dark:text-slate-400 animate-pulse">
           Run a race to chart operations…
         </p>
       </div>
@@ -57,7 +58,7 @@ const RaceChart = ({ history, series, gridColor = '#94a3b8' }) => {
         {series.map((s) => (
           <span
             key={s.key}
-            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 dark:text-slate-400"
+            className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-400"
           >
             <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: s.color }} />
             {s.name}
@@ -90,7 +91,7 @@ const RaceChart = ({ history, series, gridColor = '#94a3b8' }) => {
             key={p.key}
             d={p.d}
             fill="none"
-            stroke={series.find((s) => s.key === p.key)?.color || '#94a3b8'}
+            stroke={series.find((s) => s.key === p.key)?.color || viz.muted}
             strokeWidth={2}
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -99,7 +100,7 @@ const RaceChart = ({ history, series, gridColor = '#94a3b8' }) => {
         ))}
       </svg>
 
-      <div className="flex justify-between text-[10px] font-mono text-slate-400 dark:text-slate-500 pt-1.5 shrink-0 tabular-nums">
+      <div className="flex justify-between text-[10px] font-mono text-slate-600 dark:text-slate-400 pt-1.5 shrink-0 tabular-nums">
         <span>ops 0</span>
         <span>{maxY.toLocaleString()}</span>
       </div>
