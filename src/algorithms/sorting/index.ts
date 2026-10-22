@@ -1,11 +1,13 @@
 import type { SortGenerator } from '@core/steps';
 import { bubbleSort } from './bubble-sort/bubble-sort';
+import { heapSort } from './heap-sort/heap-sort';
 import { insertionSort } from './insertion-sort/insertion-sort';
 import { mergeSort } from './merge-sort/merge-sort';
 import { quickSort } from './quick-sort/quick-sort';
 import { selectionSort } from './selection-sort/selection-sort';
 
 export { bubbleSort } from './bubble-sort/bubble-sort';
+export { heapSort } from './heap-sort/heap-sort';
 export { insertionSort } from './insertion-sort/insertion-sort';
 export { mergeSort } from './merge-sort/merge-sort';
 export { quickSort } from './quick-sort/quick-sort';
@@ -34,4 +36,5 @@ export const sortingAlgorithms: readonly SortingAlgorithm[] = [
   { id: 'insertionSort', name: 'Insertion Sort', generator: insertionSort },
   { id: 'mergeSort', name: 'Merge Sort', generator: mergeSort },
   { id: 'quickSort', name: 'Quick Sort', generator: quickSort },
+  { id: 'heapSort', name: 'Heap Sort', generator: heapSort },
 ];

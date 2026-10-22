@@ -531,7 +531,103 @@ function quickSort(arr, low = 0, high = arr.length - 1) {
     return arr;
 }`
       }
+    },    heapSort: {
+      name: 'Heap Sort',
+      description: 'Heap Sort builds a max heap out of the array and repeatedly moves the largest remaining element to the end.',
+      purpose: 'To sort an array in place with a guaranteed O(n log n) worst case.',
+      workingPrinciple: 'The array is rearranged into a max heap, where every parent is at least as large as its children. The root is then swapped to the end of the unsorted region and the heap is repaired by sifting the new root down.',
+      bestCase: 'O(n log n)',
+      averageCase: 'O(n log n)',
+      worstCase: 'O(n log n)',
+      spaceComplexity: 'O(1)',
+      applications: [
+        'Guaranteed worst-case performance',
+        'In-place sorting with no extra memory',
+        'Priority queues and heaps in standard libraries'
+      ],
+      advantages: [
+        'Worst case is O(n log n), unlike quick sort',
+        'In-place, so it needs no extra memory',
+        'The heap structure is useful on its own'
+      ],
+      disadvantages: [
+        'Not a stable sort',
+        'More comparisons than quick sort in practice',
+        'Poor cache locality compared to a merge sort'
+      ],
+      pseudocode: [
+        'procedure heapSort(arr)',
+        '  buildMaxHeap(arr)',
+        '  for end = n - 1 down to 1 do',
+        '    swap(arr[0], arr[end])',
+        '    siftDown(arr, 0, end)',
+        '  end for',
+        'end procedure'
+      ],
+      codeSnippets: {
+        cpp: `void heapSort(int arr[], int n) {
+    for (int i = n / 2 - 1; i >= 0; i--) siftDown(arr, i, n);
+    for (int end = n - 1; end > 0; end--) {
+        swap(arr[0], arr[end]);
+        siftDown(arr, 0, end);
     }
+}`,
+        java: `void heapSort(int[] arr) {
+    int n = arr.length;
+    for (int i = n / 2 - 1; i >= 0; i--) siftDown(arr, i, n);
+    for (int end = n - 1; end > 0; end--) {
+        int temp = arr[0]; arr[0] = arr[end]; arr[end] = temp;
+        siftDown(arr, 0, end);
+    }
+}`,
+        python: `def heap_sort(arr):
+    n = len(arr)
+
+    def sift_down(root, size):
+        while True:
+            largest = root
+            left = 2 * root + 1
+            right = left + 1
+            if left < size and arr[left] > arr[largest]:
+                largest = left
+            if right < size and arr[right] > arr[largest]:
+                largest = right
+            if largest == root:
+                return
+            arr[root], arr[largest] = arr[largest], arr[root]
+            root = largest
+
+    for i in range(n // 2 - 1, -1, -1):
+        sift_down(i, n)
+    for end in range(n - 1, 0, -1):
+        arr[0], arr[end] = arr[end], arr[0]
+        sift_down(0, end)`,
+        javascript: `function heapSort(arr) {
+  const siftDown = (root, size) => {
+    let current = root;
+    for (;;) {
+      const left = current * 2 + 1;
+      if (left >= size) return;
+      let largest = left;
+      const right = left + 1;
+      if (right < size && arr[right] > arr[left]) largest = right;
+      if (arr[current] >= arr[largest]) return;
+      [arr[current], arr[largest]] = [arr[largest], arr[current]];
+      current = largest;
+    }
+  };
+
+  const n = arr.length;
+  for (let i = Math.floor(n / 2) - 1; i >= 0; i--) siftDown(i, n);
+  for (let end = n - 1; end > 0; end--) {
+    [arr[0], arr[end]] = [arr[end], arr[0]];
+    siftDown(0, end);
+  }
+}`
+      }
+    },
+
+
   },
   searching: {
     binarySearch: {
@@ -688,7 +784,104 @@ function quickSort(arr, low = 0, high = arr.length - 1) {
     return -1;
 }`
       }
+    },    jumpSearch: {
+      name: 'Jump Search',
+      description: 'Jump Search skips over the array a block at a time until it finds the block that could hold the target, then scans that block.',
+      purpose: 'To search a sorted array with far fewer comparisons than a linear search.',
+      workingPrinciple: 'The array is divided into blocks of about sqrt(n) elements. The search jumps block by block, comparing only the last element of each block, until it finds a block whose last element is at least the target. That block is then scanned linearly.',
+      bestCase: 'O(1)',
+      averageCase: 'O(√n)',
+      worstCase: 'O(√n)',
+      spaceComplexity: 'O(1)',
+      applications: [
+        'Searching a sorted array that is read-only',
+        'Situations where comparisons are expensive but jumps are cheap'
+      ],
+      advantages: [
+        'Far fewer comparisons than a linear search',
+        'Uses no extra memory',
+        'Simple to implement'
+      ],
+      disadvantages: [
+        'Only works on a sorted array',
+        'Slower than a binary search on a sorted array',
+        'The block size has to be chosen well'
+      ],
+      pseudocode: [
+        'procedure jumpSearch(arr, target)',
+        '  step = floor(sqrt(n))',
+        '  for i = 0 to n - step step step do',
+        '    if arr[min(i + step - 1, n - 1)] < target then',
+        '      continue',
+        '    end if',
+        '  end for',
+        '  scan the last block linearly',
+        'end procedure'
+      ],
+      codeSnippets: {
+        cpp: `int jumpSearch(int arr[], int n, int target) {
+    int step = (int)sqrt(n);
+    int prev = 0;
+    while (arr[min(prev + step - 1, n - 1)] < target) {
+        prev += step;
+        if (prev >= n) return -1;
     }
+    while (arr[prev] <= target) {
+        if (arr[prev] == target) return prev;
+        if (prev == n - 1) return -1;
+        prev++;
+    }
+    return -1;
+}`,
+        java: `int jumpSearch(int[] arr, int target) {
+    int n = arr.length;
+    int step = (int) Math.sqrt(n);
+    int prev = 0;
+    while (arr[Math.min(prev + step - 1, n - 1)] < target) {
+        prev += step;
+        if (prev >= n) return -1;
+    }
+    while (arr[prev] <= target) {
+        if (arr[prev] == target) return prev;
+        if (prev == n - 1) return -1;
+        prev++;
+    }
+    return -1;
+}`,
+        python: `def jump_search(arr, target):
+    n = len(arr)
+    step = int(n ** 0.5)
+    prev = 0
+    while arr[min(prev + step - 1, n - 1)] < target:
+        prev += step
+        if prev >= n:
+            return -1
+    while arr[prev] <= target:
+        if arr[prev] == target:
+            return prev
+        if prev == n - 1:
+            return -1
+        prev += 1
+    return -1`,
+        javascript: `function jumpSearch(arr, target) {
+  const n = arr.length;
+  const step = Math.floor(Math.sqrt(n));
+  let prev = 0;
+  while (arr[Math.min(prev + step - 1, n - 1)] < target) {
+    prev += step;
+    if (prev >= n) return -1;
+  }
+  while (arr[prev] <= target) {
+    if (arr[prev] === target) return prev;
+    if (prev === n - 1) return -1;
+    prev++;
+  }
+  return -1;
+}`
+      }
+    },
+
+
   },
   trees: {
     preOrder: {

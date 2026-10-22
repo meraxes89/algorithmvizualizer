@@ -12,6 +12,15 @@ export type GridNode = {
   readonly row: number;
   readonly col: number;
   readonly isWall: boolean;
+  /**
+   * The cost of moving into this cell.
+   *
+   * It defaults to 1, so a grid without weights is the uniform-cost
+   * case. A grid with weights makes Dijkstra's algorithm a genuinely
+   * weighted one, and A* a search that weighs its estimate against a
+   * real cost.
+   */
+  readonly weight?: number;
 };
 
 export type Grid = readonly (readonly GridNode[])[];

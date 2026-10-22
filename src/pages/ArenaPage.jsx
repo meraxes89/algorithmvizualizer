@@ -9,11 +9,89 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '../components/Toast';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
-import { SORTING_ALGORITHMS, SEARCHING_ALGORITHMS, PATHFINDING_ALGORITHMS } from '../algorithms/raceTraces';
+import { sortingAlgorithms } from '../algorithms/sorting';
+import { searchingAlgorithms } from '../algorithms/searching';
+import { pathfindingAlgorithms } from '../algorithms/pathfinding';
 
 const RACE_HISTORY_CAP = 300;
 const GRID_ROWS = 8;
 const GRID_COLS = 12;
+
+/**
+ * How each algorithm looks in the arena.
+ *
+ * The colour and the complexity are presentation, so they live here; the
+ * algorithm itself comes from the family registry, which means the arena
+ * races exactly the implementations the pages run.
+ */
+const RACE_STYLE = {
+  'Bubble Sort': { color: 'from-rose-500 to-pink-600', complexity: 'O(N²)' },
+  'Selection Sort': { color: 'from-amber-500 to-emerald-600', complexity: 'O(N²)' },
+  'Insertion Sort': { color: 'from-sky-500 to-blue-600', complexity: 'O(N²)' },
+  'Merge Sort': { color: 'from-violet-500 to-purple-600', complexity: 'O(N log N)' },
+  'Quick Sort': { color: 'from-blue-500 to-indigo-600', complexity: 'O(N log N)' },
+  'Heap Sort': { color: 'from-teal-500 to-emerald-600', complexity: 'O(N log N)' },
+  'Linear Search': { color: 'from-rose-500 to-pink-600', complexity: 'O(N)' },
+  'Binary Search': { color: 'from-amber-500 to-emerald-600', complexity: 'O(log N)' },
+  'Jump Search': { color: 'from-cyan-500 to-sky-600', complexity: 'O(√N)' },
+  'Breadth-First Search (BFS)': {
+    color: 'from-indigo-500 to-purple-600',
+    complexity: 'O(V + E)',
+  },
+  'Depth-First Search (DFS)': {
+    color: 'from-fuchsia-500 to-pink-600',
+    complexity: 'O(V + E)',
+  },
+  "Dijkstra's Algorithm": {
+    color: 'from-indigo-500 to-purple-600',
+    complexity: 'O((V + E) log V)',
+  },
+  'A* Search': { color: 'from-emerald-500 to-cyan-600', complexity: 'O(E)' },
+};
+
+/** Who races in each category. */
+const RACE_LINEUP = {
+  sorting: ['Quick Sort', 'Merge Sort', 'Heap Sort', 'Bubble Sort'],
+  searching: ['Binary Search', 'Linear Search', 'Jump Search'],
+  pathfinding: [
+    "Dijkstra's Algorithm",
+    'A* Search',
+    'Breadth-First Search (BFS)',
+    'Depth-First Search (DFS)',
+  ],
+};
+
+const familyOf = (category) => {
+  if (category === 'sorting') return sortingAlgorithms;
+  if (category === 'searching') return searchingAlgorithms;
+  return pathfindingAlgorithms;
+};
+
+/** The racers of a category, with their arena styling. */
+const raceEntries = (category) =>
+  familyOf(category)
+    .filter((entry) => RACE_LINEUP[category].includes(entry.name))
+    .map((entry) => [entry.id, { ...entry, ...(RACE_STYLE[entry.name] ?? {}) }]);
+
+/**
+ * The grid the pathfinding racers search.
+ *
+ * Every racer gets the same grid, and the cells carry a cost, so
+ * Dijkstra really is a weighted search here rather than a uniform-cost
+ * one in a different costume.
+ */
+const buildRaceGrid = (rows, cols) =>
+  Array.from({ length: rows }, (_, row) =>
+    Array.from({ length: cols }, (_, col) => ({
+      row,
+      col,
+      isWall: false,
+      weight: 1 + ((row * 7 + col * 13) % 9),
+    }))
+  );
+
+const RACE_START = { row: 1, col: 1 };
+const RACE_END = { row: GRID_ROWS - 2, col: GRID_COLS - 2 };
 
 const strokeColorFor = (color = '') =>
   color.includes('blue') || color.includes('indigo') ? '#6366f1' :
@@ -22,6 +100,48 @@ const strokeColorFor = (color = '') =>
   color.includes('amber') || color.includes('orange') ? '#f59e0b' :
   color.includes('cyan') ? '#06b6d4' :
   color.includes('rose') ? '#f43f5e' : '#94a3b8';
+
+/**
+ * Fold a contract step into the arena's runner state.
+ *
+ * The arena counts its own operations, because the count is what the
+ * race is measured in and it is not part of the step contract.
+ */
+const applyRaceStep = (runner, step) => {
+  if (!step) return {};
+
+  const view = step.view ?? {};
+
+  if (step.family === 'sorting') {
+    return {
+      array: view.array ?? runner.array,
+      comparing: view.comparing ?? [],
+      swapped: view.swapping ?? [],
+      comps: runner.comps + (step.t === 'compare' ? 1 : 0),
+      swaps: runner.swaps + (step.t === 'swap' ? 1 : 0),
+    };
+  }
+
+  if (step.family === 'searching') {
+    return {
+      array: view.array ?? runner.array,
+      comparing: view.current >= 0 ? [view.current] : [],
+      foundIndex: view.found >= 0 ? view.found : null,
+      comps: runner.comps + (step.t === 'probe' ? 1 : 0),
+    };
+  }
+
+  const visited = view.visited ?? [];
+  const path = view.path ?? [];
+
+  return {
+    visitedSet: new Set(visited.map((cell) => `${cell.row},${cell.col}`)),
+    pathSet: new Set(path.map((cell) => `${cell.row},${cell.col}`)),
+    activeNode: visited.length > 0 ? visited[visited.length - 1] : null,
+    visitedCount: visited.length,
+    steps: visited.length,
+  };
+};
 
 const ArenaPage = () => {
   const { isDark } = useTheme();
@@ -47,9 +167,11 @@ const ArenaPage = () => {
 
     let initial = {};
 
+    const entries = raceEntries(cat);
+
     if (cat === 'sorting') {
       const arr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 85) + 15);
-      Object.keys(SORTING_ALGORITHMS).forEach(key => {
+      entries.forEach(([key, entry]) => {
         initial[key] = {
           array: [...arr],
           comparing: [],
@@ -57,7 +179,7 @@ const ArenaPage = () => {
           comps: 0,
           swaps: 0,
           finished: false,
-          generator: SORTING_ALGORITHMS[key].generator(arr)
+          generator: entry.generator(arr)
         };
       });
     } else if (cat === 'searching') {
@@ -65,24 +187,26 @@ const ArenaPage = () => {
       const target = arr[Math.floor(Math.random() * arr.length)];
       setSearchTarget(target);
 
-      Object.keys(SEARCHING_ALGORITHMS).forEach(key => {
+      entries.forEach(([key, entry]) => {
         initial[key] = {
           array: [...arr],
           comparing: [],
           comps: 0,
           finished: false,
           foundIndex: null,
-          generator: SEARCHING_ALGORITHMS[key].generator(arr, target)
+          generator: entry.generator(arr, target)
         };
       });
     } else if (cat === 'pathfinding') {
-      Object.keys(PATHFINDING_ALGORITHMS).forEach(key => {
+      const grid = buildRaceGrid(GRID_ROWS, GRID_COLS);
+
+      entries.forEach(([key, entry]) => {
         initial[key] = {
           visitedCount: 0,
           activeNode: null,
           steps: 0,
           finished: false,
-          generator: PATHFINDING_ALGORITHMS[key].generator(GRID_ROWS, GRID_COLS)
+          generator: entry.generator(grid, RACE_START, RACE_END)
         };
       });
     }
@@ -108,10 +232,13 @@ const ArenaPage = () => {
           if (runner.finished) return;
 
           const res = runner.generator.next();
-          if (res.done || res.value.finished) {
+          const step = res.value;
+          const isDone = res.done || step?.t === 'done';
+
+          if (isDone) {
             current[key] = {
               ...runner,
-              ...res.value,
+              ...applyRaceStep(runner, step),
               finished: true
             };
             newlyFinished.push(key);
@@ -119,13 +246,16 @@ const ArenaPage = () => {
             activeCount++;
             current[key] = {
               ...runner,
-              ...res.value
+              ...applyRaceStep(runner, step)
             };
 
-            const val1 = res.value.array ? res.value.array[res.value.comparing?.[0] || 0] : (res.value.visitedCount || res.value.comps || 50);
-            const idx = res.value.comparing?.[0] || 0;
-            const len = res.value.array?.length || 100;
-            const algoName = SORTING_ALGORITHMS[key]?.name || SEARCHING_ALGORITHMS[key]?.name || PATHFINDING_ALGORITHMS[key]?.name || '';
+            const view = step.view ?? {};
+            const val1 = view.array
+              ? view.array[(view.comparing?.[0] ?? view.current) || 0]
+              : (runner.visitedCount || runner.comps || 50);
+            const idx = (view.comparing?.[0] ?? view.current) || 0;
+            const len = view.array?.length || 100;
+            const algoName = raceEntries(activeCategory).find(([k]) => k === key)?.[1]?.name || '';
 
             soundEngine.playCompare(val1 || 50, 10, 100, {
               algorithm: algoName,
@@ -209,11 +339,7 @@ const ArenaPage = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
-  const getActiveDict = () => {
-    if (activeCategory === 'sorting') return SORTING_ALGORITHMS;
-    if (activeCategory === 'searching') return SEARCHING_ALGORITHMS;
-    return PATHFINDING_ALGORITHMS;
-  };
+  const getActiveDict = () => Object.fromEntries(raceEntries(activeCategory));
 
   const CATEGORY_TABS = [
     { id: 'sorting', label: 'Sorting Race', icon: BarChart2 },
@@ -405,9 +531,9 @@ const ArenaPage = () => {
                             const cellKey = `${r},${c}`;
                             const isStart = r === 1 && c === 1;
                             const isTarget = r === GRID_ROWS - 2 && c === GRID_COLS - 2;
-                            const isVisited = runner.visitedSet ? runner.visitedSet.has(cellKey) : runner.visitedList?.includes(cellKey);
-                            const isPath = runner.pathSet ? runner.pathSet.has(cellKey) : runner.pathList?.includes(cellKey);
-                            const isActive = runner.activeNode && runner.activeNode[0] === r && runner.activeNode[1] === c;
+                            const isVisited = runner.visitedSet?.has(cellKey) ?? false;
+                            const isPath = runner.pathSet?.has(cellKey) ?? false;
+                            const isActive = runner.activeNode && runner.activeNode.row === r && runner.activeNode.col === c;
 
                             let cellStyle = 'border-line-subtle bg-line-subtle';
                             if (isStart) cellStyle = 'bg-emerald-500 ring-2 ring-emerald-400';

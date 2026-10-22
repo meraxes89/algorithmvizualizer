@@ -60,7 +60,7 @@ export function* dijkstra(
 
     for (const neighbour of neighbours(current, grid)) {
       const key = cellKey(neighbour);
-      const candidate = currentDistance + 1;
+      const candidate = currentDistance + (grid[neighbour.row][neighbour.col].weight ?? 1);
 
       if (candidate < (distance.get(key) ?? Infinity)) {
         const isNew = !seen.has(key);
