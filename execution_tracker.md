@@ -211,7 +211,7 @@ Verification:
 - [x] `pnpm build`
 - [x] `pnpm size` — budget OK; `AVLVisualizer.js` and `renderLoop.js` repriced after legitimate growth, and budgets added for `SearchingBars.js`, `SortingBars.js`, `useCanvasPalette.js`, `layout.js` and `useParamSelection.js`
 - [x] `grep` hex count outside `src/theme/` — 0
-- [x] CI run 39781805100 on `efd1c87` — checks, build and the 33-case axe sweep all green
+- [x] CI run 39781805100 on `efd1c87` — checks, build and the 33-test a11y job (30 axe scans + 3 keyboard flows) all green
 
 Still open for a later phase: visual screenshot regression on the 3D scenes, reduced-motion audit beyond the current guards, universal `StepControls` scrubbing, metadata unification (`algorithmData.js` still covers four families), and component smoke tests for 9 of the 11 families.
 
