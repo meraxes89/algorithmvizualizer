@@ -335,6 +335,18 @@ export type HeapGenerator = Generator<HeapStep, void, undefined>;
 // Recursion
 // ─────────────────────────────────────────────────────────────────────────────
 
+/** One call of a recursive function. */
+export type RecursionNode = {
+  readonly id: string;
+  /** The call this one was made from, or null for the first one. */
+  readonly parentId: string | null;
+  /** The arguments the call was made with. */
+  readonly callArgs: string;
+  /** How deep the call is. */
+  readonly depth: number;
+};
+
+/** One frame of the call stack. */
 export type RecursionFrame = {
   readonly name: string;
   readonly depth: number;
@@ -342,18 +354,23 @@ export type RecursionFrame = {
 
 /** The complete visual state of a recursion. */
 export type RecursionView = {
+  /** Every call the recursion has made, by id. */
+  readonly nodes: Readonly<Record<string, RecursionNode>>;
   /** The call stack, innermost frame last. */
   readonly stack: readonly RecursionFrame[];
-  /** The line currently being executed, or null. */
-  readonly active: number | null;
-  /** Everything the algorithm has printed so far. */
-  readonly output: readonly string[];
+  /** The call being worked on, or null. */
+  readonly active: string | null;
+  /** Everything the recursion has produced so far. */
+  readonly output: readonly unknown[];
 };
 
 export type RecursionStep = OfFamily<'recursion'> &
   (
-    | { t: 'call'; view: RecursionView; frame: RecursionFrame }
-    | { t: 'return'; view: RecursionView; frame: RecursionFrame }
+    | { t: 'call'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'decide'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'return'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'base'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'backtrack'; view: RecursionView; frame: RecursionFrame; message?: string }
     | { t: 'write'; view: RecursionView; text: string }
     | { t: 'done'; view: RecursionView }
   );

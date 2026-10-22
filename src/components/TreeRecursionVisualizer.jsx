@@ -9,6 +9,8 @@ import {
   runGenerateParenthesesTrace,
   runSubsetsTrace
 } from '../algorithms/recursion/engine';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 
 /* ------------------------------------------------------------------ */
@@ -17,46 +19,45 @@ import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 
 // Builds a tree of nodes from the trace.
 // We do a full pass over the trace to find all CALL events and establish parent-child relationships.
-function computeTreeLayout(trace, svgWidth = 1100, svgHeight = 500) {
-  if (!trace || trace.length === 0) return { nodes: [], edges: [], finalWidth: svgWidth, finalHeight: svgHeight };
+function computeTreeLayout(nodes, svgWidth = 1100, svgHeight = 500) {
+  const entries = Object.values(nodes ?? {});
+  if (entries.length === 0) {
+    return { nodes: [], edges: [], finalWidth: svgWidth, finalHeight: svgHeight };
+  }
 
   const nodeMap = new Map();
   const rootNodes = [];
   let maxNodeWidth = 80;
 
-  trace.forEach(step => {
-    if (step.type === 'CALL') {
-      if (!nodeMap.has(step.nodeId)) {
-        const argLength = step.callArgs ? step.callArgs.length : 10;
-        const nodeW = Math.max(80, argLength * 8 + 20);
-        if (nodeW > maxNodeWidth) maxNodeWidth = nodeW;
+  for (const entry of entries) {
+    const argLength = entry.callArgs ? entry.callArgs.length : 10;
+    const nodeW = Math.max(80, argLength * 8 + 20);
+    if (nodeW > maxNodeWidth) maxNodeWidth = nodeW;
 
-        const newNode = {
-          id: step.nodeId,
-          parentId: step.parentId,
-          callArgs: step.callArgs,
-          depth: step.depth,
-          children: [],
-          x: 0,
-          y: 0,
-          leafWidth: 0,
-          nodeWidth: nodeW
-        };
-        nodeMap.set(step.nodeId, newNode);
+    const newNode = {
+      id: entry.id,
+      parentId: entry.parentId,
+      callArgs: entry.callArgs,
+      depth: entry.depth,
+      children: [],
+      x: 0,
+      y: 0,
+      leafWidth: 0,
+      nodeWidth: nodeW
+    };
+    nodeMap.set(entry.id, newNode);
 
-        if (step.parentId === null) {
-          rootNodes.push(newNode);
-        } else {
-          const parent = nodeMap.get(step.parentId);
-          if (parent && !parent.children.includes(newNode)) {
-            parent.children.push(newNode);
-          }
-        }
+    if (entry.parentId === null) {
+      rootNodes.push(newNode);
+    } else {
+      const parent = nodeMap.get(entry.parentId);
+      if (parent && !parent.children.includes(newNode)) {
+        parent.children.push(newNode);
       }
     }
-  });
+  }
 
-  // Calculate widths for n-ary tree
+  // Calculate widths for the n-ary tree.
   let maxDepth = 0;
   function computeWidths(node) {
     if (node.depth > maxDepth) maxDepth = node.depth;
@@ -65,68 +66,51 @@ function computeTreeLayout(trace, svgWidth = 1100, svgHeight = 500) {
       return 1;
     }
     let w = 0;
-    node.children.forEach(c => { w += computeWidths(c); });
+    node.children.forEach((child) => {
+      w += computeWidths(child);
+    });
     node.leafWidth = w;
     return w;
   }
 
-  rootNodes.forEach(computeWidths);
+  rootNodes.forEach((root) => computeWidths(root));
 
-  const padY = 60;
-  const padX = 60;
-  const yGap = 90;
-  const leafSpacing = Math.max(120, maxNodeWidth + 40); // Need wider spacing for dynamic node width
-
-  const nodes = [];
+  // Place the nodes.
+  const placed = [];
   const edges = [];
+  const padY = 60;
+  const yGap = 70;
+  const xGap = 30;
 
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
+  const assignPositions = (node, depth, xStart) => {
+    node.y = padY + depth * yGap;
+    const allocated = node.leafWidth * (xGap + maxNodeWidth);
+    node.x = xStart + allocated / 2;
+    placed.push(node);
 
-  function assignCoords(node, currentX) {
-    node.y = padY + node.depth * yGap;
-    
-    // x is the center of its allocated leaf bounds
-    const allocatedW = node.leafWidth * leafSpacing;
-    node.x = currentX + (node.leafWidth === 1 ? 0 : (allocatedW - leafSpacing) / 2);
-    
-    const halfW = node.nodeWidth / 2;
-    minX = Math.min(minX, node.x - halfW - 20); // 20px extra padding for glow/shadow
-    maxX = Math.max(maxX, node.x + halfW + 20);
-    minY = Math.min(minY, node.y - 30);
-    maxY = Math.max(maxY, node.y + 30);
-
-    nodes.push(node);
-
-    let childX = currentX;
-    node.children.forEach(child => {
-      edges.push({ from: node.id, to: child.id });
-      assignCoords(child, childX);
-      childX += child.leafWidth * leafSpacing;
+    let currentX = xStart;
+    node.children.forEach((child) => {
+      edges.push({ from: node, to: child });
+      assignPositions(child, depth + 1, currentX);
+      currentX += child.leafWidth * (xGap + maxNodeWidth);
     });
-  }
+  };
 
-  let currX = 0;
-  rootNodes.forEach(root => {
-    assignCoords(root, currX);
-    currX += root.leafWidth * leafSpacing;
+  let currentX = 0;
+  rootNodes.forEach((root) => {
+    assignPositions(root, 0, currentX);
+    currentX += root.leafWidth * (xGap + maxNodeWidth);
   });
 
-  let finalWidth = 800;
-  let finalHeight = 460;
+  const shiftX = (svgWidth - currentX) / 2;
+  placed.forEach((n) => {
+    n.x += shiftX;
+  });
 
-  if (nodes.length > 0) {
-    const treeActualWidth = maxX - minX;
-    finalWidth = Math.max(800, treeActualWidth + padX * 2);
-    finalHeight = Math.max(460, maxY + padY);
+  const finalWidth = Math.max(svgWidth, currentX);
+  const finalHeight = Math.max(460, (maxDepth + 1) * yGap + padY * 2);
 
-    const shiftX = (finalWidth - treeActualWidth) / 2 - minX;
-    nodes.forEach(n => { n.x += shiftX; });
-  }
-
-  return { nodes, edges, finalWidth, finalHeight };
+  return { nodes: placed, edges, finalWidth, finalHeight };
 }
 
 /* ------------------------------------------------------------------ */
@@ -140,15 +124,33 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
   // Simulation State
   const [trace, setTrace] = useState([]);
   const [treeLayout, setTreeLayout] = useState({ nodes: [], edges: [], finalWidth: 800, finalHeight: 460 });
-  const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
+
+  const {
+    index: currentStepIndex,
+    isPlaying,
+    play,
+    pause,
+    next,
+    reset: resetPlayback,
+  } = usePlayback(trace, {
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'recursion',
+    meta: { algorithm: algorithmId },
+  });
   
   // UI Panels
   const [showSettings, setShowSettings] = useState(false);
 
   // Derived state for the current step
   const currentStep = currentStepIndex >= 0 && currentStepIndex < trace.length ? trace[currentStepIndex] : null;
+
+  // The call tree comes from the current step's view, so it grows as the
+  // recursion makes new calls.
+  useEffect(() => {
+    const nodes = currentStep?.view.nodes ?? {};
+    setTreeLayout(computeTreeLayout(nodes));
+  }, [currentStep]);
 
   // Refs for auto-scroll and animation
   const timerRef = useRef(null);
@@ -172,48 +174,33 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
     return () => clearInterval(timerRef.current);
   }, []);
 
-  // Playback Loop
-  useEffect(() => {
-    if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setCurrentStepIndex(prev => {
-          if (prev >= trace.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, speed);
-    } else {
-      clearInterval(timerRef.current);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [isPlaying, speed, trace.length]);
+
 
   /* ---------- Operations ---------- */
 
   const handleRun = () => {
     handleReset();
+
     let newTrace = [];
-    
+
     try {
       if (algorithmId === 'factorial') {
-        newTrace = runFactorialTrace(parseInt(inputValue, 10));
+        newTrace = collectSteps(runFactorialTrace(parseInt(inputValue, 10)));
       } else if (algorithmId === 'fibonacci') {
-        newTrace = runFibonacciTrace(parseInt(inputValue, 10));
+        newTrace = collectSteps(runFibonacciTrace(parseInt(inputValue, 10)));
       } else if (algorithmId === 'permutations') {
-        const arr = inputValue.split(',').map(s => s.trim());
-        newTrace = runPermutationsTrace(arr).trace;
+        const arr = inputValue.split(',').map((s) => s.trim());
+        newTrace = collectSteps(runPermutationsTrace(arr));
       } else if (algorithmId === 'combinationSum') {
         const parts = inputValue.split(';');
         const arr = parts[0].split(',').map(Number);
         const target = parseInt(parts[1], 10);
-        newTrace = runCombinationSumTrace(arr, target).trace;
+        newTrace = collectSteps(runCombinationSumTrace(arr, target));
       } else if (algorithmId === 'generateParentheses') {
-        newTrace = runGenerateParenthesesTrace(parseInt(inputValue, 10)).trace;
+        newTrace = collectSteps(runGenerateParenthesesTrace(parseInt(inputValue, 10)));
       } else if (algorithmId === 'subsets') {
-        const arr = inputValue.split(',').map(s => s.trim());
-        newTrace = runSubsetsTrace(arr).trace;
+        const arr = inputValue.split(',').map((s) => s.trim());
+        newTrace = collectSteps(runSubsetsTrace(arr));
       }
     } catch (e) {
       console.error(e);
@@ -221,32 +208,29 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
     }
 
     setTrace(newTrace);
-    setTreeLayout(computeTreeLayout(newTrace));
-    setCurrentStepIndex(0);
-    setIsPlaying(true);
+    setTreeLayout(computeTreeLayout(newTrace[0]?.view.nodes ?? {}));
+    play();
   };
 
   const handleReset = () => {
-    setIsPlaying(false);
-    clearInterval(timerRef.current);
+    resetPlayback();
     setTrace([]);
     setTreeLayout({ nodes: [], edges: [], finalWidth: 800, finalHeight: 460 });
-    setCurrentStepIndex(-1);
   };
 
   const togglePlay = () => {
     if (trace.length === 0) {
       handleRun();
+    } else if (isPlaying) {
+      pause();
     } else {
-      setIsPlaying(!isPlaying);
+      play();
     }
   };
 
   const stepForward = () => {
-    setIsPlaying(false);
-    if (currentStepIndex < trace.length - 1) {
-      setCurrentStepIndex(prev => prev + 1);
-    }
+    pause();
+    next();
   };
 
   /* ---------- Rendering Helpers ---------- */
