@@ -29,7 +29,7 @@ const SORT_COLORS = {
   sorted: COLORS.SORTED || '#fb923c',
 };
 
-const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
+const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource = 'sorting' }) => {
   const [arraySize, setArraySize] = useState(40);
 
   const [showSettings, setShowSettings] = useState(false);
@@ -76,7 +76,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
     reset,
   } = usePlayback(steps, {
     speed: SPEED_PRESETS.FAST,
-    source: 'sorting',
+    source: playbackSource,
     meta: eventMeta,
     onFinish: () => {
       triggerVictoryConfetti(getColorsFromTailwind(algorithmInfo?.color || ''));

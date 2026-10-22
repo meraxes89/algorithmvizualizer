@@ -1,7 +1,9 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Play, Pause, RotateCcw, FastForward, Settings } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import { runTowerOfHanoiTrace } from '../algorithms/recursion/puzzleEngine';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 
 /* ------------------------------------------------------------------ */
@@ -14,9 +16,22 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
   
   // Simulation State
   const [trace, setTrace] = useState([]);
-  const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
+
+  const {
+    index: currentStepIndex,
+    isPlaying,
+    speed,
+    play,
+    pause,
+    next,
+    reset: resetPlayback,
+    setSpeed,
+  } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'puzzle',
+    meta: { algorithm: algorithmId },
+  });
   
   // UI Panels
   const [showSettings, setShowSettings] = useState(false);
@@ -24,38 +39,11 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
   // Derived state for the current step
   const currentStep = currentStepIndex >= 0 && currentStepIndex < trace.length ? trace[currentStepIndex] : null;
 
-  // Refs for animation
-  const timerRef = useRef(null);
-
   // Update default input based on algorithm
   useEffect(() => {
     setInputValue('3');
     handleReset();
   }, [algorithmId]);
-
-  // Clean up timer on unmount
-  useEffect(() => {
-    return () => clearInterval(timerRef.current);
-  }, []);
-
-
-  // Playback Loop
-  useEffect(() => {
-    if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setCurrentStepIndex(prev => {
-          if (prev >= trace.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, speed);
-    } else {
-      clearInterval(timerRef.current);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [isPlaying, speed, trace.length]);
 
   /* ---------- Operations ---------- */
 
@@ -68,37 +56,33 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
 
     let newTrace = [];
     try {
-      newTrace = runTowerOfHanoiTrace(numDisks);
+      newTrace = collectSteps(runTowerOfHanoiTrace(numDisks));
     } catch (e) {
       console.error(e);
       return;
     }
 
     setTrace(newTrace);
-    setCurrentStepIndex(0);
-    setIsPlaying(true);
   };
 
   const handleReset = () => {
-    setIsPlaying(false);
-    clearInterval(timerRef.current);
+    resetPlayback();
     setTrace([]);
-    setCurrentStepIndex(-1);
   };
 
   const togglePlay = () => {
     if (trace.length === 0) {
       handleRun();
+    } else if (isPlaying) {
+      pause();
     } else {
-      setIsPlaying(!isPlaying);
+      play();
     }
   };
 
   const stepForward = () => {
-    setIsPlaying(false);
-    if (currentStepIndex < trace.length - 1) {
-      setCurrentStepIndex(prev => prev + 1);
-    }
+    pause();
+    next();
   };
 
   /* ---------- Rendering Helpers ---------- */
@@ -148,8 +132,8 @@ const TowerOfHanoiVisualizer = React.memo(({ algorithmId }) => {
   };
 
   const renderPuzzle = () => {
-    if (!currentStep || !currentStep.pegs) return null;
-    const pegs = currentStep.pegs;
+    if (!currentStep || !currentStep.view) return null;
+    const pegs = currentStep.view.pegs;
     const totalDisks = Math.max(1, parseInt(inputValue, 10));
 
     return (

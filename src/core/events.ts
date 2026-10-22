@@ -106,16 +106,29 @@ export class StepEventBus {
   }
 }
 
-/** Every family, in a stable order. */
-export const FAMILIES: readonly StepFamily[] = [
-  'sorting',
-  'searching',
-  'pathfinding',
-  'graph',
-  'trees',
-  'recursion',
-  'dp',
-];
+/**
+ * Every family, in a stable order.
+ *
+ * The map is the exhaustiveness check: `Record<StepFamily, true>` stops
+ * compiling when a family is added to the contract and not to the bus,
+ * which is exactly the bug this list had — it was three families behind
+ * the contract, and `onAny` silently ignored them.
+ */
+const FAMILY_NAMES = {
+  sorting: true,
+  searching: true,
+  pathfinding: true,
+  graph: true,
+  trees: true,
+  trie: true,
+  heap: true,
+  recursion: true,
+  board: true,
+  puzzle: true,
+  dp: true,
+} satisfies Record<StepFamily, true>;
+
+export const FAMILIES = Object.keys(FAMILY_NAMES) as readonly StepFamily[];
 
 /** The bus the app uses. Subscribers attach to this one. */
 export const stepBus = new StepEventBus();

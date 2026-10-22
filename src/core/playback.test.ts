@@ -276,6 +276,26 @@ describe('browserEnv', () => {
     expect(typeof browserEnv.now()).toBe('number');
   });
 
+  it('pauses and finishes when a tick lands on the last step', () => {
+    const fake = createFakeEnv();
+    const finishes = vi.fn();
+    const playback = new Playback({ speed: 100, onFinish: finishes }, fake.env);
+
+    playback.load(['a', 'b', 'c']);
+    playback.play();
+
+    // Three steps, so the fourth tick is the one that would move past
+    // the end.
+    for (let i = 0; i < 4; i++) {
+      fake.advance(100);
+    }
+
+    expect(playback.currentIndex).toBe(2);
+    expect(playback.isFinished).toBe(true);
+    expect(playback.isPlaying).toBe(false);
+    expect(finishes).toHaveBeenCalledTimes(1);
+  });
+
   it('schedules and cancels a frame', () => {
     const handle = browserEnv.requestAnimationFrame(() => {});
     expect(typeof handle).toBe('number');

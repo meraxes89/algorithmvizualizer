@@ -274,10 +274,13 @@ export class Playback {
       // Catch up, but never render more than one step per frame beyond a
       // sane bound, so a long stall does not fast-forward the whole trace.
       let budget = 4;
-      while (this.accumulator >= perStep && budget > 0 && !this.isFinished) {
+      while (this.accumulator >= perStep && budget > 0) {
         this.accumulator -= perStep;
         this.advance();
         budget -= 1;
+
+        // `advance` pauses if it reached the end, so the run is over.
+        if (!this.playing) break;
       }
       if (this.accumulator > perStep * 4) {
         this.accumulator = 0;

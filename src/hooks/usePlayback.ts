@@ -12,6 +12,8 @@ export type UsePlaybackOptions = {
   source?: string;
   /** Context attached to every published event, e.g. the algorithm name. */
   meta?: Record<string, unknown>;
+  /** Called once when playback reaches the end of the trace. */
+  onFinish?: () => void;
 };
 
 export type UsePlaybackResult = {
@@ -55,6 +57,10 @@ export function usePlayback(
   const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeedState] = useState(initialSpeed);
 
+  // The finish callback is read through a ref so the engine, which is
+  // created once, always calls the current one.
+  const onFinishRef = useRef(options.onFinish);
+
   // The engine is created once and kept for the life of the component.
   const playbackRef = useRef<Playback | null>(null);
   if (playbackRef.current === null) {
@@ -65,11 +71,17 @@ export function usePlayback(
         meta,
         onStep: (next) => setIndex(next),
         onPlayStateChange: (playing) => setIsPlaying(playing),
+        onFinish: () => onFinishRef.current?.(),
       },
       env
     );
   }
   const playback = playbackRef.current;
+
+  // Keep the finish callback current.
+  useEffect(() => {
+    onFinishRef.current = options.onFinish;
+  }, [options.onFinish]);
 
   // Keep the event metadata current, e.g. when the algorithm changes.
   useEffect(() => {

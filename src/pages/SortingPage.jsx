@@ -76,7 +76,7 @@ const SortingPage = () => {
 
       {compareAlgos ? (
         <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
-          {compareAlgos.map((algo) => (
+          {compareAlgos.map((algo, index) => (
             <div
               key={algo.name}
               className="flex min-h-[600px] flex-col overflow-hidden rounded-3xl border border-line-subtle bg-paper-1/80 shadow-paper"
@@ -84,6 +84,7 @@ const SortingPage = () => {
               <SortingVisualizer
                 algorithm={algo.algorithm}
                 algorithmInfo={algo.info}
+                playbackSource={index === 0 ? 'sorting' : `sorting:${algo.name}`}
               />
             </div>
           ))}

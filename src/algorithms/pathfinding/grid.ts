@@ -25,6 +25,16 @@ export type GridNode = {
 
 export type Grid = readonly (readonly GridNode[])[];
 
+/**
+ * The cost of moving into a cell.
+ *
+ * A weight below one would make a move free, and a negative one would
+ * make the shortest path undefined — both break what the weighted
+ * searches promise. The model clamps rather than trusting every caller.
+ */
+export const weightOf = (node: GridNode): number =>
+  Math.max(1, Number.isFinite(node.weight) ? (node.weight as number) : 1);
+
 /** A stable key for a cell, for use in a set or a map. */
 export const cellKey = (cell: CellRef): string => `${cell.row},${cell.col}`;
 

@@ -76,6 +76,35 @@ describe('usePlayback', () => {
     expect(result.current.index).toBe(1);
   });
 
+  it('calls onFinish once when playback reaches the end', () => {
+    const fake = createFakeEnv();
+    const finishes: number[] = [];
+
+    const { result } = renderHook(() =>
+      usePlayback(steps, {
+        env: fake.env,
+        speed: 100,
+        onFinish: () => {
+          finishes.push(1);
+        },
+      })
+    );
+
+    act(() => {
+      result.current.play();
+    });
+
+    // Four steps, so the fifth tick is the one that finds the end.
+    act(() => {
+      for (let i = 0; i < 5; i++) {
+        fake.advance(100);
+      }
+    });
+
+    expect(result.current.isFinished).toBe(true);
+    expect(finishes).toHaveLength(1);
+  });
+
   it('seeks to a position in the trace', () => {
     const fake = createFakeEnv();
     const { result } = renderHook(() => usePlayback(steps, { env: fake.env }));

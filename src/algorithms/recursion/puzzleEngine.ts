@@ -1,26 +1,18 @@
-// src/algorithms/recursion/puzzleEngine.ts
-// Trace generator for puzzle algorithms.
-//
-// This is the first module in the TypeScript migration. It is deliberately
-// one of the pure ones: no React, no DOM, no timers — just a function that
-// returns a trace.
+import type { PuzzleStep, PuzzleView, RecursionFrame } from '@core/steps';
 
 /** The three pegs of a Tower of Hanoi puzzle. */
 export type PegName = 'A' | 'B' | 'C';
 
-/** The kind of event a trace step represents. */
-export type HanoiTraceType = 'START' | 'CALL' | 'MOVE' | 'RETURN' | 'SUCCESS';
-
 /** The contents of all three pegs at a point in time. */
 export type HanoiPegs = Record<PegName, number[]>;
 
-/** One entry in a Tower of Hanoi trace. */
-export type HanoiTraceStep = {
-  type: HanoiTraceType;
-  pegs: HanoiPegs;
-  message: string;
-  stack: string[];
-};
+/**
+ * Build a puzzle step.
+ *
+ * The helper keeps the object literal out of the ambiguous position
+ * after `yield`.
+ */
+export const puzzleStep = (step: PuzzleStep): PuzzleStep => step;
 
 const clonePegs = (pegs: HanoiPegs): HanoiPegs => ({
   A: [...pegs.A],
@@ -29,14 +21,22 @@ const clonePegs = (pegs: HanoiPegs): HanoiPegs => ({
 });
 
 /**
- * Build the full execution trace of a Tower of Hanoi solution.
+ * The full execution trace of a Tower of Hanoi solution.
+ *
+ * Yields a step every time a disk moves or a call is made or returned,
+ * so the puzzle can be scrubbed to any position.
  *
  * @param n - how many disks to move.
- * @returns the trace, from START to SUCCESS.
  */
-export const runTowerOfHanoiTrace = (n: number): HanoiTraceStep[] => {
-  const trace: HanoiTraceStep[] = [];
+export function* runTowerOfHanoiTrace(n: number): Generator<PuzzleStep, void, undefined> {
   const stack: string[] = [];
+
+  const frames = (): readonly RecursionFrame[] => stack.map((name, depth) => ({ name, depth }));
+
+  const view = (pegs: HanoiPegs): PuzzleView => ({
+    pegs: clonePegs(pegs),
+    stack: frames(),
+  });
 
   // Peg A starts with every disk, largest first.
   const pegs: HanoiPegs = {
@@ -45,68 +45,71 @@ export const runTowerOfHanoiTrace = (n: number): HanoiTraceStep[] => {
     C: [],
   };
 
-  const recurse = (disk: number, source: PegName, auxiliary: PegName, target: PegName): void => {
+  function* recurse(
+    disk: number,
+    source: PegName,
+    auxiliary: PegName,
+    target: PegName
+  ): Generator<PuzzleStep, void, undefined> {
     stack.push(`hanoi(${disk}, ${source}, ${target}, ${auxiliary})`);
 
-    trace.push({
-      type: 'CALL',
-      pegs: clonePegs(pegs),
+    yield puzzleStep({
+      family: 'puzzle',
+      t: 'call',
+      view: view(pegs),
       message: `Moving ${disk} disk(s) from ${source} to ${target}`,
-      stack: [...stack],
     });
 
     if (disk === 1) {
-      pegs[target].push(pegs[source].pop()!);
+      pegs[target].push(pegs[source].pop() as number);
 
-      trace.push({
-        type: 'MOVE',
-        pegs: clonePegs(pegs),
+      yield puzzleStep({
+        family: 'puzzle',
+        t: 'move',
+        view: view(pegs),
         message: `Moved disk ${pegs[target][pegs[target].length - 1]} from ${source} to ${target}`,
-        stack: [...stack],
       });
 
       stack.pop();
       return;
     }
 
-    recurse(disk - 1, source, target, auxiliary);
+    yield* recurse(disk - 1, source, target, auxiliary);
 
-    pegs[target].push(pegs[source].pop()!);
+    pegs[target].push(pegs[source].pop() as number);
 
-    trace.push({
-      type: 'MOVE',
-      pegs: clonePegs(pegs),
+    yield puzzleStep({
+      family: 'puzzle',
+      t: 'move',
+      view: view(pegs),
       message: `Moved disk ${pegs[target][pegs[target].length - 1]} from ${source} to ${target}`,
-      stack: [...stack],
     });
 
-    recurse(disk - 1, auxiliary, source, target);
+    yield* recurse(disk - 1, auxiliary, source, target);
 
-    trace.push({
-      type: 'RETURN',
-      pegs: clonePegs(pegs),
+    yield puzzleStep({
+      family: 'puzzle',
+      t: 'return',
+      view: view(pegs),
       message: `Finished moving ${disk} disk(s) from ${source} to ${target}`,
-      stack: [...stack],
     });
 
     stack.pop();
-  };
+  }
 
-  trace.push({
-    type: 'START',
-    pegs: clonePegs(pegs),
+  yield puzzleStep({
+    family: 'puzzle',
+    t: 'start',
+    view: view(pegs),
     message: `Starting Tower of Hanoi with ${n} disks`,
-    stack: [],
   });
 
-  recurse(n, 'A', 'B', 'C');
+  yield* recurse(n, 'A', 'B', 'C');
 
-  trace.push({
-    type: 'SUCCESS',
-    pegs: clonePegs(pegs),
+  yield puzzleStep({
+    family: 'puzzle',
+    t: 'success',
+    view: view(pegs),
     message: 'All disks moved successfully!',
-    stack: [],
   });
-
-  return trace;
-};
+}

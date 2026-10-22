@@ -24,15 +24,15 @@
 - [x] De-collide `data/treeAlgorithms.js` — `algorithmData` renamed to `treeAlgorithmData` (`9f3bfa1`)
 - [x] Remove unused imports across `src/` — 45 dead symbols and 27 redundant `import React` lines (`45d339d`)
 - [x] Add `engines` (node >= 24, pnpm >= 12), `.nvmrc`, `.editorconfig` (`f063622`)
-- [ ] Delete the dead-code list from audit §1.5 — deliberately deferred, not in this pass
-- [ ] Remove the stale `package-lock.json` — deliberately deferred, not in this pass
+- [x] Delete the dead-code list from audit §1.5 — done with the family ports: `nQueens.js`, `towerOfHanoi.js`, the tree re-export shims, orphan `avl.js` and the unused `RecursionVisualizer.jsx` are all gone
+- [x] Remove the stale `package-lock.json` — gone; `pnpm-lock.yaml` is the only lockfile
 - [ ] README bugs section — deferred to Phase 5 (docs rewrite)
 
 #### Phase 0 acceptance
 
 - [x] Zero known P0 runtime bugs
 - [x] Production build green after every commit
-- [ ] `grep`-verified dead-code list empty — blocked on the deferred sweep above
+- [x] `grep`-verified dead-code list empty — the §1.5 list is gone
 - [ ] README bugs section gone — deferred to Phase 5
 
 ### Phase 1 — Safety net
@@ -60,6 +60,7 @@
 - [ ] Playwright e2e job — no e2e specs exist until the Phase 2 ports land
 - [ ] Prettier sweep over the 94 legacy files that are not formatted — a separate, explicit decision
 - [ ] `react-hooks/exhaustive-deps` warnings (17) and `react-refresh` warnings (2) — warnings today, errors when the components are rewritten
+- [ ] `checkJs` over the legacy surface — **measured, not enabled**: `tsc` over `.js` + `.ts` reports **104 errors in 9 files** (`editor/executors.js` 33, `soundEngine.js` 17, `animationHelpers.js` 12, `animatedFavicon.js` 12, `completions.js` 10, `confettiHelper.js` 9, and four more); over `.jsx` as well it is **1,511 errors**, dominated by the unported visualizers. Enabling it today would fail the gate on files the migration has not reached, so the plan's per-file rule stands: each file is checked as it converts. The `onFinish` regression is the argument for doing it sooner — it lived in a `.jsx` file that no checker read.
 
 #### Phase 1 acceptance
 
@@ -87,6 +88,8 @@
 - [x] **trees — BST / AVL / heap** — the BST insert, search and delete, the four traversals, the AVL insert, search and delete with all four rotation cases, and the heap insert and delete, all as pure generators with property tests; the tree visualizers read the tree from the current step, so a rotation is visible the moment it happens; `bstOperations.js`, `avlOperations.js`, `heapOperations.js`, `traversals.js` and the orphan `avl.js` are gone (`7755a57`, `3ccb1ec`)
 - [x] **segment tree / trie** — build, range query and point update for the segment tree; insert, search, autocomplete and delete for the trie; both got views of their own because neither is a tree of pointers; `segmentTreeOperations.js` and `trieOperations.js` are gone (`7755a57`, `3ccb1ec`)
 - [x] **recursion engines** — the six tree-recursion algorithms and the four board searches as generators; the contract gained a node map for the call tree and a `board` family for the searches; `engine.js`, `gridEngine.js` and the two dead duplicate modules (`nQueens.js`, `towerOfHanoi.js`) are gone (`b6165ed`, `0dc8d16`)
+- [x] **puzzles** — the Tower of Hanoi is a `puzzle` family generator now, with a pegs view; the visualizer reads it through the playback engine
+- [x] **the last two visualizers that owned time** — `GraphVisualizer` and `TowerOfHanoiVisualizer` now use the playback engine. The remaining `setInterval` calls are not playback: the favicon animation, the confetti animation, and the arena's race timer
 - [x] **DP** — the knapsack, the longest common subsequence and Fibonacci as generators, checked against brute force; the table snapshot lives in the generator now, one place instead of per component; `DPVisualizer` is playback-driven and its tabs come from the family registry (`9086385`)
 - [x] the maze generator — typed, not traced: a maze is built in one synchronous pass and the search is what gets played back (`80b601b`)
 
@@ -106,6 +109,11 @@
 - [x] the subsets trace pushed two pseudo-call frames per level and popped one, so the displayed call stack grew faster than the real depth; the decisions are their own step kind now (`b6165ed`)
 - [x] the segment tree's node snapshot had no coordinates for the layout; the layout helper assigns them and the type says so
 - [x] the knight's tour numbers its squares from zero, not one — the test asserts what the algorithm actually does
+- [x] `usePlayback` dropped the `onFinish` a visualizer passed it, **and** the tick loop skipped the final `advance()` once a trace was finished — so no run ever called `onFinish` or paused itself: the confetti and the completion toast never fired, and `isPlaying` stayed true at the end. Found in the Phase 2 audit, fixed in the engine with a test that pins both.
+- [x] `FAMILIES` in the event bus listed 7 of the 11 step families, so `onAny` silently skipped the rest. The list is now a `Record<StepFamily, true>`, which stops compiling when a family is added without updating it.
+- [x] `SortingVisualizer` passed `onFinish` to a hook that had no such option; the TypeScript-free `.jsx` boundary is why nothing caught it — see the `checkJs` note below
+- [x] the sound subscriber played every `sorting` event regardless of which playback instance published it, so compare mode doubled the notes; the source is instance-scoped now and only the left instance is audible
+- [x] `GridNode.weight` had no lower bound, so a zero or negative weight would quietly break the shortest-path guarantee; `weightOf()` clamps it in one place, used by both Dijkstra and A*
 
 #### Rules added
 
@@ -115,9 +123,9 @@
 #### Phase 2 acceptance
 
 - [x] Golden traces pass for every ported family
-- [x] Component smoke tests pass for every ported family
+- [ ] Component smoke tests pass for every ported family — **only `SortingBars` and `SearchingBars` have component tests today (2 of 11 families)**; everything else is covered at the algorithm layer, and the visualizers are exercised by the build and by hand. Adding jsdom smoke tests per visualizer is open work, not done.
 - [x] The old implementation is gone for every ported family — verified by grep
-- [x] Every family ported — sorting, searching, pathfinding, graph, trees (BST, AVL, heap, segment tree, trie), recursion (call tree and board searches) and DP; the only remaining algorithm module is the maze generator, which is a constructor rather than an animation and is typed
+- [x] Every family ported — sorting, searching, pathfinding, graph, trees (BST, AVL, heap, segment tree, trie), recursion (call tree and board searches), puzzles (Tower of Hanoi) and DP; the only remaining algorithm module is the maze generator, which is a constructor rather than an animation and is typed
 
 ### Phase 3 — Registry drives the app
 

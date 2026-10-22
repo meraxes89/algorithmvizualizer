@@ -3,6 +3,7 @@ import { Play, Pause, RotateCcw, Trash2, HelpCircle, Shuffle, ChevronLeft, Chevr
 import { COLORS } from '../utils/animationHelpers';
 import { graphAlgorithms, getEdgeKey } from '../algorithms/graph';
 import { collectSteps } from '../core/playback';
+import { usePlayback } from '../hooks/usePlayback';
 import InteractiveGraphBuilder from './educational/InteractiveGraphBuilder';
 import { triggerVictoryConfetti } from '../utils/confettiHelper';
 
@@ -40,9 +41,25 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
   // Visualizer step states
   const [steps, setSteps] = useState([]);
-  const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [speed, setSpeed] = useState(300); // ms per step
+
+  // The playback engine owns the run: graph steps reach the event bus and
+  // the transport behaves like every other family's.
+  const {
+    index: currentStepIndex,
+    isPlaying,
+    speed,
+    play,
+    pause,
+    next,
+    previous,
+    reset: resetPlayback,
+    setSpeed,
+  } = usePlayback(steps, {
+    speed: 300,
+    source: 'graph',
+    meta: { algorithm: currentAlgoKey },
+    onFinish: triggerVictoryConfetti,
+  });
   const [showGraphBuilder, setShowGraphBuilder] = useState(false);
 
   // Editor states
@@ -53,7 +70,6 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
   // Drag node ref
   const draggingNodeRef = useRef(null);
   const svgRef = useRef(null);
-  const playIntervalRef = useRef(null);
 
   // Sync isDirected when selected algorithm changes
   useEffect(() => {
@@ -67,7 +83,6 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
   // Generate an initial random graph
   useEffect(() => {
     generateRandomGraph();
-    return () => clearInterval(playIntervalRef.current);
   }, []);
 
   // Set default source/target after graph generation
@@ -82,22 +97,9 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     }
   }, [vertices]);
 
-  // Handle auto playback interval
-  useEffect(() => {
-    if (isPlaying) {
-      playIntervalRef.current = setInterval(() => {
-        handleNextStep();
-      }, speed);
-    } else {
-      clearInterval(playIntervalRef.current);
-    }
-    return () => clearInterval(playIntervalRef.current);
-  }, [isPlaying, currentStepIndex, steps, speed]);
-
   const generateRandomGraph = () => {
-    setIsPlaying(false);
+    pause();
     setSteps([]);
-    setCurrentStepIndex(-1);
 
     const count = 6;
     const width = 800;
@@ -260,7 +262,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
       return;
     }
 
-    setIsPlaying(false);
+    pause();
 
     // MST algorithms and Topological Sort do not need source/target selection.
     const computedSteps = details.needsSource
@@ -268,28 +270,11 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
       : collectSteps(details.generator(vertices, edges, null, null, isDirected));
 
     setSteps(computedSteps);
-    setCurrentStepIndex(0);
-  };
-
-  const handleNextStep = () => {
-    if (currentStepIndex < steps.length - 1) {
-      setCurrentStepIndex(prev => prev + 1);
-    } else {
-      setIsPlaying(false);
-      triggerVictoryConfetti();
-    }
-  };
-
-  const handlePrevStep = () => {
-    if (currentStepIndex > 0) {
-      setCurrentStepIndex(prev => prev - 1);
-    }
   };
 
   const resetVisualization = () => {
-    setIsPlaying(false);
+    resetPlayback();
     setSteps([]);
-    setCurrentStepIndex(-1);
   };
 
   const activeStep = steps[currentStepIndex] || null;
@@ -361,7 +346,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
           ) : (
             <>
               <button
-                onClick={() => setIsPlaying(!isPlaying)}
+                onClick={() => (isPlaying ? pause() : play())}
                 className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-colors shadow-sm shadow-blue-600/20"
               >
                 {isPlaying ? <Pause size={16} /> : <Play size={16} />}
@@ -369,7 +354,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
               </button>
 
               <button
-                onClick={handlePrevStep}
+                onClick={() => previous()}
                 disabled={currentStepIndex <= 0}
                 className="bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed p-2.5 rounded-lg transition-colors shadow-sm"
               >
@@ -377,7 +362,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
               </button>
 
               <button
-                onClick={handleNextStep}
+                onClick={() => next()}
                 disabled={currentStepIndex >= steps.length - 1}
                 className="bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 disabled:opacity-40 disabled:cursor-not-allowed p-2.5 rounded-lg transition-colors shadow-sm"
               >

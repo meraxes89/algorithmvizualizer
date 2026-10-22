@@ -45,6 +45,7 @@ export type StepFamily =
   | 'heap'
   | 'recursion'
   | 'board'
+  | 'puzzle'
   | 'dp';
 
 /** Tags every step of a family with that family, so `AnyStep` narrows. */
@@ -420,6 +421,29 @@ export type BoardStep = OfFamily<'board'> & {
 export type BoardGenerator = Generator<BoardStep, void, undefined>;
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Puzzles
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The pegs of a Tower of Hanoi puzzle, each holding its disks. */
+export type PuzzleView = {
+  /** The disks on each peg, largest first. */
+  readonly pegs: Readonly<Record<string, readonly number[]>>;
+  /** The call stack, innermost frame last. */
+  readonly stack: readonly RecursionFrame[];
+};
+
+export type PuzzleStep = OfFamily<'puzzle'> & {
+  /** What happened. */
+  t: 'start' | 'call' | 'move' | 'return' | 'success';
+  /** The complete visual state. */
+  view: PuzzleView;
+  /** A line of prose about the step. */
+  message?: string;
+};
+
+export type PuzzleGenerator = Generator<PuzzleStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Dynamic programming
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -460,6 +484,7 @@ export type StepByFamily = {
   heap: HeapStep;
   recursion: RecursionStep;
   board: BoardStep;
+  puzzle: PuzzleStep;
   dp: DPStep;
 };
 
@@ -474,6 +499,7 @@ export type GeneratorByFamily = {
   heap: HeapGenerator;
   recursion: RecursionGenerator;
   board: BoardGenerator;
+  puzzle: PuzzleGenerator;
   dp: DPGenerator;
 };
 

@@ -216,10 +216,19 @@ export const soundEngine = new SoundEngine();
  * comparison or a swap into notes. Nothing in `src/algorithms` knows
  * that sound exists.
  *
+ * @param options.source - which playback instance to listen to. Two
+ * visualizers can run at once in compare mode, and they publish the same
+ * family; without this filter both streams would play, and the notes
+ * would overlap.
  * @returns a function that unsubscribes.
  */
-export const subscribeToStepEvents = () => {
-  return stepBus.on('sorting', ({ step, meta }) => {
+export const subscribeToStepEvents = ({ source = 'sorting' } = {}) => {
+  return stepBus.on('sorting', (event) => {
+    // Only the audible instance plays. The other one still publishes, so
+    // the bus stays honest about what ran.
+    if (event.source !== source) return;
+
+    const { step, meta } = event;
     if (!soundEngine.isEnabled) return;
 
     const { array, comparing, swapping } = step.view;
