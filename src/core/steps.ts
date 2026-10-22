@@ -36,7 +36,15 @@
 
 /** Every family the contract covers. */
 export type StepFamily =
-  'sorting' | 'searching' | 'pathfinding' | 'graph' | 'trees' | 'recursion' | 'dp';
+  | 'sorting'
+  | 'searching'
+  | 'pathfinding'
+  | 'graph'
+  | 'trees'
+  | 'trie'
+  | 'heap'
+  | 'recursion'
+  | 'dp';
 
 /** Tags every step of a family with that family, so `AnyStep` narrows. */
 type OfFamily<F extends StepFamily> = { readonly family: F };
@@ -199,7 +207,8 @@ export type TreeLogEntry = {
  */
 export type TreeNodeSnapshot = {
   readonly id: number;
-  readonly val: number;
+  /** The value of the node, or null while it is still being built. */
+  readonly val: number | null;
   readonly left: number | null;
   readonly right: number | null;
   /** The height of the subtree, for the balanced trees. */
@@ -218,6 +227,12 @@ export type TreeView = {
   readonly order: readonly number[];
   /** The nodes taking part in a rotation, for the balanced trees. */
   readonly rotating?: readonly number[];
+  /** The range a segment-tree node covers, by node id. */
+  readonly ranges?: Readonly<Record<number, readonly [number, number]>>;
+  /** The nodes that contributed to the answer, for a range query. */
+  readonly contributing?: readonly number[];
+  /** The nodes the new value is propagating through, for a point update. */
+  readonly propagating?: readonly number[];
   /** Everything the algorithm has logged so far. */
   readonly log: readonly TreeLogEntry[];
 };
@@ -232,6 +247,89 @@ export type TreeStep = OfFamily<'trees'> &
   );
 
 export type TreeGenerator = Generator<TreeStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tries
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One node of a trie, flattened. */
+export type TrieNodeSnapshot = {
+  readonly id: number;
+  /** The character the node stands for. */
+  readonly char: string;
+  /** Whether a word ends at this node. */
+  readonly isEnd: boolean;
+  /** The children of the node, by id. */
+  readonly children: readonly number[];
+};
+
+/**
+ * The complete visual state of a trie.
+ *
+ * A trie is a tree whose children are keyed by a character rather than
+ * by a side, so it has a view of its own.
+ */
+export type TrieView = {
+  /** Every node of the trie, by id. */
+  readonly nodes: Readonly<Record<number, TrieNodeSnapshot>>;
+  /** The state of every node the algorithm has touched, by id. */
+  readonly states: Readonly<Record<number, TreeNodeState>>;
+  /** The node currently being worked on, or null. */
+  readonly active: number | null;
+  /** The order the nodes were visited in. */
+  readonly order: readonly number[];
+  /** The nodes that hold a complete word. */
+  readonly found: readonly number[];
+  /** The node being removed. */
+  readonly deleting: readonly number[];
+  /** Everything the algorithm has logged so far. */
+  readonly log: readonly TreeLogEntry[];
+};
+
+export type TrieStep = OfFamily<'trie'> &
+  (
+    | { t: 'visit'; view: TrieView; node: number }
+    | { t: 'active'; view: TrieView; node: number | null }
+    | { t: 'found'; view: TrieView; node: number }
+    | { t: 'log'; view: TrieView; entry: TreeLogEntry }
+    | { t: 'done'; view: TrieView }
+  );
+
+export type TrieGenerator = Generator<TrieStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Heaps
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The complete visual state of a heap.
+ *
+ * A heap is an array with an invariant, not a tree of pointers, so its
+ * view is an array and its highlights are indices.
+ */
+export type HeapView = {
+  /** The values, in the order the heap stores them. */
+  readonly values: readonly number[];
+  /** The index being worked on, or null. */
+  readonly active: number | null;
+  /** The indices being compared. */
+  readonly comparing: readonly number[];
+  /** The indices being swapped. */
+  readonly swapping: readonly number[];
+  /** Everything the algorithm has logged so far. */
+  readonly log: readonly TreeLogEntry[];
+};
+
+export type HeapStep = OfFamily<'heap'> &
+  (
+    | { t: 'compare'; view: HeapView; indices: readonly number[] }
+    | { t: 'swap'; view: HeapView; indices: readonly number[] }
+    | { t: 'active'; view: HeapView; index: number | null }
+    | { t: 'log'; view: HeapView; entry: TreeLogEntry }
+    | { t: 'done'; view: HeapView }
+  );
+
+export type HeapGenerator = Generator<HeapStep, void, undefined>;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Recursion
@@ -297,6 +395,8 @@ export type StepByFamily = {
   pathfinding: PathStep;
   graph: GraphStep;
   trees: TreeStep;
+  trie: TrieStep;
+  heap: HeapStep;
   recursion: RecursionStep;
   dp: DPStep;
 };
@@ -308,6 +408,8 @@ export type GeneratorByFamily = {
   pathfinding: PathGenerator;
   graph: GraphGenerator;
   trees: TreeGenerator;
+  trie: TrieGenerator;
+  heap: HeapGenerator;
   recursion: RecursionGenerator;
   dp: DPGenerator;
 };

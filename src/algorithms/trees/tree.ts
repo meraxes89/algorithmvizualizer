@@ -30,10 +30,24 @@ export type TreeNode = {
 /** A flat snapshot of a whole tree. */
 export type TreeSnapshot = Record<number, TreeNodeSnapshot>;
 
+/**
+ * The shape the tree helpers need from a node.
+ *
+ * Every tree-shaped family has a node with an id, a value and two
+ * children; only the meaning of the value differs.
+ */
+export type ViewableNode = {
+  id: number;
+  val: number | null;
+  left: ViewableNode | null;
+  right: ViewableNode | null;
+  height?: number;
+};
+
 /** Walk a tree, depth first. */
 export const walkTree = (
-  node: TreeNode | null,
-  visit: (node: TreeNode, depth: number) => void,
+  node: ViewableNode | null,
+  visit: (node: ViewableNode, depth: number) => void,
   depth = 0
 ): void => {
   if (!node) return;
@@ -43,7 +57,7 @@ export const walkTree = (
 };
 
 /** Flatten a tree into a snapshot the step can carry. */
-export const snapshotTree = (root: TreeNode | null): TreeSnapshot => {
+export const snapshotTree = (root: ViewableNode | null): TreeSnapshot => {
   const snapshot: TreeSnapshot = {};
 
   walkTree(root, (node) => {
@@ -97,15 +111,21 @@ export class TreeTrace {
   log: TreeLogEntry[] = [];
   states: Record<number, TreeNodeState> = {};
   rotating: number[] = [];
+  ranges: Record<number, [number, number]> = {};
+  contributing: number[] = [];
+  propagating: number[] = [];
 
   /** The current view of the tree. */
-  view(root: TreeNode | null): TreeView {
+  view(root: ViewableNode | null): TreeView {
     return {
       nodes: snapshotTree(root),
       states: { ...this.states },
       active: this.active,
       order: [...this.visited],
       rotating: [...this.rotating],
+      ranges: { ...this.ranges },
+      contributing: [...this.contributing],
+      propagating: [...this.propagating],
       log: [...this.log],
     };
   }
