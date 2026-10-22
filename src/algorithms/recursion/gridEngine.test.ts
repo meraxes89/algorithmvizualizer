@@ -5,7 +5,7 @@ import {
   runRatInMazeTrace,
   runSudokuTrace,
 } from './gridEngine';
-import type { BoardStep } from '@core/steps';
+import type { BoardCell, BoardStep } from '@core/steps';
 
 const trace = (generator: Generator<BoardStep, void, undefined>) => [...generator];
 

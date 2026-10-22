@@ -1,33 +1,61 @@
+import type { CellRef } from '@core/steps';
+
+/**
+ * A cell a maze builder works on.
+ *
+ * The maze builder mutates the grid it is given — that is what building a
+ * maze is — so this is the mutable counterpart of the pathfinding grid's
+ * node, and everything else on a cell travels through the spread.
+ */
+export type MazeNode = {
+  readonly row: number;
+  readonly col: number;
+  isWall: boolean;
+  weight?: number;
+};
+
+export type MazeGrid = MazeNode[][];
+
 // Maze Generation Algorithms for Pathfinding Visualizer
 // Generates complex, challenging, guaranteed-solvable mazes with winding corridors and dead-ends.
 
 /**
  * Ensures Start and End are connected in grid. If blocked, carves a winding path.
  */
-function ensureConnectivity(grid, startPos, endPos) {
+function ensureConnectivity(grid: MazeGrid, startPos: CellRef, endPos: CellRef): MazeGrid {
   const numRows = grid.length;
   const numCols = grid[0].length;
-  
+
   // BFS check
-  const queue = [{ row: startPos.row, col: startPos.col }];
+  const queue: CellRef[] = [{ row: startPos.row, col: startPos.col }];
   const visited = new Set([`${startPos.row},${startPos.col}`]);
   let found = false;
 
   while (queue.length > 0) {
-    const { row, col } = queue.shift();
+    const current = queue.shift();
+    if (!current) break;
+
+    const { row, col } = current;
     if (row === endPos.row && col === endPos.col) {
       found = true;
       break;
     }
 
-    const dirs = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+    const dirs = [
+      [-1, 0],
+      [1, 0],
+      [0, -1],
+      [0, 1],
+    ];
     for (const [dr, dc] of dirs) {
       const nr = row + dr;
       const nc = col + dc;
       const key = `${nr},${nc}`;
       if (
-        nr >= 0 && nr < numRows &&
-        nc >= 0 && nc < numCols &&
+        nr >= 0 &&
+        nr < numRows &&
+        nc >= 0 &&
+        nc < numCols &&
         !grid[nr][nc].isWall &&
         !visited.has(key)
       ) {
@@ -48,9 +76,9 @@ function ensureConnectivity(grid, startPos, endPos) {
 
   while (currR !== targetR || currC !== targetC) {
     grid[currR][currC].isWall = false;
-    
+
     // Choose step towards target with slight randomness
-    const moves = [];
+    const moves: [number, number][] = [];
     if (currR < targetR) moves.push([1, 0]);
     if (currR > targetR) moves.push([-1, 0]);
     if (currC < targetC) moves.push([0, 1]);
@@ -58,7 +86,12 @@ function ensureConnectivity(grid, startPos, endPos) {
 
     if (Math.random() < 0.3) {
       // Add random side turn
-      const sideMoves = [[-1, 0], [1, 0], [0, -1], [0, 1]];
+      const sideMoves = [
+        [-1, 0],
+        [1, 0],
+        [0, -1],
+        [0, 1],
+      ];
       const randomMove = sideMoves[Math.floor(Math.random() * sideMoves.length)];
       const nr = Math.max(0, Math.min(numRows - 1, currR + randomMove[0]));
       const nc = Math.max(0, Math.min(numCols - 1, currC + randomMove[1]));
@@ -79,13 +112,17 @@ function ensureConnectivity(grid, startPos, endPos) {
  * 1. Recursive Backtracking (DFS Winding Corridors) Maze Generator
  * Creates intricate, deep winding labyrinths with multiple dead ends.
  */
-export function generateDFSBacktrackingMaze(baseGrid, startPos, endPos) {
+export function generateDFSBacktrackingMaze(
+  baseGrid: MazeGrid,
+  startPos: CellRef,
+  endPos: CellRef
+): MazeGrid {
   const numRows = baseGrid.length;
   const numCols = baseGrid[0].length;
 
   // Start with a clone of grid where all cells are walls
-  const grid = baseGrid.map(row =>
-    row.map(node => {
+  const grid = baseGrid.map((row) =>
+    row.map((node) => {
       const isStart = node.row === startPos.row && node.col === startPos.col;
       const isEnd = node.row === endPos.row && node.col === endPos.col;
       return {
@@ -96,7 +133,7 @@ export function generateDFSBacktrackingMaze(baseGrid, startPos, endPos) {
         distance: Infinity,
         previousNode: null,
         isStart,
-        isEnd
+        isEnd,
       };
     })
   );
@@ -104,9 +141,17 @@ export function generateDFSBacktrackingMaze(baseGrid, startPos, endPos) {
   // DFS Maze Carving using odd coordinates
   const visited = Array.from({ length: numRows }, () => Array(numCols).fill(false));
 
-  function getValidNeighbors(r, c) {
+  function getValidNeighbors(
+    r: number,
+    c: number
+  ): { r: number; c: number; dr: number; dc: number }[] {
     const neighbors = [];
-    const dirs = [[-2, 0], [2, 0], [0, -2], [0, 2]];
+    const dirs = [
+      [-2, 0],
+      [2, 0],
+      [0, -2],
+      [0, 2],
+    ];
     for (const [dr, dc] of dirs) {
       const nr = r + dr;
       const nc = c + dc;
@@ -179,12 +224,16 @@ export function generateDFSBacktrackingMaze(baseGrid, startPos, endPos) {
  * 2. Recursive Division Maze Generator
  * Creates clean, structured, chamber-like mazes with wall lines and passage openings.
  */
-export function generateRecursiveDivisionMaze(baseGrid, startPos, endPos) {
+export function generateRecursiveDivisionMaze(
+  baseGrid: MazeGrid,
+  startPos: CellRef,
+  endPos: CellRef
+): MazeGrid {
   const numRows = baseGrid.length;
   const numCols = baseGrid[0].length;
 
-  const grid = baseGrid.map(row =>
-    row.map(node => ({
+  const grid = baseGrid.map((row) =>
+    row.map((node) => ({
       ...node,
       isWall: false,
       isVisited: false,
@@ -204,7 +253,7 @@ export function generateRecursiveDivisionMaze(baseGrid, startPos, endPos) {
     grid[numRows - 1][c].isWall = true;
   }
 
-  function addWall(rStart, rEnd, cStart, cEnd) {
+  function addWall(rStart: number, rEnd: number, cStart: number, cEnd: number): void {
     const width = cEnd - cStart;
     const height = rEnd - rStart;
 
@@ -282,7 +331,7 @@ export function generateRecursiveDivisionMaze(baseGrid, startPos, endPos) {
   grid[endPos.row][endPos.col].isWall = false;
 
   // Clear adjacent cells to prevent immediate blockages
-  const clearRadius = (pos) => {
+  const clearRadius = (pos: CellRef): void => {
     for (let dr = -1; dr <= 1; dr++) {
       for (let dc = -1; dc <= 1; dc++) {
         const r = pos.row + dr;
@@ -303,12 +352,16 @@ export function generateRecursiveDivisionMaze(baseGrid, startPos, endPos) {
  * 3. Prim's Algorithm Labyrinth Generator
  * Produces organic, dense branching labyrinths with rich wall structures.
  */
-export function generatePrimsMaze(baseGrid, startPos, endPos) {
+export function generatePrimsMaze(
+  baseGrid: MazeGrid,
+  startPos: CellRef,
+  endPos: CellRef
+): MazeGrid {
   const numRows = baseGrid.length;
   const numCols = baseGrid[0].length;
 
-  const grid = baseGrid.map(row =>
-    row.map(node => ({
+  const grid = baseGrid.map((row) =>
+    row.map((node) => ({
       ...node,
       isWall: true,
       isVisited: false,
@@ -318,10 +371,15 @@ export function generatePrimsMaze(baseGrid, startPos, endPos) {
     }))
   );
 
-  const walls = [];
+  const walls: { r: number; c: number; fromR: number; fromC: number }[] = [];
 
-  function addCellWalls(r, c) {
-    const dirs = [[-2, 0], [2, 0], [0, -2], [0, 2]];
+  function addCellWalls(r: number, c: number): void {
+    const dirs = [
+      [-2, 0],
+      [2, 0],
+      [0, -2],
+      [0, 2],
+    ];
     for (const [dr, dc] of dirs) {
       const nr = r + dr;
       const nc = c + dc;
@@ -380,7 +438,12 @@ export function generatePrimsMaze(baseGrid, startPos, endPos) {
  * Primary Maze Generator Router
  * Returns a complex, guaranteed-solvable maze based on requested type or random selection.
  */
-export function generateComplexMaze(baseGrid, startPos, endPos, mazeType = 'dfs') {
+export function generateComplexMaze(
+  baseGrid: MazeGrid,
+  startPos: CellRef,
+  endPos: CellRef,
+  mazeType = 'dfs'
+): MazeGrid {
   if (mazeType === 'recursive_division') {
     return generateRecursiveDivisionMaze(baseGrid, startPos, endPos);
   }
