@@ -245,6 +245,7 @@ Still open for a later phase: visual screenshot regression on the 3D scenes, red
 - [x] `pnpm test:coverage` — 87.36% statements, 89.49% branches, 92.83% functions
 - [x] `GITHUB_PAGES=true pnpm build`
 - [x] `pnpm size` — bundle budget OK; no new budget changes
+- [x] CI run 39801326403 on `e16463b` — checks, build/bundle budget and the a11y route sweep all green
 
 ### Phase 6 — Continuous hardening
 
