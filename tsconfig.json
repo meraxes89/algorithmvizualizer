@@ -21,20 +21,19 @@
     "useDefineForClassFields": true,
     "noFallthroughCasesInSwitch": true,
 
-    "baseUrl": ".",
     "paths": {
-      "@core": ["src/core/index.ts"],
-      "@core/*": ["src/core/*"],
-      "@registry": ["src/registry/index.ts"],
-      "@registry/*": ["src/registry/*"],
-      "@algorithms": ["src/algorithms/index.ts"],
-      "@algorithms/*": ["src/algorithms/*"],
-      "@components": ["src/components/index.ts"],
-      "@components/*": ["src/components/*"],
-      "@hooks": ["src/hooks/index.ts"],
-      "@hooks/*": ["src/hooks/*"],
-      "@data": ["src/data/index.ts"],
-      "@data/*": ["src/data/*"]
+      "@core": ["./src/core/index.ts"],
+      "@core/*": ["./src/core/*"],
+      "@registry": ["./src/registry/index.ts"],
+      "@registry/*": ["./src/registry/*"],
+      "@algorithms": ["./src/algorithms/index.ts"],
+      "@algorithms/*": ["./src/algorithms/*"],
+      "@components": ["./src/components/index.ts"],
+      "@components/*": ["./src/components/*"],
+      "@hooks": ["./src/hooks/index.ts"],
+      "@hooks/*": ["./src/hooks/*"],
+      "@data": ["./src/data/index.ts"],
+      "@data/*": ["./src/data/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.tsx", "vitest.config.ts"]
