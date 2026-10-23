@@ -18,6 +18,24 @@ updates:
       - dependencies
     commit-message:
       prefix: chore(deps)
+    ignore:
+      # Major migrations that need a deliberate project, not a rubber-stamp
+      # merge — both failed their CI gates when Dependabot first proposed
+      # them (React 19 busts the bundle budget and re-chunks the app; Tailwind
+      # 4 breaks the build until the CSS-first config migration lands).
+      # Remove the ignore entry when the migration is scheduled.
+      - dependency-name: react
+        update-types:
+          - version-update:semver-major
+      - dependency-name: react-dom
+        update-types:
+          - version-update:semver-major
+      - dependency-name: '@types/react'
+        update-types:
+          - version-update:semver-major
+      - dependency-name: tailwindcss
+        update-types:
+          - version-update:semver-major
     groups:
       production-minor-patch:
         dependency-type: production
