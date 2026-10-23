@@ -298,6 +298,25 @@ Still open for a later phase at the time: visual screenshot regression on the 3D
 
 ---
 
+## Post-merge maintenance (2026-10-23, on `main` after PR #2)
+
+The merge triggered the first Dependabot cycle: six update PRs plus the first post-merge Checks run failing on the Lighthouse floor. Everything from that batch, in the order it was resolved:
+
+- [x] **Lighthouse 73 vs the 75 floor on the merge commit** (run 39913064762, CLS 1.0 vs 0.132 on the identical tree hours earlier) — root-caused and fixed in `f9a99c1`; the full story is in the Phase 6 Lighthouse entry above
+- [x] **AVL insert log test de-flaked** (`f29d4bf`) — "logs what it did" drew its tree from unseeded `Math.random()` and asserted a `compare` that the duplicate-at-root draw (~1%) never emits; it fired on the three.js merge run (39917898865) and made an unrelated bump look guilty. The tree is fixed now; the other random-tree uses assert invariants and stay random
+- [x] **PR #4 merged** (`c7e32c8`) — three 0.185.1 → 0.186.1, production minor group, CI green
+- [x] **PR #7 applied via merge commit `2a41aae`** — @vitejs/plugin-react 4.7.0 → 5.2.0; its CI was green and its peer range (`vite ^4.2.0 || … ^8.0.0`) covers Vite 5, so the major was safe. Merged locally in one verified batch (below) so the lockfile stayed coherent
+- [x] **PR #8 applied via merge commit `ebb31b6`** — framer-motion 12.43.0 → 14.4.0; peers cover React 18, CI green, and the combined tree got an extra runtime pass (route mounts, CLS 0.0000 on `/` and `/arena`, Lighthouse 97/100)
+- [x] **PR #9 applied via commit `3911732`** — TypeScript 5.9.3 → 6.0.3: the only compile error under TS 6 was the `baseUrl` deprecation (TS5101), so the "major" was a config one-liner (drop `baseUrl`, make `paths` explicitly relative). Taken rather than ignored
+- [x] **PR #3 merged** (`a35a0573`) — the actions group (checkout 7, pnpm/action-setup 6, setup-node 7, upload-artifact 7, configure-pages 6, upload-pages-artifact 5, deploy-pages 5); after a rebase onto the fixed main its full CI went green, and the post-merge Checks (run 51) plus the Pages Deploy (run 8) with the new action versions are green
+- [x] **PR #5 closed with rationale + ignore rule** — React 19 busts the bundle budget (re-chunked app) and is a deliberate migration; `react`, `react-dom`, `@types/react` semver-majors are ignored in `.github/dependabot.yml` until it is scheduled
+- [x] **PR #6 closed with rationale + ignore rule** — Tailwind 4 breaks the build until the CSS-first config migration (PostCSS plugin, theme in CSS, opacity-modifier syntax, the Paper Studio token layer); `tailwindcss` semver-majors ignored until scheduled
+- [x] **Lockfile discipline note** — GitHub's textual merge of a lockfile-based PR can produce an incoherent `pnpm-lock.yaml` when main moved under it; the #7/#8 batch was merged locally with `pnpm install` regenerating one coherent lockfile and the full gate run on the combined tree before the single push (lint 0 errors, tsc clean, 376/376, build + budget green)
+
+Verification for the batch: CI runs 49 (`f29d4bf`), 50 (`ebb31b6`) and 51 (`a35a0573`) green — checks, build/bundle budget, a11y sweep, Lighthouse — and Pages Deploys 7 and 8 green. The Dependabot queue is empty; six PRs resolved (three merged, three applied-and-closed), two majors parked with recorded reasons.
+
+---
+
 ## Repository remotes
 
 Decided 2026-10-22, Phase 1 risk register ("Dual remotes (GitHub + GitLab) diverge").
