@@ -134,10 +134,15 @@ jobs:
           echo "preview server did not start"
           exit 1
 
+      # The product is a desktop-first visualizer (the e2e suite runs
+      # desktop Chromium too), and the default mobile emulation throttles
+      # the CPU 4x on a shared 2-core runner, which swamps the score with
+      # variance. The desktop preset measures the product as it ships.
       - name: Run Lighthouse against the home route
         run: |
           mkdir -p lighthouse-reports
           pnpm dlx lighthouse@12 http://localhost:4173/ \
+            --preset=desktop \
             --output=json \
             --output-path=lighthouse-reports/home.json \
             --only-categories=performance,accessibility,best-practices,seo \
