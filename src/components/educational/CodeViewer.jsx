@@ -27,12 +27,12 @@ const CODE_STYLE = {
   lineHeight: '1.6',
   padding: '20px',
   margin: 0,
-  backgroundColor: '#1e1e1e',
+  backgroundColor: 'var(--code-bg)',
   minHeight: '200px',
 };
 
 const LINE_NUMBER_STYLE = {
-  color: '#858585',
+  color: 'var(--code-muted)',
   fontSize: '13px',
   paddingRight: '15px',
 };
@@ -68,9 +68,9 @@ const CodeViewer = React.memo(({ codeSnippets, isOpen, onClose }) => {
   };
 
   return (
-    <div className="bg-[#1e1e1e] border-t border-gray-700 h-full flex flex-col">
+    <div className="bg-[var(--code-bg)] border-t border-gray-700 h-full flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-[#252526] flex-shrink-0 border-b border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-[var(--code-bg-chrome)] flex-shrink-0 border-b border-gray-700">
         <div className="flex items-center gap-2">
           <Code2 className="text-blue-400" size={20} />
           <h3 className="text-white font-semibold text-lg">Code Viewer</h3>
@@ -122,7 +122,7 @@ const CodeViewer = React.memo(({ codeSnippets, isOpen, onClose }) => {
       </div>
 
       {/* Code Display */}
-      <div className="flex-1 overflow-auto bg-[#1e1e1e]">
+      <div className="flex-1 overflow-auto bg-[var(--code-bg)]">
         <div className="p-6">
           <div className="rounded-lg overflow-hidden shadow-2xl">
             <SyntaxHighlighter
@@ -140,7 +140,7 @@ const CodeViewer = React.memo(({ codeSnippets, isOpen, onClose }) => {
 
       {/* Copy Notification */}
       {copied && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-2xl animate-pulse z-[100] font-semibold">
+        <div className="fixed bottom-4 right-4 bg-green-700 text-white px-6 py-3 rounded-lg shadow-2xl animate-pulse z-[100] font-semibold">
           Code copied to clipboard!
         </div>
       )}

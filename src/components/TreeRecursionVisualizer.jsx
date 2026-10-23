@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Play, Pause, RotateCcw, FastForward, Settings, MessageSquare, List } from 'lucide-react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
+import { Play, Pause, RotateCcw, FastForward, Settings } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   runFactorialTrace,
@@ -9,6 +9,8 @@ import {
   runGenerateParenthesesTrace,
   runSubsetsTrace
 } from '../algorithms/recursion/engine';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 
 /* ------------------------------------------------------------------ */
@@ -17,46 +19,45 @@ import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 
 // Builds a tree of nodes from the trace.
 // We do a full pass over the trace to find all CALL events and establish parent-child relationships.
-function computeTreeLayout(trace, svgWidth = 1100, svgHeight = 500) {
-  if (!trace || trace.length === 0) return { nodes: [], edges: [], finalWidth: svgWidth, finalHeight: svgHeight };
+function computeTreeLayout(nodes, svgWidth = 1100, svgHeight = 500) {
+  const entries = Object.values(nodes ?? {});
+  if (entries.length === 0) {
+    return { nodes: [], edges: [], finalWidth: svgWidth, finalHeight: svgHeight };
+  }
 
   const nodeMap = new Map();
   const rootNodes = [];
   let maxNodeWidth = 80;
 
-  trace.forEach(step => {
-    if (step.type === 'CALL') {
-      if (!nodeMap.has(step.nodeId)) {
-        const argLength = step.callArgs ? step.callArgs.length : 10;
-        const nodeW = Math.max(80, argLength * 8 + 20);
-        if (nodeW > maxNodeWidth) maxNodeWidth = nodeW;
+  for (const entry of entries) {
+    const argLength = entry.callArgs ? entry.callArgs.length : 10;
+    const nodeW = Math.max(80, argLength * 8 + 20);
+    if (nodeW > maxNodeWidth) maxNodeWidth = nodeW;
 
-        const newNode = {
-          id: step.nodeId,
-          parentId: step.parentId,
-          callArgs: step.callArgs,
-          depth: step.depth,
-          children: [],
-          x: 0,
-          y: 0,
-          leafWidth: 0,
-          nodeWidth: nodeW
-        };
-        nodeMap.set(step.nodeId, newNode);
+    const newNode = {
+      id: entry.id,
+      parentId: entry.parentId,
+      callArgs: entry.callArgs,
+      depth: entry.depth,
+      children: [],
+      x: 0,
+      y: 0,
+      leafWidth: 0,
+      nodeWidth: nodeW
+    };
+    nodeMap.set(entry.id, newNode);
 
-        if (step.parentId === null) {
-          rootNodes.push(newNode);
-        } else {
-          const parent = nodeMap.get(step.parentId);
-          if (parent && !parent.children.includes(newNode)) {
-            parent.children.push(newNode);
-          }
-        }
+    if (entry.parentId === null) {
+      rootNodes.push(newNode);
+    } else {
+      const parent = nodeMap.get(entry.parentId);
+      if (parent && !parent.children.includes(newNode)) {
+        parent.children.push(newNode);
       }
     }
-  });
+  }
 
-  // Calculate widths for n-ary tree
+  // Calculate widths for the n-ary tree.
   let maxDepth = 0;
   function computeWidths(node) {
     if (node.depth > maxDepth) maxDepth = node.depth;
@@ -65,68 +66,51 @@ function computeTreeLayout(trace, svgWidth = 1100, svgHeight = 500) {
       return 1;
     }
     let w = 0;
-    node.children.forEach(c => { w += computeWidths(c); });
+    node.children.forEach((child) => {
+      w += computeWidths(child);
+    });
     node.leafWidth = w;
     return w;
   }
 
-  rootNodes.forEach(computeWidths);
+  rootNodes.forEach((root) => computeWidths(root));
 
-  const padY = 60;
-  const padX = 60;
-  const yGap = 90;
-  const leafSpacing = Math.max(120, maxNodeWidth + 40); // Need wider spacing for dynamic node width
-
-  const nodes = [];
+  // Place the nodes.
+  const placed = [];
   const edges = [];
+  const padY = 60;
+  const yGap = 70;
+  const xGap = 30;
 
-  let minX = Infinity;
-  let maxX = -Infinity;
-  let minY = Infinity;
-  let maxY = -Infinity;
+  const assignPositions = (node, depth, xStart) => {
+    node.y = padY + depth * yGap;
+    const allocated = node.leafWidth * (xGap + maxNodeWidth);
+    node.x = xStart + allocated / 2;
+    placed.push(node);
 
-  function assignCoords(node, currentX) {
-    node.y = padY + node.depth * yGap;
-    
-    // x is the center of its allocated leaf bounds
-    const allocatedW = node.leafWidth * leafSpacing;
-    node.x = currentX + (node.leafWidth === 1 ? 0 : (allocatedW - leafSpacing) / 2);
-    
-    const halfW = node.nodeWidth / 2;
-    minX = Math.min(minX, node.x - halfW - 20); // 20px extra padding for glow/shadow
-    maxX = Math.max(maxX, node.x + halfW + 20);
-    minY = Math.min(minY, node.y - 30);
-    maxY = Math.max(maxY, node.y + 30);
-
-    nodes.push(node);
-
-    let childX = currentX;
-    node.children.forEach(child => {
-      edges.push({ from: node.id, to: child.id });
-      assignCoords(child, childX);
-      childX += child.leafWidth * leafSpacing;
+    let currentX = xStart;
+    node.children.forEach((child) => {
+      edges.push({ from: node, to: child });
+      assignPositions(child, depth + 1, currentX);
+      currentX += child.leafWidth * (xGap + maxNodeWidth);
     });
-  }
+  };
 
-  let currX = 0;
-  rootNodes.forEach(root => {
-    assignCoords(root, currX);
-    currX += root.leafWidth * leafSpacing;
+  let currentX = 0;
+  rootNodes.forEach((root) => {
+    assignPositions(root, 0, currentX);
+    currentX += root.leafWidth * (xGap + maxNodeWidth);
   });
 
-  let finalWidth = 800;
-  let finalHeight = 460;
+  const shiftX = (svgWidth - currentX) / 2;
+  placed.forEach((n) => {
+    n.x += shiftX;
+  });
 
-  if (nodes.length > 0) {
-    const treeActualWidth = maxX - minX;
-    finalWidth = Math.max(800, treeActualWidth + padX * 2);
-    finalHeight = Math.max(460, maxY + padY);
+  const finalWidth = Math.max(svgWidth, currentX);
+  const finalHeight = Math.max(460, (maxDepth + 1) * yGap + padY * 2);
 
-    const shiftX = (finalWidth - treeActualWidth) / 2 - minX;
-    nodes.forEach(n => { n.x += shiftX; });
-  }
-
-  return { nodes, edges, finalWidth, finalHeight };
+  return { nodes: placed, edges, finalWidth, finalHeight };
 }
 
 /* ------------------------------------------------------------------ */
@@ -140,15 +124,33 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
   // Simulation State
   const [trace, setTrace] = useState([]);
   const [treeLayout, setTreeLayout] = useState({ nodes: [], edges: [], finalWidth: 800, finalHeight: 460 });
-  const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
+
+  const {
+    index: currentStepIndex,
+    isPlaying,
+    play,
+    pause,
+    next,
+    reset: resetPlayback,
+  } = usePlayback(trace, {
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'recursion',
+    meta: { algorithm: algorithmId },
+  });
   
   // UI Panels
   const [showSettings, setShowSettings] = useState(false);
 
   // Derived state for the current step
   const currentStep = currentStepIndex >= 0 && currentStepIndex < trace.length ? trace[currentStepIndex] : null;
+
+  // The call tree comes from the current step's view, so it grows as the
+  // recursion makes new calls.
+  useEffect(() => {
+    const nodes = currentStep?.view.nodes ?? {};
+    setTreeLayout(computeTreeLayout(nodes));
+  }, [currentStep]);
 
   // Refs for auto-scroll and animation
   const timerRef = useRef(null);
@@ -172,48 +174,33 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
     return () => clearInterval(timerRef.current);
   }, []);
 
-  // Playback Loop
-  useEffect(() => {
-    if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setCurrentStepIndex(prev => {
-          if (prev >= trace.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, speed);
-    } else {
-      clearInterval(timerRef.current);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [isPlaying, speed, trace.length]);
+
 
   /* ---------- Operations ---------- */
 
   const handleRun = () => {
     handleReset();
+
     let newTrace = [];
-    
+
     try {
       if (algorithmId === 'factorial') {
-        newTrace = runFactorialTrace(parseInt(inputValue, 10));
+        newTrace = collectSteps(runFactorialTrace(parseInt(inputValue, 10)));
       } else if (algorithmId === 'fibonacci') {
-        newTrace = runFibonacciTrace(parseInt(inputValue, 10));
+        newTrace = collectSteps(runFibonacciTrace(parseInt(inputValue, 10)));
       } else if (algorithmId === 'permutations') {
-        const arr = inputValue.split(',').map(s => s.trim());
-        newTrace = runPermutationsTrace(arr).trace;
+        const arr = inputValue.split(',').map((s) => s.trim());
+        newTrace = collectSteps(runPermutationsTrace(arr));
       } else if (algorithmId === 'combinationSum') {
         const parts = inputValue.split(';');
         const arr = parts[0].split(',').map(Number);
         const target = parseInt(parts[1], 10);
-        newTrace = runCombinationSumTrace(arr, target).trace;
+        newTrace = collectSteps(runCombinationSumTrace(arr, target));
       } else if (algorithmId === 'generateParentheses') {
-        newTrace = runGenerateParenthesesTrace(parseInt(inputValue, 10)).trace;
+        newTrace = collectSteps(runGenerateParenthesesTrace(parseInt(inputValue, 10)));
       } else if (algorithmId === 'subsets') {
-        const arr = inputValue.split(',').map(s => s.trim());
-        newTrace = runSubsetsTrace(arr).trace;
+        const arr = inputValue.split(',').map((s) => s.trim());
+        newTrace = collectSteps(runSubsetsTrace(arr));
       }
     } catch (e) {
       console.error(e);
@@ -221,32 +208,29 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
     }
 
     setTrace(newTrace);
-    setTreeLayout(computeTreeLayout(newTrace));
-    setCurrentStepIndex(0);
-    setIsPlaying(true);
+    setTreeLayout(computeTreeLayout(newTrace[0]?.view.nodes ?? {}));
+    play();
   };
 
   const handleReset = () => {
-    setIsPlaying(false);
-    clearInterval(timerRef.current);
+    resetPlayback();
     setTrace([]);
     setTreeLayout({ nodes: [], edges: [], finalWidth: 800, finalHeight: 460 });
-    setCurrentStepIndex(-1);
   };
 
   const togglePlay = () => {
     if (trace.length === 0) {
       handleRun();
+    } else if (isPlaying) {
+      pause();
     } else {
-      setIsPlaying(!isPlaying);
+      play();
     }
   };
 
   const stepForward = () => {
-    setIsPlaying(false);
-    if (currentStepIndex < trace.length - 1) {
-      setCurrentStepIndex(prev => prev + 1);
-    }
+    pause();
+    next();
   };
 
   /* ---------- Rendering Helpers ---------- */
@@ -278,22 +262,12 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
   };
 
   const getStrokeColor = (nodeId) => {
-    if (nodeId === activeNodeId) return '#fef3c7'; // yellow
+    if (nodeId === activeNodeId) return 'var(--viz-node-active-soft)'; // yellow
     const state = visibleNodesMap.get(nodeId);
-    if (!state) return '#bfdbfe';
-    if (state.type === 'SUCCESS' || state.type === 'RETURN') return '#bbf7d0'; // green
-    if (state.type === 'BACKTRACK') return '#fecaca'; // red
-    return '#a7f3d0';
-  };
-
-  const logColor = (type) => {
-    switch (type) {
-      case 'CALL': return 'text-blue-400';
-      case 'RETURN': return 'text-purple-400';
-      case 'SUCCESS': return 'text-emerald-400';
-      case 'BACKTRACK': return 'text-rose-400';
-      default: return 'text-gray-300';
-    }
+    if (!state) return 'var(--viz-node-default-soft)';
+    if (state.type === 'SUCCESS' || state.type === 'RETURN') return 'var(--viz-node-found-soft)'; // green
+    if (state.type === 'BACKTRACK') return 'var(--viz-node-delete-soft)'; // red
+    return 'var(--viz-node-visited-soft)';
   };
 
   const meta = recursionAlgorithmsData[algorithmId] || {};
@@ -304,15 +278,15 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-t-lg shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">{meta.name || "Recursion Tree"}</h2>
-          <p className="text-xs opacity-90 mt-0.5">
+          <p className="text-xs mt-0.5">
             Visualize the Call Stack and Backtracking paths
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Time:</span> {meta.complexities?.time}
           </div>
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Space:</span> {meta.complexities?.space}
           </div>
         </div>
@@ -323,7 +297,7 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
         
         <div className="flex items-center gap-2 bg-white dark:bg-slate-700 p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
           <span className="text-slate-600 dark:text-slate-300 text-xs font-semibold px-2 border-r border-slate-200 dark:border-slate-600">Input</span>
-          <input
+          <input aria-label="Input arguments"
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -343,7 +317,7 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
 
         <button
           onClick={togglePlay}
-          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
         >
           {isPlaying ? <Pause size={14} /> : <Play size={14} />}
           {isPlaying ? 'Pause' : 'Play'}
@@ -352,7 +326,7 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
         <button
           onClick={stepForward}
           disabled={isPlaying || currentStepIndex >= trace.length - 1}
-          className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
         >
           <FastForward size={14} /> Step
         </button>
@@ -395,12 +369,15 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
         
         {/* SVG Tree View */}
         <div 
+          role="group"
+          tabIndex={0}
+          aria-label="Visualization canvas"
           className="flex-1 relative overflow-auto custom-scrollbar dark:bg-slate-900"
-          style={{ backgroundColor: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+          style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >
           {trace.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-500 dark:text-slate-400 text-lg font-medium select-none">
-              Click <span className="text-blue-600 mx-1">Run</span> to trace recursion tree
+            <div className="absolute inset-0 flex items-center justify-center text-slate-600 dark:text-slate-400 text-lg font-medium select-none">
+              Click <span className="text-blue-600 dark:text-blue-400 mx-1">Run</span> to trace recursion tree
             </div>
           ) : (
             <div style={{ minWidth: treeLayout.finalWidth, minHeight: treeLayout.finalHeight, padding: '16px' }}>
@@ -411,27 +388,27 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
               >
                 <defs>
                   <filter id="rec-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.4" />
+                    <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="var(--viz-shadow)" floodOpacity="0.4" />
                   </filter>
                   <radialGradient id="rec-grad-default" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#60a5fa" />
-                    <stop offset="100%" stopColor="#2563eb" />
+                    <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-default-to)" />
                   </radialGradient>
                   <radialGradient id="rec-grad-visited" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#818cf8" />
-                    <stop offset="100%" stopColor="#4f46e5" />
+                    <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-default-to)" />
                   </radialGradient>
                   <radialGradient id="rec-grad-active" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#fcd34d" />
-                    <stop offset="100%" stopColor="#d97706" />
+                    <stop offset="0%" stopColor="var(--viz-node-active-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-active-to)" />
                   </radialGradient>
                   <radialGradient id="rec-grad-success" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#34d399" />
-                    <stop offset="100%" stopColor="#059669" />
+                    <stop offset="0%" stopColor="var(--viz-node-visited-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-visited-to)" />
                   </radialGradient>
                   <radialGradient id="rec-grad-backtrack" cx="35%" cy="30%" r="65%">
-                    <stop offset="0%" stopColor="#fca5a5" />
-                    <stop offset="100%" stopColor="#ef4444" />
+                    <stop offset="0%" stopColor="var(--viz-node-delete-from)" />
+                    <stop offset="100%" stopColor="var(--viz-node-delete-to)" />
                   </radialGradient>
                 </defs>
 
@@ -448,11 +425,11 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
                   const fromNode = treeLayout.nodes.find(n => n.id === edge.from);
                   const toNode = treeLayout.nodes.find(n => n.id === edge.to);
 
-                  let stroke = '#cbd5e1';
-                  if (isActive) stroke = '#fcd34d';
-                  else if (isBacktracking) stroke = '#ef4444';
-                  else if (isReturned) stroke = '#10b981';
-                  else stroke = '#3b82f6';
+                  let stroke = 'var(--viz-edge)';
+                  if (isActive) stroke = 'var(--viz-node-active-from)';
+                  else if (isBacktracking) stroke = 'var(--viz-node-delete-to)';
+                  else if (isReturned) stroke = 'var(--viz-sorted)';
+                  else stroke = 'var(--viz-active)';
 
                   return (
                     <line
@@ -521,7 +498,7 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
                         y={node.y + 1}
                         textAnchor="middle"
                         dy=".35em"
-                        fill="white"
+                        fill="var(--viz-node-text)"
                         fontSize="12"
                         fontWeight="700"
                         fontFamily="monospace"
@@ -533,8 +510,8 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
                       {/* Return Value badge */}
                       {retVal && (
                         <g transform={`translate(${node.x + (node.nodeWidth / 2) - 10}, ${node.y - 15})`}>
-                          <circle cx={0} cy={0} r={12} fill="#1e293b" stroke="#10b981" strokeWidth={1.5} />
-                          <text x={0} y={0} textAnchor="middle" dy=".3em" fill="#10b981" fontSize="10" fontWeight="bold">
+                          <circle cx={0} cy={0} r={12} fill="var(--viz-surface-3)" stroke="var(--viz-sorted)" strokeWidth={1.5} />
+                          <text x={0} y={0} textAnchor="middle" dy=".3em" fill="var(--viz-sorted)" fontSize="10" fontWeight="bold">
                             {retVal === 'null' ? '∅' : retVal.substring(0, 3)}
                           </text>
                         </g>
@@ -553,19 +530,19 @@ const TreeRecursionVisualizer = React.memo(({ algorithmId }) => {
       {/* Legend */}
       <div className="bg-slate-50 dark:bg-slate-800 p-3 flex flex-wrap gap-4 justify-center text-sm rounded-b-lg border-t border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-active)' }} />
           <span className="text-slate-600 dark:text-slate-300">Active Frame</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-sorted)' }} />
           <span className="text-slate-600 dark:text-slate-300">Returned / Success</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded border-2 border-[#ef4444] border-dashed bg-transparent" />
+          <div className="w-4 h-4 rounded border-2 border-[var(--viz-danger)] border-dashed bg-transparent" />
           <span className="text-slate-600 dark:text-slate-300">Backtracked</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#fcd34d' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-node-active-from)' }} />
           <span className="text-slate-600 dark:text-slate-300">Current Executing</span>
         </div>
       </div>

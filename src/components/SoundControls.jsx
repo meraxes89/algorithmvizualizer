@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Volume2, VolumeX, Settings2, Sliders } from 'lucide-react';
-import soundEngine from '../utils/soundEngine';
+import { Volume2, VolumeX, Sliders } from 'lucide-react';
+import { soundEngine } from '../utils/soundEngine';
 
 const SOUND_PROFILES = [
   { id: 'marimba', name: 'Marimba' },
@@ -36,12 +36,12 @@ const SoundControls = React.memo(({ className = '' }) => {
         onClick={handleToggle}
         className={`flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-medium transition-all shadow-sm ${
           enabled
-            ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300'
+            ? 'bg-emerald-50 dark:bg-emerald-900/30 border-emerald-200 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300'
             : 'bg-paper-1 border-line-subtle text-ink hover:bg-paper-0/60 dark:hover:bg-paper-2/60'
         }`}
         title={enabled ? 'Mute Audio Sonification' : 'Enable Audio Sonification'}
       >
-        {enabled ? <Volume2 className="w-4 h-4 text-emerald-600 dark:text-emerald-400" /> : <VolumeX className="w-4 h-4 text-ink-3" />}
+        {enabled ? <Volume2 className="w-4 h-4 text-emerald-800 dark:text-emerald-400" /> : <VolumeX className="w-4 h-4 text-ink-3" />}
         <span>{enabled ? 'Audio ON' : 'Audio OFF'}</span>
       </button>
 

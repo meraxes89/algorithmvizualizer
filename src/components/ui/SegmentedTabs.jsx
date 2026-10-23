@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 const SegmentedTabs = ({ items, value, onChange, size = 'md', label = 'Sections' }) => (
   <div

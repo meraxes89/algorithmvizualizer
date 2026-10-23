@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Plus, Trash2, Shuffle, RotateCcw, Settings, MessageSquare, ArrowUpToLine, ArrowDownToLine } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   generateRandomHeap,
   layoutHeapTree,
-  heapInsertAnimated,
-  heapDeleteAnimated,
-} from '../algorithms/trees/heapOperations';
+} from '../algorithms/trees/heap/heap';
+import { heapDelete, heapInsert } from '../algorithms/trees/heap/heap-operations';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 
 /* ------------------------------------------------------------------ */
 /*  HeapVisualizer – interactive Max/Min Heap playground              */
@@ -19,17 +20,28 @@ const HeapVisualizer = React.memo(() => {
   const [isMaxHeap, setIsMaxHeap] = useState(true);
 
   // Animation state
-  const [activeNode, setActiveNode] = useState(null);
-  const [comparingNodes, setComparingNodes] = useState([]);
-  const [swappingNodes, setSwappingNodes] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
+  // The trace of the operation being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'heap',
+    meta: { algorithm: 'Heap' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const comparingNodes = view?.comparing ?? [];
+  const swappingNodes = view?.swapping ?? [];
+  const isRunning = isPlaying;
 
   // UI state
   const [inputValue, setInputValue] = useState('');
   const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
-  const [logs, setLogs] = useState([]);
+
 
   const logEndRef = useRef(null);
 
@@ -45,6 +57,11 @@ const HeapVisualizer = React.memo(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
+
   // Auto-scroll logs
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -52,14 +69,8 @@ const HeapVisualizer = React.memo(() => {
 
   /* ---------- helpers ---------- */
 
-  const addLog = useCallback((entry) => {
-    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
-  }, []);
-
   const clearAnimation = () => {
-    setActiveNode(null);
-    setComparingNodes([]);
-    setSwappingNodes([]);
+    setTrace([]);
   };
 
   const parsedValue = () => {
@@ -75,14 +86,12 @@ const HeapVisualizer = React.memo(() => {
     clearAnimation();
     const arr = generateRandomHeap(10, maxHeapFlag);
     refreshLayout(arr);
-    setLogs([{ type: 'info', text: `Generated a random ${maxHeapFlag ? 'Max' : 'Min'} Heap with 10 elements.`, ts: Date.now() }]);
   };
 
   const handleReset = () => {
     if (isRunning) return;
     clearAnimation();
     refreshLayout([]);
-    setLogs([{ type: 'info', text: 'Heap cleared.', ts: Date.now() }]);
   };
 
   const handleToggleHeapType = () => {
@@ -92,42 +101,28 @@ const HeapVisualizer = React.memo(() => {
     handleRandomHeap(newIsMax);
   };
 
-  const handleInsert = async () => {
+  const handleInsert = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await heapInsertAnimated(heapArray, val, isMaxHeap, {
-      setActiveNode,
-      setComparingNodes,
-      setSwappingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
+    const steps = collectSteps(heapInsert(heapArray, val, isMaxHeap));
+    const newArray = steps[steps.length - 1]?.view.values ?? heapArray;
 
-    clearAnimation();
-    setIsRunning(false);
+    setHeapArray([...newArray]);
+    refreshLayout([...newArray]);
+    setTrace(steps);
     setInputValue('');
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (isRunning || heapArray.length === 0) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await heapDeleteAnimated(heapArray, isMaxHeap, {
-      setActiveNode,
-      setComparingNodes,
-      setSwappingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
+    const steps = collectSteps(heapDelete(heapArray, isMaxHeap));
+    const newArray = steps[steps.length - 1]?.view.values ?? heapArray;
 
-    clearAnimation();
-    setIsRunning(false);
+    setHeapArray([...newArray]);
+    refreshLayout([...newArray]);
+    setTrace(steps);
   };
 
   const handleKeyDown = (e) => {
@@ -145,10 +140,10 @@ const HeapVisualizer = React.memo(() => {
 
   const getColors = (state) => {
     switch (state) {
-      case 'swapping': return { fill: 'url(#heap-grad-swapping)', stroke: '#fca5a5', text: 'white' }; // red
-      case 'comparing': return { fill: 'url(#heap-grad-comparing)', stroke: '#fde047', text: 'white' }; // yellow
-      case 'active': return { fill: 'url(#heap-grad-active)', stroke: '#6ee7b7', text: 'white' }; // green
-      default: return { fill: 'url(#heap-grad-default)', stroke: '#c7d2fe', text: 'white' }; // default blue
+      case 'swapping': return { fill: 'url(#heap-grad-swapping)', stroke: 'var(--viz-node-delete-from)', text: 'var(--viz-node-text)' }; // red
+      case 'comparing': return { fill: 'url(#heap-grad-comparing)', stroke: 'var(--viz-compare)', text: 'var(--viz-node-text)' }; // yellow
+      case 'active': return { fill: 'url(#heap-grad-active)', stroke: 'var(--viz-node-found-from)', text: 'var(--viz-node-text)' }; // green
+      default: return { fill: 'url(#heap-grad-default)', stroke: 'var(--viz-node-default-soft)', text: 'var(--viz-node-text)' }; // default blue
     }
   };
 
@@ -156,14 +151,14 @@ const HeapVisualizer = React.memo(() => {
 
   const logColor = (type) => {
     switch (type) {
-      case 'start': return 'text-blue-600';
-      case 'compare': return 'text-amber-600';
-      case 'success': return 'text-emerald-600';
-      case 'error': return 'text-red-600';
-      case 'warn': return 'text-yellow-600';
-      case 'delete': return 'text-rose-600';
+      case 'start': return 'text-blue-600 dark:text-blue-300';
+      case 'compare': return 'text-amber-800 dark:text-amber-300';
+      case 'success': return 'text-emerald-800 dark:text-emerald-300';
+      case 'error': return 'text-red-700 dark:text-red-400';
+      case 'warn': return 'text-yellow-700 dark:text-yellow-300';
+      case 'delete': return 'text-rose-700 dark:text-rose-300';
       case 'info':
-      default: return 'text-slate-600';
+      default: return 'text-slate-600 dark:text-slate-300';
     }
   };
 
@@ -186,7 +181,7 @@ const HeapVisualizer = React.memo(() => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-t-lg shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">Heap Operations</h2>
-          <p className="text-xs opacity-90 mt-0.5">
+          <p className="text-xs mt-0.5">
             Insert &amp; Extract Root with Bubble-up / Heapify-down
           </p>
         </div>
@@ -195,16 +190,16 @@ const HeapVisualizer = React.memo(() => {
           <button
             onClick={handleToggleHeapType}
             disabled={isRunning}
-            className="flex items-center gap-2 bg-white/20 hover:bg-white/30 disabled:opacity-50 px-3 py-1.5 rounded-lg transition-colors font-semibold text-sm"
+            className="flex items-center gap-2 bg-black/20 hover:bg-black/30 disabled:opacity-50 px-3 py-1.5 rounded-lg transition-colors font-semibold text-sm"
           >
             {isMaxHeap ? <ArrowUpToLine size={16} /> : <ArrowDownToLine size={16} />}
             {isMaxHeap ? 'Max Heap' : 'Min Heap'}
           </button>
           <div className="flex flex-wrap gap-2 text-xs">
-            <div className="bg-white/20 px-2.5 py-1 rounded-full">
+            <div className="bg-black/20 px-2.5 py-1 rounded-full">
               <span className="font-semibold">Time:</span> O(log n)
             </div>
-            <div className="bg-white/20 px-2.5 py-1 rounded-full">
+            <div className="bg-black/20 px-2.5 py-1 rounded-full">
               <span className="font-semibold">Space:</span> O(n)
             </div>
           </div>
@@ -213,7 +208,7 @@ const HeapVisualizer = React.memo(() => {
 
       {/* Controls */}
       <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex flex-wrap items-center gap-3">
-        <input
+        <input aria-label="Value to insert into the heap"
           type="number"
           min={1}
           max={999}
@@ -222,13 +217,13 @@ const HeapVisualizer = React.memo(() => {
           onKeyDown={handleKeyDown}
           placeholder="Value (1–999)"
           disabled={isRunning}
-          className="w-32 px-3 py-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm focus:border-blue-400 focus:outline-none text-sm placeholder-slate-400 disabled:opacity-50"
+          className="w-32 px-3 py-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm focus:border-blue-400 focus:outline-none text-sm placeholder-slate-500 disabled:opacity-50"
         />
 
         <button
           onClick={handleInsert}
           disabled={isRunning || !parsedValue()}
-          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Plus size={16} />
           Insert
@@ -237,7 +232,7 @@ const HeapVisualizer = React.memo(() => {
         <button
           onClick={handleDelete}
           disabled={isRunning || heapArray.length === 0}
-          className="flex items-center gap-1.5 bg-rose-500 hover:bg-rose-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Trash2 size={16} />
           Extract Root
@@ -248,7 +243,7 @@ const HeapVisualizer = React.memo(() => {
         <button
           onClick={() => handleRandomHeap()}
           disabled={isRunning}
-          className="flex items-center gap-1.5 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Shuffle size={16} />
           Random Heap
@@ -314,10 +309,10 @@ const HeapVisualizer = React.memo(() => {
           
           {/* Array Representation */}
           <div className="h-24 border-b border-slate-200 dark:border-slate-700 flex flex-col items-center justify-center p-2 bg-white dark:bg-slate-900">
-            <div className="text-slate-500 dark:text-slate-400 text-xs font-semibold mb-2 tracking-wider uppercase">Array Representation</div>
+            <div className="text-slate-600 dark:text-slate-400 text-xs font-semibold mb-2 tracking-wider uppercase">Array Representation</div>
             <div className="flex items-center gap-1 overflow-x-auto w-full px-4 justify-center">
               {heapArray.length === 0 ? (
-                 <span className="text-slate-400 text-sm">Empty</span>
+                 <span className="text-slate-600 text-sm">Empty</span>
               ) : (
                 heapArray.map((val, idx) => {
                   const state = getNodeState(idx);
@@ -326,14 +321,14 @@ const HeapVisualizer = React.memo(() => {
                   let text = 'text-slate-700';
                   if (state === 'swapping') { bg = 'bg-red-100'; border = 'border-red-400'; text = 'text-red-700'; }
                   else if (state === 'comparing') { bg = 'bg-yellow-100'; border = 'border-yellow-400'; text = 'text-yellow-700'; }
-                  else if (state === 'active') { bg = 'bg-emerald-100'; border = 'border-emerald-400'; text = 'text-emerald-700'; }
+                  else if (state === 'active') { bg = 'bg-emerald-100'; border = 'border-emerald-400'; text = 'text-emerald-800'; }
 
                   return (
                     <div key={`arr-${idx}`} className="flex flex-col items-center">
                       <div className={`w-10 h-10 flex items-center justify-center border-2 rounded ${bg} ${border} ${text} font-mono font-bold transition-colors duration-300`}>
                         {val}
                       </div>
-                      <div className="text-slate-400 text-[10px] mt-1">{idx}</div>
+                      <div className="text-slate-600 text-[10px] mt-1">{idx}</div>
                     </div>
                   );
                 })
@@ -344,34 +339,34 @@ const HeapVisualizer = React.memo(() => {
           {/* SVG Tree */}
           <div 
             className="flex-1 overflow-hidden relative dark:bg-slate-900"
-            style={{ backgroundColor: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+            style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
           >
              {heapArray.length === 0 ? (
-               <div className="absolute inset-0 flex items-center justify-center text-slate-500 dark:text-slate-400 text-lg font-medium select-none">
-                Enter a value and click <span className="text-emerald-600 mx-1">Insert</span> or press{' '}
-                <span className="text-purple-600 mx-1">Random Heap</span>
+               <div className="absolute inset-0 flex items-center justify-center text-slate-600 dark:text-slate-400 text-lg font-medium select-none">
+                Enter a value and click <span className="text-emerald-800 dark:text-emerald-300 mx-1">Insert</span> or press{' '}
+                <span className="text-purple-700 mx-1">Random Heap</span>
                </div>
              ) : (
                 <svg viewBox="0 0 1100 460" preserveAspectRatio="xMidYMid meet" className="w-full h-full">
                   <defs>
                     <filter id="heap-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                      <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#000" floodOpacity="0.45" />
+                      <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="var(--viz-shadow)" floodOpacity="0.45" />
                     </filter>
                     <radialGradient id="heap-grad-default" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#60a5fa" />
-                      <stop offset="100%" stopColor="#2563eb" />
+                      <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                      <stop offset="100%" stopColor="var(--viz-node-default-to)" />
                     </radialGradient>
                     <radialGradient id="heap-grad-active" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#34d399" />
-                      <stop offset="100%" stopColor="#059669" />
+                      <stop offset="0%" stopColor="var(--viz-node-visited-from)" />
+                      <stop offset="100%" stopColor="var(--viz-node-visited-to)" />
                     </radialGradient>
                     <radialGradient id="heap-grad-comparing" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#fcd34d" />
-                      <stop offset="100%" stopColor="#d97706" />
+                      <stop offset="0%" stopColor="var(--viz-node-active-from)" />
+                      <stop offset="100%" stopColor="var(--viz-node-active-to)" />
                     </radialGradient>
                     <radialGradient id="heap-grad-swapping" cx="35%" cy="30%" r="65%">
-                      <stop offset="0%" stopColor="#fca5a5" />
-                      <stop offset="100%" stopColor="#ef4444" />
+                      <stop offset="0%" stopColor="var(--viz-node-delete-from)" />
+                      <stop offset="100%" stopColor="var(--viz-node-delete-to)" />
                     </radialGradient>
                   </defs>
 
@@ -388,7 +383,7 @@ const HeapVisualizer = React.memo(() => {
                         y1={edge.from.y}
                         x2={edge.to.x}
                         y2={edge.to.y}
-                        stroke={isComparing ? '#fbbf24' : '#cbd5e1'}
+                        stroke={isComparing ? 'var(--viz-compare)' : 'var(--viz-edge)'}
                         strokeWidth={isComparing ? 4 : 3}
                         strokeLinecap="round"
                         className="transition-all duration-300"
@@ -452,7 +447,7 @@ const HeapVisualizer = React.memo(() => {
                           x={node.x + 25}
                           y={node.y - 25}
                           textAnchor="middle"
-                          fill="#94a3b8"
+                          fill="var(--viz-muted)"
                           fontSize="10"
                           fontWeight="700"
                           fontFamily="monospace"
@@ -474,15 +469,15 @@ const HeapVisualizer = React.memo(() => {
               <MessageSquare size={16} className="text-blue-500" />
               <span className="text-slate-800 dark:text-slate-100 font-semibold text-sm">Algorithm Log</span>
               <button
-                onClick={() => setLogs([])}
-                className="ml-auto text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                onClick={() => setTrace([])}
+                className="ml-auto text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
               >
                 Clear
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-xs font-mono">
               {logs.length === 0 && (
-                <p className="text-slate-500 dark:text-slate-400 text-center mt-6">
+                <p className="text-slate-600 dark:text-slate-400 text-center mt-6">
                   Perform an operation to see step‑by‑step logs here.
                 </p>
               )}
@@ -501,19 +496,19 @@ const HeapVisualizer = React.memo(() => {
       {/* Legend */}
       <div className="bg-slate-50 dark:bg-slate-800 p-3 flex flex-wrap gap-4 justify-center text-sm rounded-b-lg border-t border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-active)' }} />
           <span className="text-slate-600 dark:text-slate-300">Idle</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-sorted)' }} />
           <span className="text-slate-600 dark:text-slate-300">Active (Current)</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#facc15' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-path)' }} />
           <span className="text-slate-600 dark:text-slate-300">Comparing</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ef4444' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-node-delete-to)' }} />
           <span className="text-slate-600 dark:text-slate-300">Swapping</span>
         </div>
       </div>

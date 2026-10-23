@@ -1,25 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Scale, Sparkles, Layers } from 'lucide-react';
 import SortingVisualizer from '../components/SortingVisualizer';
 import ComparisonMode from '../components/educational/ComparisonMode';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
-import { bubbleSort, bubbleSortInfo } from '../algorithms/sorting/bubbleSort';
-import { selectionSort, selectionSortInfo } from '../algorithms/sorting/selectionSort';
-import { insertionSort, insertionSortInfo } from '../algorithms/sorting/insertionSort';
-import { mergeSort, mergeSortInfo } from '../algorithms/sorting/mergeSort';
-import { quickSort, quickSortInfo } from '../algorithms/sorting/quickSort';
+import { sortingAlgorithms } from '../algorithms/sorting';
+import { useParamSelection } from '../hooks/useParamSelection';
 
 const SortingPage = () => {
-  const algorithms = [
-    { name: 'Bubble Sort', algorithm: bubbleSort, info: bubbleSortInfo },
-    { name: 'Selection Sort', algorithm: selectionSort, info: selectionSortInfo },
-    { name: 'Insertion Sort', algorithm: insertionSort, info: insertionSortInfo },
-    { name: 'Merge Sort', algorithm: mergeSort, info: mergeSortInfo },
-    { name: 'Quick Sort', algorithm: quickSort, info: quickSortInfo },
-  ];
+  const algorithms = sortingAlgorithms.map((entry) => ({
+    id: entry.id,
+    name: entry.name,
+    algorithm: entry.generator,
+    info: entry.meta,
+  }));
 
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState(algorithms[0]);
+  const { selected: selectedAlgorithm, select: selectAlgorithm } =
+    useParamSelection(algorithms);
   const [isCompareOpen, setIsCompareOpen] = useState(false);
   const [compareAlgos, setCompareAlgos] = useState(null);
 
@@ -61,8 +58,8 @@ const SortingPage = () => {
         !compareAlgos && (
           <SegmentedTabs
             items={algorithms}
-            value={selectedAlgorithm.name}
-            onChange={setSelectedAlgorithm}
+            value={selectedAlgorithm.id}
+            onChange={selectAlgorithm}
             label="Sorting algorithms"
           />
         )
@@ -81,7 +78,7 @@ const SortingPage = () => {
 
       {compareAlgos ? (
         <div className="grid flex-1 grid-cols-1 gap-6 lg:grid-cols-2">
-          {compareAlgos.map((algo) => (
+          {compareAlgos.map((algo, index) => (
             <div
               key={algo.name}
               className="flex min-h-[600px] flex-col overflow-hidden rounded-3xl border border-line-subtle bg-paper-1/80 shadow-paper"
@@ -89,6 +86,7 @@ const SortingPage = () => {
               <SortingVisualizer
                 algorithm={algo.algorithm}
                 algorithmInfo={algo.info}
+                playbackSource={index === 0 ? 'sorting' : `sorting:${algo.name}`}
               />
             </div>
           ))}

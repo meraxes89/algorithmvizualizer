@@ -1,19 +1,7 @@
-import React from 'react';
+
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import {
-  ArrowRight,
-  ArrowUpRight,
-  Swords,
-  Network,
-  Search,
-  ListTree,
-  BarChart3,
-  PlayCircle,
-  Code2,
-  Cpu,
-  GitBranch,
-} from 'lucide-react';
+import { ArrowRight, ArrowUpRight, Swords, Network, Search, BarChart3, PlayCircle, Code2, Cpu, GitBranch } from 'lucide-react';
 import GitLabIcon from '../components/GitLabIcon';
 import Logo from '../components/Logo';
 import LiveSortCanvas from '../components/home/LiveSortCanvas';
@@ -102,15 +90,6 @@ const reveal = {
   visible: (i) => ({
     y: '0%',
     transition: { duration: 0.9, ease: EASE, delay: 0.15 + i * 0.12 },
-  }),
-};
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  visible: (i = 0) => ({
-    opacity: 1,
-    y: 0,
-    transition: { duration: 0.7, ease: EASE, delay: i * 0.08 },
   }),
 };
 
@@ -336,7 +315,7 @@ const Home = () => {
                   <f.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <h4 className="font-semibold text-[15px] text-ink mb-1.5">{f.title}</h4>
+                  <h3 className="font-semibold text-[15px] text-ink mb-1.5">{f.title}</h3>
                   <p className="text-[13px] text-ink-2 leading-relaxed">{f.desc}</p>
                 </div>
               </div>

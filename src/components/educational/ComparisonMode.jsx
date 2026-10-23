@@ -23,7 +23,7 @@ const ComparisonMode = React.memo(({ algorithms, onCompare, isOpen }) => {
       <div className="flex flex-wrap items-center gap-4">
         <div className="flex-1 min-w-[200px]">
           <label className="text-white text-sm font-semibold mb-2 block">First Algorithm</label>
-          <select
+          <select aria-label="First algorithm"
             value={algo1}
             onChange={(e) => setAlgo1(e.target.value)}
             className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 outline-none"
@@ -42,7 +42,7 @@ const ComparisonMode = React.memo(({ algorithms, onCompare, isOpen }) => {
 
         <div className="flex-1 min-w-[200px]">
           <label className="text-white text-sm font-semibold mb-2 block">Second Algorithm</label>
-          <select
+          <select aria-label="Second algorithm"
             value={algo2}
             onChange={(e) => setAlgo2(e.target.value)}
             className="w-full px-4 py-2 rounded-lg bg-gray-700 text-white border border-gray-600 focus:border-blue-500 outline-none"
@@ -58,7 +58,7 @@ const ComparisonMode = React.memo(({ algorithms, onCompare, isOpen }) => {
         <button
           onClick={handleCompare}
           disabled={!algo1 || !algo2 || algo1 === algo2}
-          className="flex items-center gap-2 bg-green-500 hover:bg-green-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors mt-6"
+          className="flex items-center gap-2 bg-green-700 hover:bg-green-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-semibold transition-colors mt-6"
         >
           <Play size={18} />
           Compare Algorithms

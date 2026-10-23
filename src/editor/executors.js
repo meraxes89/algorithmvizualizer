@@ -308,7 +308,6 @@ const {
   setError,
   setRunStats,
 } = ctx;
-  const langConfig = LANGUAGES[selectedLang];
 
   try {
     const headers = {

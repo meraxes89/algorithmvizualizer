@@ -1,8 +1,11 @@
-import React, { useState, useEffect, lazy, Suspense } from 'react';
-import { Play, Pause, RotateCcw, Shuffle, BookOpen, Code2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
+import { Play, Pause, RotateCcw, BookOpen, Code2 } from 'lucide-react';
 import ExplanationPanel from './educational/ExplanationPanel';
 const CodeViewer = lazy(() => import('./educational/CodeViewer'));
 import { triggerVictoryConfetti } from '../utils/confettiHelper';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
+import { dpAlgorithms } from '../algorithms/dp';
 
 const DP_INFO = {
   knapsack: {
@@ -145,10 +148,6 @@ const DP_INFO = {
 };
 
 const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
-  const [activeCell, setActiveCell] = useState([-1, -1]);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentStep, setCurrentStep] = useState(0);
-  const [steps, setSteps] = useState([]);
   const [showExplanation, setShowExplanation] = useState(false);
   const [showCodeViewer, setShowCodeViewer] = useState(false);
 
@@ -165,79 +164,42 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
   const s1 = "AGGTAB";
   const s2 = "GXTXAYB";
 
-  useEffect(() => {
-    generateDPSteps();
+  const steps = useMemo(() => {
+    const entry = dpAlgorithms.find((algorithm) => algorithm.id === algorithmType);
+    if (!entry) return [];
+
+    return collectSteps(
+      entry.generator({
+        items: items.map((item) => ({ value: item.v, weight: item.w })),
+        capacity,
+        first: s1,
+        second: s2,
+        count: 10,
+      })
+    );
   }, [algorithmType]);
 
-  const generateDPSteps = () => {
-    setIsPlaying(false);
-    setCurrentStep(0);
-    const generatedSteps = [];
-
-    if (algorithmType === 'knapsack') {
-      const rows = items.length + 1;
-      const cols = capacity + 1;
-      const grid = Array.from({ length: rows }, () => Array(cols).fill(0));
-
-      for (let i = 0; i < rows; i++) {
-        for (let w = 0; w < cols; w++) {
-          if (i === 0 || w === 0) {
-            grid[i][w] = 0;
-          } else {
-            const item = items[i - 1];
-            if (item.w <= w) {
-              grid[i][w] = Math.max(item.v + grid[i - 1][w - item.w], grid[i - 1][w]);
-            } else {
-              grid[i][w] = grid[i - 1][w];
-            }
-          }
-          generatedSteps.push({
-            cell: [i, w],
-            val: grid[i][w],
-            gridState: JSON.parse(JSON.stringify(grid))
-          });
-        }
-      }
-    } else {
-      // LCS
-      const rows = s1.length + 1;
-      const cols = s2.length + 1;
-      const grid = Array.from({ length: rows }, () => Array(cols).fill(0));
-
-      for (let i = 0; i < rows; i++) {
-        for (let j = 0; j < cols; j++) {
-          if (i === 0 || j === 0) {
-            grid[i][j] = 0;
-          } else if (s1[i - 1] === s2[j - 1]) {
-            grid[i][j] = 1 + grid[i - 1][j - 1];
-          } else {
-            grid[i][j] = Math.max(grid[i - 1][j], grid[i][j - 1]);
-          }
-          generatedSteps.push({
-            cell: [i, j],
-            val: grid[i][j],
-            gridState: JSON.parse(JSON.stringify(grid))
-          });
-        }
-      }
-    }
-    setSteps(generatedSteps);
-  };
+  const {
+    index: currentStep,
+    isPlaying,
+    play,
+    pause,
+    reset,
+  } = usePlayback(steps, {
+    speed: 250,
+    source: 'dp',
+    meta: { algorithm: algorithmType },
+  });
 
   useEffect(() => {
-    let timer;
-    if (isPlaying && currentStep < steps.length - 1) {
-      timer = setTimeout(() => {
-        setCurrentStep(prev => prev + 1);
-      }, 250);
-    } else if (isPlaying && currentStep >= steps.length - 1 && steps.length > 0) {
-      setIsPlaying(false);
+    if (isPlaying && currentStep >= steps.length - 1 && steps.length > 0) {
       triggerVictoryConfetti();
     }
-    return () => clearTimeout(timer);
   }, [isPlaying, currentStep, steps]);
 
-  const currentStepData = steps[currentStep] || { cell: [-1, -1], gridState: [] };
+  const currentStepData = steps[currentStep];
+  const gridState = currentStepData?.view.table ?? [];
+  const activeCell = currentStepData?.view.active ?? [-1, -1];
   const info = DP_INFO[algorithmType] || DP_INFO.knapsack;
 
   return (
@@ -249,13 +211,13 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
         </h2>
         <div className="flex flex-wrap gap-3 text-xs mb-3">
           <div className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-md font-medium border border-purple-100">
-            <span className="font-bold opacity-75 mr-1">Time:</span> {info.timeComplexity}
+            <span className="font-bold mr-1">Time:</span> {info.timeComplexity}
           </div>
           <div className="bg-purple-50 text-purple-700 px-2.5 py-1 rounded-md font-medium border border-purple-100">
-            <span className="font-bold opacity-75 mr-1">Space:</span> {info.spaceComplexity}
+            <span className="font-bold mr-1">Space:</span> {info.spaceComplexity}
           </div>
         </div>
-        <p className="text-[13px] text-slate-500 dark:text-slate-400 leading-relaxed max-w-4xl">
+        <p className="text-[13px] text-slate-600 dark:text-slate-400 leading-relaxed max-w-4xl">
           {info.description}
         </p>
       </div>
@@ -263,7 +225,7 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
       {/* Control Bar */}
       <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-4 flex flex-wrap items-center gap-3">
         <button
-          onClick={() => setIsPlaying(!isPlaying)}
+          onClick={() => (isPlaying ? pause() : play())}
           className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-lg text-sm font-semibold transition-all shadow-sm shadow-purple-600/20"
         >
           {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
@@ -271,10 +233,10 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
         </button>
 
         <button
-          onClick={() => { setIsPlaying(false); setCurrentStep(0); }}
+          onClick={() => reset()}
           className="flex items-center gap-2 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-600 text-slate-700 dark:text-slate-200 px-4 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm"
         >
-          <RotateCcw className="w-4 h-4 text-slate-500" />
+          <RotateCcw className="w-4 h-4 text-slate-600 dark:text-slate-400" />
           Reset
         </button>
 
@@ -300,8 +262,8 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
           Code
         </button>
 
-        <div className="ml-auto text-xs font-semibold text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
-          Step: <span className="text-purple-600 dark:text-purple-400 font-bold">{currentStep + 1}</span> / {steps.length}
+        <div className="ml-auto text-xs font-semibold text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+          Step: <span className="text-purple-700 dark:text-purple-400 font-bold">{currentStep + 1}</span> / {steps.length}
         </div>
       </div>
 
@@ -319,7 +281,7 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
               </tr>
             </thead>
             <tbody>
-              {currentStepData.gridState?.map((row, i) => (
+              {gridState?.map((row, i) => (
                 <tr key={i} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                   <td className="p-3 font-bold bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300">
                     {algorithmType === 'knapsack'
@@ -327,7 +289,7 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
                       : (i === 0 ? '0 (Ø)' : s1[i - 1])}
                   </td>
                   {row.map((val, j) => {
-                    const isActive = currentStepData.cell[0] === i && currentStepData.cell[1] === j;
+                    const isActive = activeCell[0] === i && activeCell[1] === j;
                     return (
                       <td
                         key={j}
@@ -336,7 +298,7 @@ const DPVisualizer = React.memo(({ algorithmType = 'knapsack' }) => {
                             ? 'bg-purple-600 text-white font-extrabold scale-110 shadow-lg'
                             : val > 0
                             ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-700 dark:text-purple-300 font-semibold'
-                            : 'text-slate-400 dark:text-slate-600'
+                            : 'text-slate-600 dark:text-slate-400'
                         }`}
                       >
                         {val}

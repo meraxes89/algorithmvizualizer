@@ -1,30 +1,149 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Swords, Trophy, CheckCircle2, Search as SearchIcon, Network, BarChart2 } from 'lucide-react';
 import SoundControls from '../components/SoundControls';
-import soundEngine from '../utils/soundEngine';
+import { soundEngine } from '../utils/soundEngine';
 import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
-import { useTheme } from '../context/ThemeContext';
 import RaceChart from '../components/RaceChart';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from '../components/Toast';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
-import { SORTING_ALGORITHMS, SEARCHING_ALGORITHMS, PATHFINDING_ALGORITHMS } from '../algorithms/raceTraces';
+import { sortingAlgorithms } from '../algorithms/sorting';
+import { searchingAlgorithms } from '../algorithms/searching';
+import { pathfindingAlgorithms } from '../algorithms/pathfinding';
+import { viz } from '../theme/vizTokens';
 
 const RACE_HISTORY_CAP = 300;
 const GRID_ROWS = 8;
 const GRID_COLS = 12;
 
+/**
+ * How each algorithm looks in the arena.
+ *
+ * The colour and the complexity are presentation, so they live here; the
+ * algorithm itself comes from the family registry, which means the arena
+ * races exactly the implementations the pages run.
+ */
+const RACE_STYLE = {
+  'Bubble Sort': { color: 'from-rose-500 to-pink-600', complexity: 'O(N²)' },
+  'Selection Sort': { color: 'from-amber-500 to-emerald-600', complexity: 'O(N²)' },
+  'Insertion Sort': { color: 'from-sky-500 to-blue-600', complexity: 'O(N²)' },
+  'Merge Sort': { color: 'from-violet-500 to-purple-600', complexity: 'O(N log N)' },
+  'Quick Sort': { color: 'from-blue-500 to-indigo-600', complexity: 'O(N log N)' },
+  'Heap Sort': { color: 'from-teal-500 to-emerald-600', complexity: 'O(N log N)' },
+  'Linear Search': { color: 'from-rose-500 to-pink-600', complexity: 'O(N)' },
+  'Binary Search': { color: 'from-amber-500 to-emerald-600', complexity: 'O(log N)' },
+  'Jump Search': { color: 'from-cyan-500 to-sky-600', complexity: 'O(√N)' },
+  'Breadth-First Search (BFS)': {
+    color: 'from-indigo-500 to-purple-600',
+    complexity: 'O(V + E)',
+  },
+  'Depth-First Search (DFS)': {
+    color: 'from-fuchsia-500 to-pink-600',
+    complexity: 'O(V + E)',
+  },
+  "Dijkstra's Algorithm": {
+    color: 'from-indigo-500 to-purple-600',
+    complexity: 'O((V + E) log V)',
+  },
+  'A* Search': { color: 'from-emerald-500 to-cyan-600', complexity: 'O(E)' },
+};
+
+/** Who races in each category. */
+const RACE_LINEUP = {
+  sorting: ['Quick Sort', 'Merge Sort', 'Heap Sort', 'Bubble Sort'],
+  searching: ['Binary Search', 'Linear Search', 'Jump Search'],
+  pathfinding: [
+    "Dijkstra's Algorithm",
+    'A* Search',
+    'Breadth-First Search (BFS)',
+    'Depth-First Search (DFS)',
+  ],
+};
+
+const familyOf = (category) => {
+  if (category === 'sorting') return sortingAlgorithms;
+  if (category === 'searching') return searchingAlgorithms;
+  return pathfindingAlgorithms;
+};
+
+/** The racers of a category, with their arena styling. */
+const raceEntries = (category) =>
+  familyOf(category)
+    .filter((entry) => RACE_LINEUP[category].includes(entry.name))
+    .map((entry) => [entry.id, { ...entry, ...(RACE_STYLE[entry.name] ?? {}) }]);
+
+/**
+ * The grid the pathfinding racers search.
+ *
+ * Every racer gets the same grid, and the cells carry a cost, so
+ * Dijkstra really is a weighted search here rather than a uniform-cost
+ * one in a different costume.
+ */
+const buildRaceGrid = (rows, cols) =>
+  Array.from({ length: rows }, (_, row) =>
+    Array.from({ length: cols }, (_, col) => ({
+      row,
+      col,
+      isWall: false,
+      weight: 1 + ((row * 7 + col * 13) % 9),
+    }))
+  );
+
+const RACE_START = { row: 1, col: 1 };
+const RACE_END = { row: GRID_ROWS - 2, col: GRID_COLS - 2 };
+
 const strokeColorFor = (color = '') =>
-  color.includes('blue') || color.includes('indigo') ? '#6366f1' :
-  color.includes('purple') ? '#a855f7' :
-  color.includes('emerald') ? '#10b981' :
-  color.includes('amber') || color.includes('orange') ? '#f59e0b' :
-  color.includes('cyan') ? '#06b6d4' :
-  color.includes('rose') ? '#f43f5e' : '#94a3b8';
+  color.includes('blue') || color.includes('indigo') ? viz.default :
+  color.includes('purple') ? viz.pivot :
+  color.includes('emerald') ? viz.sorted :
+  color.includes('amber') || color.includes('orange') ? viz.compare :
+  color.includes('cyan') ? viz.visited :
+  color.includes('rose') ? viz.swap : viz.muted;
+
+/**
+ * Fold a contract step into the arena's runner state.
+ *
+ * The arena counts its own operations, because the count is what the
+ * race is measured in and it is not part of the step contract.
+ */
+const applyRaceStep = (runner, step) => {
+  if (!step) return {};
+
+  const view = step.view ?? {};
+
+  if (step.family === 'sorting') {
+    return {
+      array: view.array ?? runner.array,
+      comparing: view.comparing ?? [],
+      swapped: view.swapping ?? [],
+      comps: runner.comps + (step.t === 'compare' ? 1 : 0),
+      swaps: runner.swaps + (step.t === 'swap' ? 1 : 0),
+    };
+  }
+
+  if (step.family === 'searching') {
+    return {
+      array: view.array ?? runner.array,
+      comparing: view.current >= 0 ? [view.current] : [],
+      foundIndex: view.found >= 0 ? view.found : null,
+      comps: runner.comps + (step.t === 'probe' ? 1 : 0),
+    };
+  }
+
+  const visited = view.visited ?? [];
+  const path = view.path ?? [];
+
+  return {
+    visitedSet: new Set(visited.map((cell) => `${cell.row},${cell.col}`)),
+    pathSet: new Set(path.map((cell) => `${cell.row},${cell.col}`)),
+    activeNode: visited.length > 0 ? visited[visited.length - 1] : null,
+    visitedCount: visited.length,
+    steps: visited.length,
+  };
+};
 
 const ArenaPage = () => {
-  const { isDark } = useTheme();
   const [activeCategory, setActiveCategory] = useState('sorting'); // 'sorting' | 'searching' | 'pathfinding'
   const [arraySize, setArraySize] = useState(30);
   const [speed, setSpeed] = useState(40);
@@ -47,9 +166,11 @@ const ArenaPage = () => {
 
     let initial = {};
 
+    const entries = raceEntries(cat);
+
     if (cat === 'sorting') {
       const arr = Array.from({ length: arraySize }, () => Math.floor(Math.random() * 85) + 15);
-      Object.keys(SORTING_ALGORITHMS).forEach(key => {
+      entries.forEach(([key, entry]) => {
         initial[key] = {
           array: [...arr],
           comparing: [],
@@ -57,7 +178,7 @@ const ArenaPage = () => {
           comps: 0,
           swaps: 0,
           finished: false,
-          generator: SORTING_ALGORITHMS[key].generator(arr)
+          generator: entry.generator(arr)
         };
       });
     } else if (cat === 'searching') {
@@ -65,24 +186,26 @@ const ArenaPage = () => {
       const target = arr[Math.floor(Math.random() * arr.length)];
       setSearchTarget(target);
 
-      Object.keys(SEARCHING_ALGORITHMS).forEach(key => {
+      entries.forEach(([key, entry]) => {
         initial[key] = {
           array: [...arr],
           comparing: [],
           comps: 0,
           finished: false,
           foundIndex: null,
-          generator: SEARCHING_ALGORITHMS[key].generator(arr, target)
+          generator: entry.generator(arr, target)
         };
       });
     } else if (cat === 'pathfinding') {
-      Object.keys(PATHFINDING_ALGORITHMS).forEach(key => {
+      const grid = buildRaceGrid(GRID_ROWS, GRID_COLS);
+
+      entries.forEach(([key, entry]) => {
         initial[key] = {
           visitedCount: 0,
           activeNode: null,
           steps: 0,
           finished: false,
-          generator: PATHFINDING_ALGORITHMS[key].generator(GRID_ROWS, GRID_COLS)
+          generator: entry.generator(grid, RACE_START, RACE_END)
         };
       });
     }
@@ -108,10 +231,13 @@ const ArenaPage = () => {
           if (runner.finished) return;
 
           const res = runner.generator.next();
-          if (res.done || res.value.finished) {
+          const step = res.value;
+          const isDone = res.done || step?.t === 'done';
+
+          if (isDone) {
             current[key] = {
               ...runner,
-              ...res.value,
+              ...applyRaceStep(runner, step),
               finished: true
             };
             newlyFinished.push(key);
@@ -119,13 +245,16 @@ const ArenaPage = () => {
             activeCount++;
             current[key] = {
               ...runner,
-              ...res.value
+              ...applyRaceStep(runner, step)
             };
 
-            const val1 = res.value.array ? res.value.array[res.value.comparing?.[0] || 0] : (res.value.visitedCount || res.value.comps || 50);
-            const idx = res.value.comparing?.[0] || 0;
-            const len = res.value.array?.length || 100;
-            const algoName = SORTING_ALGORITHMS[key]?.name || SEARCHING_ALGORITHMS[key]?.name || PATHFINDING_ALGORITHMS[key]?.name || '';
+            const view = step.view ?? {};
+            const val1 = view.array
+              ? view.array[(view.comparing?.[0] ?? view.current) || 0]
+              : (runner.visitedCount || runner.comps || 50);
+            const idx = (view.comparing?.[0] ?? view.current) || 0;
+            const len = view.array?.length || 100;
+            const algoName = raceEntries(activeCategory).find(([k]) => k === key)?.[1]?.name || '';
 
             soundEngine.playCompare(val1 || 50, 10, 100, {
               algorithm: algoName,
@@ -209,11 +338,7 @@ const ArenaPage = () => {
     return () => document.removeEventListener('visibilitychange', handleVisibility);
   }, []);
 
-  const getActiveDict = () => {
-    if (activeCategory === 'sorting') return SORTING_ALGORITHMS;
-    if (activeCategory === 'searching') return SEARCHING_ALGORITHMS;
-    return PATHFINDING_ALGORITHMS;
-  };
+  const getActiveDict = () => Object.fromEntries(raceEntries(activeCategory));
 
   const CATEGORY_TABS = [
     { id: 'sorting', label: 'Sorting Race', icon: BarChart2 },
@@ -273,7 +398,7 @@ const ArenaPage = () => {
           {activeCategory !== 'pathfinding' && (
             <div className="flex items-center gap-3">
               <span className="w-24 text-xs font-semibold text-ink-2">Data Size: {arraySize}</span>
-              <input
+              <input aria-label="Data size"
                 type="range"
                 min="15"
                 max="50"
@@ -287,7 +412,7 @@ const ArenaPage = () => {
 
           <div className="flex items-center gap-3">
             <span className="w-24 text-xs font-semibold text-ink-2">Speed: {speed}%</span>
-            <input
+            <input aria-label="Speed"
               type="range"
               min="1"
               max="95"
@@ -304,8 +429,8 @@ const ArenaPage = () => {
           )}
 
           {winner && (
-            <div className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
-              <Trophy className="w-4 h-4 text-amber-500" /> Winner: {winner}
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-bold text-amber-800 dark:text-amber-400">
+              <Trophy className="w-4 h-4 text-amber-800 dark:text-amber-400" /> Winner: {winner}
             </div>
           )}
         </div>
@@ -332,14 +457,14 @@ const ArenaPage = () => {
                   <div className="mb-4 flex items-center justify-between">
                     <div className="flex items-center gap-2.5">
                       <div className={`h-3 w-3 rounded-full bg-gradient-to-r ${algInfo.color}`} />
-                      <h3 className="text-sm font-bold text-ink">{algInfo.name}</h3>
+                      <h2 className="text-sm font-bold text-ink">{algInfo.name}</h2>
                       <span className="rounded-full border border-line-subtle bg-paper-1 px-2 py-0.5 font-mono text-[10px] text-ink-3">
                         {algInfo.complexity}
                       </span>
                     </div>
 
                     {runner.finished && (
-                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-600 dark:text-emerald-400">
+                      <span className="flex items-center gap-1 rounded-full border border-emerald-500/25 bg-emerald-500/10 px-2.5 py-0.5 text-[10px] font-bold text-emerald-800 dark:text-emerald-400">
                         <CheckCircle2 className="w-3 h-3" /> Finished
                       </span>
                     )}
@@ -405,9 +530,9 @@ const ArenaPage = () => {
                             const cellKey = `${r},${c}`;
                             const isStart = r === 1 && c === 1;
                             const isTarget = r === GRID_ROWS - 2 && c === GRID_COLS - 2;
-                            const isVisited = runner.visitedSet ? runner.visitedSet.has(cellKey) : runner.visitedList?.includes(cellKey);
-                            const isPath = runner.pathSet ? runner.pathSet.has(cellKey) : runner.pathList?.includes(cellKey);
-                            const isActive = runner.activeNode && runner.activeNode[0] === r && runner.activeNode[1] === c;
+                            const isVisited = runner.visitedSet?.has(cellKey) ?? false;
+                            const isPath = runner.pathSet?.has(cellKey) ?? false;
+                            const isActive = runner.activeNode && runner.activeNode.row === r && runner.activeNode.col === c;
 
                             let cellStyle = 'border-line-subtle bg-line-subtle';
                             if (isStart) cellStyle = 'bg-emerald-500 ring-2 ring-emerald-400';
@@ -460,14 +585,14 @@ const ArenaPage = () => {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
           <div className="glass-card flex h-[300px] flex-col p-5 lg:col-span-2">
-            <h3 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
+            <h2 className="mb-4 flex items-center gap-2 text-sm font-bold text-ink">
               <BarChart2 className="w-4 h-4 text-accent" />
               Live Operations Race
-            </h3>
+            </h2>
             <div className="min-h-0 w-full flex-1">
               <RaceChart
                 history={raceHistory}
-                gridColor={isDark ? '#4a4238' : '#e6ddcf'}
+                gridColor={viz.grid}
                 series={Object.entries(getActiveDict()).map(([key, algInfo]) => ({
                   key,
                   name: algInfo.name,
@@ -478,7 +603,7 @@ const ArenaPage = () => {
           </div>
 
           <div className="glass-card flex h-[300px] flex-col bg-accent-soft p-5">
-            <h3 className="mb-2 text-sm font-bold text-ink">Live Commentary</h3>
+            <h2 className="mb-2 text-sm font-bold text-ink">Live Commentary</h2>
             <div className="flex flex-1 flex-col items-center justify-center text-center">
               <motion.p
                 key={commentary}

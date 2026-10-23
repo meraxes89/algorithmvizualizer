@@ -1,0 +1,7 @@
+# Runs on every commit. lint-staged only touches the files that are
+# staged, so this stays fast even on a large change.
+#
+# ESLint here is the same config CI runs, which means a file that breaks a
+# layer boundary (a React import inside src/algorithms, a new plain .js
+# file under src/) cannot be committed.
+pnpm exec lint-staged

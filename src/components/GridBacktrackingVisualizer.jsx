@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { Play, Pause, RotateCcw, FastForward, Settings, MessageSquare, List } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Play, Pause, RotateCcw, FastForward, Settings } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   runNQueensTrace,
@@ -7,6 +7,8 @@ import {
   runRatInMazeTrace,
   runKnightsTourTrace
 } from '../algorithms/recursion/gridEngine';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 import { recursionAlgorithmsData } from '../data/recursionAlgorithms';
 
 /* ------------------------------------------------------------------ */
@@ -19,9 +21,20 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
   
   // Simulation State
   const [trace, setTrace] = useState([]);
-  const [currentStepIndex, setCurrentStepIndex] = useState(-1);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [speed, setSpeed] = useState(SPEED_PRESETS.MEDIUM);
+
+  const {
+    index: currentStepIndex,
+    isPlaying,
+    play,
+    pause,
+    next,
+    reset: resetPlayback,
+  } = usePlayback(trace, {
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'board',
+    meta: { algorithm: algorithmId },
+  });
   
   // UI Panels
   const [showSettings, setShowSettings] = useState(false);
@@ -70,23 +83,6 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
   }, []);
 
   // Playback Loop
-  useEffect(() => {
-    if (isPlaying) {
-      timerRef.current = setInterval(() => {
-        setCurrentStepIndex(prev => {
-          if (prev >= trace.length - 1) {
-            setIsPlaying(false);
-            return prev;
-          }
-          return prev + 1;
-        });
-      }, speed);
-    } else {
-      clearInterval(timerRef.current);
-    }
-    return () => clearInterval(timerRef.current);
-  }, [isPlaying, speed, trace.length]);
-
   /* ---------- Operations ---------- */
 
   const handleRun = () => {
@@ -95,13 +91,13 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
     
     try {
       if (algorithmId === 'nQueens') {
-        newTrace = runNQueensTrace(parseInt(inputValue, 10) || 4);
+        newTrace = collectSteps(runNQueensTrace(parseInt(inputValue, 10) || 4));
       } else if (algorithmId === 'sudoku') {
-        newTrace = runSudokuTrace(defaultSudoku);
+        newTrace = collectSteps(runSudokuTrace(defaultSudoku));
       } else if (algorithmId === 'ratInMaze') {
-        newTrace = runRatInMazeTrace(defaultMaze);
+        newTrace = collectSteps(runRatInMazeTrace(defaultMaze));
       } else if (algorithmId === 'knightsTour') {
-        newTrace = runKnightsTourTrace(parseInt(inputValue, 10) || 5);
+        newTrace = collectSteps(runKnightsTourTrace(parseInt(inputValue, 10) || 5));
       }
     } catch (e) {
       console.error(e);
@@ -109,50 +105,36 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
     }
 
     setTrace(newTrace);
-    setCurrentStepIndex(0);
-    setIsPlaying(true);
+    play();
   };
 
   const handleReset = () => {
-    setIsPlaying(false);
-    clearInterval(timerRef.current);
+    resetPlayback();
     setTrace([]);
-    setCurrentStepIndex(-1);
   };
 
   const togglePlay = () => {
     if (trace.length === 0) {
       handleRun();
+    } else if (isPlaying) {
+      pause();
     } else {
-      setIsPlaying(!isPlaying);
+      play();
     }
   };
 
   const stepForward = () => {
-    setIsPlaying(false);
-    if (currentStepIndex < trace.length - 1) {
-      setCurrentStepIndex(prev => prev + 1);
-    }
+    pause();
+    next();
   };
 
   /* ---------- Rendering Helpers ---------- */
 
-  const logColor = (type) => {
-    switch (type) {
-      case 'PLACE': return 'text-blue-400';
-      case 'TRY': return 'text-yellow-400';
-      case 'SUCCESS': return 'text-emerald-400';
-      case 'BACKTRACK': return 'text-rose-400';
-      case 'INVALID': return 'text-orange-400';
-      default: return 'text-gray-300';
-    }
-  };
-
   const meta = recursionAlgorithmsData[algorithmId] || {};
 
   const renderGrid = () => {
-    if (!currentStep || !currentStep.board) return null;
-    const board = currentStep.board;
+    if (!currentStep || !currentStep.view) return null;
+    const board = currentStep.view.board;
     const n = board.length;
     const m = board[0].length;
 
@@ -184,7 +166,7 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
               if (i % 3 === 2 && i !== 8) cellStyle += " border-b-slate-400 border-b-2";
             } else if (algorithmId === 'ratInMaze') {
               cellContent = cell === 1 ? '🐀' : '';
-              if (currentStep.maze[i][j] === 0) {
+              if (currentStep.view.maze?.[i][j] === 0) {
                 cellStyle = "bg-slate-800 border-slate-700"; // wall
               } else {
                 cellStyle = "bg-white border-slate-200"; // path
@@ -197,10 +179,10 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
             }
 
             if (isFocused) {
-              if (currentStep.type === 'PLACE') cellStyle += " ring-2 ring-blue-500 ring-inset bg-blue-100";
-              else if (currentStep.type === 'TRY') cellStyle += " ring-2 ring-yellow-500 ring-inset bg-yellow-100";
-              else if (currentStep.type === 'BACKTRACK') cellStyle += " ring-2 ring-red-500 ring-inset bg-red-100";
-              else if (currentStep.type === 'INVALID') cellStyle += " ring-2 ring-orange-500 ring-inset bg-orange-100";
+              if (currentStep.t === 'place') cellStyle += " ring-2 ring-blue-500 ring-inset bg-blue-100";
+              else if (currentStep.t === 'try') cellStyle += " ring-2 ring-yellow-500 ring-inset bg-yellow-100";
+              else if (currentStep.t === 'backtrack') cellStyle += " ring-2 ring-red-500 ring-inset bg-red-100";
+              else if (currentStep.t === 'invalid') cellStyle += " ring-2 ring-orange-500 ring-inset bg-orange-100";
             }
 
             return (
@@ -223,15 +205,15 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-t-lg shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">{meta.name || "Grid Backtracking"}</h2>
-          <p className="text-xs opacity-90 mt-0.5">
+          <p className="text-xs mt-0.5">
             Visualize the State Space Search and Backtracking
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Time:</span> {meta.complexities?.time}
           </div>
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Space:</span> {meta.complexities?.space}
           </div>
         </div>
@@ -242,7 +224,7 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
         
         <div className="flex items-center gap-2 bg-white dark:bg-slate-700 p-1.5 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
           <span className="text-slate-600 dark:text-slate-300 text-xs font-semibold px-2 border-r border-slate-200 dark:border-slate-600">Input</span>
-          <input
+          <input aria-label="Input for the algorithm"
             type="text"
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -263,7 +245,7 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
 
         <button
           onClick={togglePlay}
-          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
         >
           {isPlaying ? <Pause size={14} /> : <Play size={14} />}
           {isPlaying ? 'Pause' : 'Play'}
@@ -272,7 +254,7 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
         <button
           onClick={stepForward}
           disabled={isPlaying || currentStepIndex >= trace.length - 1}
-          className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-1.5 rounded-lg font-semibold transition-colors text-sm"
         >
           <FastForward size={14} /> Step
         </button>
@@ -315,12 +297,15 @@ const GridBacktrackingVisualizer = React.memo(({ algorithmId }) => {
         
         {/* Grid View */}
         <div 
+          role="group"
+          tabIndex={0}
+          aria-label="Visualization canvas"
           className="flex-1 flex flex-col items-center justify-center relative p-4 overflow-auto custom-scrollbar dark:bg-slate-900"
-          style={{ backgroundColor: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+          style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >
           {trace.length === 0 ? (
-            <div className="absolute inset-0 flex items-center justify-center text-slate-500 dark:text-slate-400 text-lg font-medium select-none">
-              Click <span className="text-blue-600 mx-1">Run</span> to visualize backtracking
+            <div className="absolute inset-0 flex items-center justify-center text-slate-600 dark:text-slate-400 text-lg font-medium select-none">
+              Click <span className="text-blue-600 dark:text-blue-400 mx-1">Run</span> to visualize backtracking
             </div>
           ) : (
             renderGrid()

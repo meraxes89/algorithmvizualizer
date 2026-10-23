@@ -12,7 +12,7 @@ const GLARE_STYLE = {
   willChange: 'opacity, background'
 };
 
-const TiltCard = React.memo(({ children, className = '', breathingDelay = 0 }) => {
+const TiltCard = React.memo(({ children, className = '' }) => {
   const cardRef = useRef(null);
   const glareRef = useRef(null);
   const rafId = useRef(null);

@@ -1,30 +1,51 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Plus, Trash2, MousePointer2, ArrowRight, ToggleLeft, ToggleRight } from 'lucide-react';
+import { viz } from '../../theme/vizTokens';
 
-const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
-  const [isDirected, setIsDirected] = useState(false);
+const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen, initialGraph }) => {
+  // Seed from the live graph so opening the builder shows the current
+  // graph instead of an empty canvas.
+  const [nodes, setNodes] = useState(() => initialGraph?.vertices ?? []);
+  const [edges, setEdges] = useState(() => initialGraph?.edges ?? []);
+  const [isDirected, setIsDirected] = useState(() => initialGraph?.isDirected ?? false);
   const [mode, setMode] = useState('select'); // select, addNode, addEdge, delete
   const [selectedNode, setSelectedNode] = useState(null);
   const [edgeStart, setEdgeStart] = useState(null);
   const [edgeWeight, setEdgeWeight] = useState(1);
   const svgRef = useRef(null);
 
+  // Keep the latest callback in a ref so a new inline function identity on
+  // every parent render cannot retrigger the effect below.
+  const onGraphChangeRef = useRef(onGraphChange);
   useEffect(() => {
-    if (onGraphChange) {
-      onGraphChange({ nodes, edges, isDirected });
+    onGraphChangeRef.current = onGraphChange;
+  });
+
+  // Snapshot of the graph the builder was opened with. Reporting only when
+  // the graph actually diverges from it keeps the initial mount (and any
+  // parent re-render) from wiping the live graph.
+  const initialGraphRef = useRef({ nodes, edges, isDirected });
+
+  useEffect(() => {
+    const initial = initialGraphRef.current;
+    if (initial.nodes === nodes && initial.edges === edges && initial.isDirected === isDirected) {
+      return;
     }
-  }, [nodes, edges, isDirected, onGraphChange]);
+    onGraphChangeRef.current?.({ vertices: nodes, edges, isDirected });
+  }, [nodes, edges, isDirected]);
 
   const handleSvgClick = (e) => {
     if (mode === 'addNode' && svgRef.current) {
       const rect = svgRef.current.getBoundingClientRect();
       const x = e.clientX - rect.left;
       const y = e.clientY - rect.top;
+      // Mirror GraphVisualizer's id/label scheme so ids stay unique and
+      // consistent when the builder starts from an existing graph.
+      const maxId = nodes.reduce((max, n) => (n.id > max ? n.id : max), -1);
+      const newId = maxId + 1;
       const newNode = {
-        id: nodes.length,
-        label: String.fromCharCode(65 + nodes.length),
+        id: newId,
+        label: String.fromCharCode(65 + (newId % 26)) + (newId >= 26 ? Math.floor(newId / 26) : ''),
         x,
         y,
       };
@@ -91,7 +112,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
             onClick={() => setMode('select')}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all ${
               mode === 'select'
-                ? 'bg-blue-500 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
@@ -103,7 +124,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
             onClick={() => setMode('addNode')}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all ${
               mode === 'addNode'
-                ? 'bg-blue-500 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
@@ -115,7 +136,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
             onClick={() => setMode('addEdge')}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all ${
               mode === 'addEdge'
-                ? 'bg-blue-500 text-white'
+                ? 'bg-blue-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
@@ -127,7 +148,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
             onClick={() => setMode('delete')}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all ${
               mode === 'delete'
-                ? 'bg-red-500 text-white'
+                ? 'bg-red-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
@@ -141,7 +162,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
             onClick={() => setIsDirected(!isDirected)}
             className={`flex items-center gap-2 px-3 py-2 rounded-lg font-semibold transition-all ${
               isDirected
-                ? 'bg-purple-500 text-white'
+                ? 'bg-purple-600 text-white'
                 : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
             }`}
           >
@@ -154,6 +175,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
               <label className="text-white text-sm font-semibold">Weight:</label>
               <input
                 type="number"
+                aria-label="Edge weight"
                 min="1"
                 max="100"
                 value={edgeWeight}
@@ -165,7 +187,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
 
           <button
             onClick={clearGraph}
-            className="ml-auto flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            className="ml-auto flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
           >
             Clear Graph
           </button>
@@ -206,7 +228,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
                   y1={y1}
                   x2={x2}
                   y2={y2}
-                  stroke="#60a5fa"
+                  stroke={viz.active}
                   strokeWidth={2}
                   markerEnd={isDirected ? 'url(#arrow)' : undefined}
                 />
@@ -216,14 +238,14 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
                   width={24}
                   height={20}
                   rx={4}
-                  fill="#1f2937"
-                  stroke="#4b5563"
+                  fill={viz.surface3}
+                  stroke={viz.edge}
                   strokeWidth={1}
                 />
                 <text
                   x={midX}
                   y={midY + 1}
-                  fill="white"
+                  fill={viz.nodeText}
                   fontSize="12"
                   fontWeight="bold"
                   textAnchor="middle"
@@ -247,7 +269,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
                 markerHeight="6"
                 orient="auto-start-reverse"
               >
-                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#60a5fa" />
+                <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill={viz.active} />
               </marker>
             </defs>
           )}
@@ -256,7 +278,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
           {nodes.map((node) => (
             <g
               key={node.id}
-              onMouseDown={(e) => {
+              onMouseDown={() => {
                 if (mode === 'select') {
                   const handleMouseMove = (e) => handleNodeDrag(e, node);
                   const handleMouseUp = () => {
@@ -276,12 +298,12 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
                 r={25}
                 fill={
                   selectedNode?.id === node.id
-                    ? '#8b5cf6'
+                    ? viz.pivotStrong
                     : edgeStart?.id === node.id
-                    ? '#fbbf24'
-                    : '#3b82f6'
+                    ? viz.compare
+                    : viz.active
                 }
-                stroke="white"
+                stroke={viz.nodeText}
                 strokeWidth={3}
                 className="transition-all duration-200 hover:scale-110"
                 style={{ transformOrigin: `${node.x}px ${node.y}px` }}
@@ -289,7 +311,7 @@ const InteractiveGraphBuilder = React.memo(({ onGraphChange, isOpen }) => {
               <text
                 x={node.x}
                 y={node.y}
-                fill="white"
+                fill={viz.nodeText}
                 fontSize="16"
                 fontWeight="bold"
                 textAnchor="middle"

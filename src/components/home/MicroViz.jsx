@@ -1,9 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { useCanvasPalette } from '../../utils/useCanvasPalette';
 
-const VIZ_W = 160;
-const VIZ_H = 100;
-
 function initBars() {
   return { kind: 'bars', arr: shuffledVals(18), i: 1, j: 0, hold: 0 };
 }
@@ -213,6 +210,8 @@ const MicroViz = ({ variant = 'bars', className = '' }) => {
     const canvas = canvasRef.current;
     if (!canvas || !palette) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 

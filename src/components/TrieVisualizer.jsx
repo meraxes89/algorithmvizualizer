@@ -1,16 +1,19 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Shuffle, RotateCcw, Settings, BarChart3, MessageSquare, TextCursorInput } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
 import {
   buildTrieFromWords,
   generateRandomWords,
-  layoutTrie,
-  getTrieStats,
-  trieInsertAnimated,
-  trieSearchAnimated,
-  trieAutocompleteAnimated,
-  trieDeleteAnimated,
-} from '../algorithms/trees/trieOperations';
+} from '../algorithms/trees/trie/trie';
+import {
+  trieAutocomplete,
+  trieDelete,
+  trieInsert,
+  trieSearch,
+} from '../algorithms/trees/trie/trie';
+import { getTrieStats, layoutTrie } from '../algorithms/trees/trie/trie-layout';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 
 /* ------------------------------------------------------------------ */
 /*  TrieVisualizer – interactive Prefix Tree playground               */
@@ -23,11 +26,32 @@ const TrieVisualizer = React.memo(() => {
   const [stats, setStats] = useState({ wordCount: 0, nodeCount: 0, maxDepth: 0 });
 
   // Animation state
-  const [activeNode, setActiveNode] = useState(null);
-  const [visitedNodes, setVisitedNodes] = useState([]);
-  const [foundNodes, setFoundNodes] = useState([]);
-  const [deletingNode, setDeletingNode] = useState(null);
-  const [isRunning, setIsRunning] = useState(false);
+  // The trace of the operation being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'trie',
+    meta: { algorithm: 'Trie' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const visitedNodes = view?.order ?? [];
+  const foundNodes = view?.found ?? [];
+  const deletingNode = useMemo(
+    () =>
+      Object.entries(view?.states ?? {}).find(([, state]) => state === 'deleting')?.[0] ??
+      null,
+    [view]
+  );
+  const isRunning = isPlaying;
+
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
 
   // UI state
   const [inputValue, setInputValue] = useState('');
@@ -35,7 +59,7 @@ const TrieVisualizer = React.memo(() => {
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
   const [showStats, setShowStats] = useState(true);
-  const [logs, setLogs] = useState([]);
+
 
   const logEndRef = useRef(null);
 
@@ -59,15 +83,8 @@ const TrieVisualizer = React.memo(() => {
 
   /* ---------- helpers ---------- */
 
-  const addLog = useCallback((entry) => {
-    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
-  }, []);
-
   const clearAnimation = () => {
-    setActiveNode(null);
-    setVisitedNodes([]);
-    setFoundNodes([]);
-    setDeletingNode(null);
+    setTrace([]);
   };
 
   const parsedValue = () => {
@@ -84,7 +101,7 @@ const TrieVisualizer = React.memo(() => {
     const root = buildTrieFromWords(words);
     setTrieRoot(root);
     refreshLayout(root);
-    setLogs([{ type: 'info', text: `Generated Trie with random words: ${words.join(', ')}`, ts: Date.now() }]);
+    setTrace([]);
   };
 
   const handleReset = () => {
@@ -93,79 +110,35 @@ const TrieVisualizer = React.memo(() => {
     const emptyRoot = buildTrieFromWords([]);
     setTrieRoot(emptyRoot);
     refreshLayout(emptyRoot);
-    setLogs([{ type: 'info', text: 'Trie cleared.', ts: Date.now() }]);
   };
 
-  const handleInsert = async () => {
+  const handleInsert = () => {
     const val = parsedValue();
     if (!val || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await trieInsertAnimated(trieRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
-
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(collectSteps(trieInsert(trieRoot, val)));
     setInputValue('');
   };
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     const val = parsedValue();
     if (!val || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await trieSearchAnimated(trieRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setFoundNodes,
-      addLog,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(trieSearch(trieRoot, val)));
   };
 
-  const handleAutocomplete = async () => {
+  const handleAutocomplete = () => {
     const val = parsedValue();
     if (!val || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await trieAutocompleteAnimated(trieRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setFoundNodes,
-      addLog,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(trieAutocomplete(trieRoot, val)));
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     const val = parsedValue();
     if (!val || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await trieDeleteAnimated(trieRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setDeletingNode,
-      addLog,
-      refreshLayout,
-      speed,
-    });
-
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(collectSteps(trieDelete(trieRoot, val)));
     setInputValue('');
   };
 
@@ -185,26 +158,26 @@ const TrieVisualizer = React.memo(() => {
   };
 
   const getStrokeColor = (node) => {
-    if (deletingNode === node.id) return '#fecaca';
-    if (foundNodes.includes(node.id)) return '#bbf7d0';
-    if (activeNode === node.id) return '#fef3c7';
-    if (visitedNodes.includes(node.id)) return '#a7f3d0';
-    if (node.char === 'ROOT') return '#d8b4fe';
-    return '#c7d2fe';
+    if (deletingNode === node.id) return 'var(--viz-node-delete-soft)';
+    if (foundNodes.includes(node.id)) return 'var(--viz-node-found-soft)';
+    if (activeNode === node.id) return 'var(--viz-node-active-soft)';
+    if (visitedNodes.includes(node.id)) return 'var(--viz-node-visited-soft)';
+    if (node.char === 'ROOT') return 'var(--viz-node-pivot-soft)';
+    return 'var(--viz-node-default-soft)';
   };
 
   /* ---------- Log Styling ---------- */
 
   const logColor = (type) => {
     switch (type) {
-      case 'start': return 'text-blue-600';
-      case 'compare': return 'text-amber-600';
-      case 'success': return 'text-emerald-600';
-      case 'error': return 'text-red-600';
-      case 'warn': return 'text-yellow-600';
-      case 'delete': return 'text-rose-600';
+      case 'start': return 'text-blue-600 dark:text-blue-300';
+      case 'compare': return 'text-amber-800 dark:text-amber-300';
+      case 'success': return 'text-emerald-800 dark:text-emerald-300';
+      case 'error': return 'text-red-700 dark:text-red-400';
+      case 'warn': return 'text-yellow-700 dark:text-yellow-300';
+      case 'delete': return 'text-rose-700 dark:text-rose-300';
       case 'info':
-      default: return 'text-slate-600';
+      default: return 'text-slate-600 dark:text-slate-300';
     }
   };
 
@@ -227,15 +200,15 @@ const TrieVisualizer = React.memo(() => {
       <div className="bg-gradient-to-r from-cyan-600 to-blue-600 text-white px-5 py-3 rounded-t-lg shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">Trie (Prefix Tree)</h2>
-          <p className="text-xs opacity-90 mt-0.5">
+          <p className="text-xs mt-0.5">
             Insert, Search, Autocomplete &amp; Delete
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Time:</span> O(L) <span className="opacity-75 italic ml-1">L=length</span>
           </div>
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Space:</span> O(N*L)
           </div>
         </div>
@@ -243,20 +216,20 @@ const TrieVisualizer = React.memo(() => {
 
       {/* Controls */}
       <div className="bg-slate-50 border-b border-slate-200 p-4 flex flex-wrap items-center gap-3">
-        <input
+        <input aria-label="Word to insert, search, or delete"
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value.replace(/[^a-zA-Z]/g, ''))} // only alphabet
           onKeyDown={handleKeyDown}
           placeholder="Enter word..."
           disabled={isRunning}
-          className="w-36 px-3 py-2 bg-white text-slate-800 rounded-lg border border-slate-200 shadow-sm focus:border-blue-400 focus:outline-none text-sm placeholder-slate-400 disabled:opacity-50"
+          className="w-36 px-3 py-2 bg-white text-slate-800 rounded-lg border border-slate-200 shadow-sm focus:border-blue-400 focus:outline-none text-sm placeholder-slate-500 disabled:opacity-50"
         />
 
         <button
           onClick={handleInsert}
           disabled={isRunning || !parsedValue()}
-          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Plus size={16} />
           Insert
@@ -265,7 +238,7 @@ const TrieVisualizer = React.memo(() => {
         <button
           onClick={handleSearch}
           disabled={isRunning || !parsedValue()}
-          className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Search size={16} />
           Search
@@ -283,7 +256,7 @@ const TrieVisualizer = React.memo(() => {
         <button
           onClick={handleDelete}
           disabled={isRunning || !parsedValue()}
-          className="flex items-center gap-1.5 bg-rose-500 hover:bg-rose-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Trash2 size={16} />
           Delete
@@ -294,7 +267,7 @@ const TrieVisualizer = React.memo(() => {
         <button
           onClick={handleRandomWords}
           disabled={isRunning}
-          className="flex items-center gap-1.5 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Shuffle size={16} />
           Random Words
@@ -366,16 +339,16 @@ const TrieVisualizer = React.memo(() => {
       {showStats && (
         <div className="bg-slate-50 border-b border-slate-200 px-5 py-2 flex flex-wrap gap-5 text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-slate-500">Total Words:</span>
-            <span className="text-emerald-600 font-bold">{stats.wordCount}</span>
+            <span className="text-slate-600">Total Words:</span>
+            <span className="text-emerald-800 font-bold">{stats.wordCount}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-500">Total Nodes:</span>
+            <span className="text-slate-600">Total Nodes:</span>
             <span className="text-slate-700 font-bold">{stats.nodeCount}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-500">Max Depth:</span>
-            <span className="text-cyan-600 font-bold">{stats.maxDepth}</span>
+            <span className="text-slate-600">Max Depth:</span>
+            <span className="text-cyan-700 font-bold">{stats.maxDepth}</span>
           </div>
         </div>
       )}
@@ -385,37 +358,37 @@ const TrieVisualizer = React.memo(() => {
         {/* SVG Tree */}
         <div 
           className="flex-1 flex items-center justify-center overflow-hidden relative"
-          style={{ backgroundColor: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+          style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >
           <svg viewBox="0 0 1100 500" preserveAspectRatio="xMidYMid meet" className="w-full h-full">
             <defs>
               <filter id="trie-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.5" />
+                <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="var(--viz-shadow)" floodOpacity="0.5" />
               </filter>
               {/* Gradients */}
               <radialGradient id="trie-grad-default" cx="35%" cy="30%" r="65%">
-                <stop offset="0%" stopColor="#60a5fa" />
-                <stop offset="100%" stopColor="#2563eb" />
+                <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                <stop offset="100%" stopColor="var(--viz-node-default-to)" />
               </radialGradient>
               <radialGradient id="trie-grad-root" cx="35%" cy="30%" r="65%">
-                <stop offset="0%" stopColor="#c084fc" />
-                <stop offset="100%" stopColor="#7e22ce" />
+                <stop offset="0%" stopColor="var(--viz-node-pivot-from)" />
+                <stop offset="100%" stopColor="var(--viz-node-pivot-to)" />
               </radialGradient>
               <radialGradient id="trie-grad-visited" cx="35%" cy="30%" r="65%">
-                <stop offset="0%" stopColor="#34d399" />
-                <stop offset="100%" stopColor="#059669" />
+                <stop offset="0%" stopColor="var(--viz-node-visited-from)" />
+                <stop offset="100%" stopColor="var(--viz-node-visited-to)" />
               </radialGradient>
               <radialGradient id="trie-grad-active" cx="35%" cy="30%" r="65%">
-                <stop offset="0%" stopColor="#fcd34d" />
-                <stop offset="100%" stopColor="#d97706" />
+                <stop offset="0%" stopColor="var(--viz-node-active-from)" />
+                <stop offset="100%" stopColor="var(--viz-node-active-to)" />
               </radialGradient>
               <radialGradient id="trie-grad-found" cx="35%" cy="30%" r="65%">
-                <stop offset="0%" stopColor="#6ee7b7" />
-                <stop offset="100%" stopColor="#10b981" />
+                <stop offset="0%" stopColor="var(--viz-node-found-from)" />
+                <stop offset="100%" stopColor="var(--viz-sorted)" />
               </radialGradient>
               <radialGradient id="trie-grad-deleting" cx="35%" cy="30%" r="65%">
-                <stop offset="0%" stopColor="#fca5a5" />
-                <stop offset="100%" stopColor="#ef4444" />
+                <stop offset="0%" stopColor="var(--viz-node-delete-from)" />
+                <stop offset="100%" stopColor="var(--viz-node-delete-to)" />
               </radialGradient>
             </defs>
 
@@ -426,10 +399,10 @@ const TrieVisualizer = React.memo(() => {
               const isFound = foundNodes.includes(edge.from.id) && foundNodes.includes(edge.to.id);
               const isDeleting = deletingNode === edge.to.id;
 
-              let stroke = '#cbd5e1';
-              if (isDeleting) stroke = '#ef4444';
-              else if (isFound) stroke = '#10b981';
-              else if (fromActive && toActive) stroke = '#f59e0b';
+              let stroke = 'var(--viz-edge)';
+              if (isDeleting) stroke = 'var(--viz-node-delete-to)';
+              else if (isFound) stroke = 'var(--viz-sorted)';
+              else if (fromActive && toActive) stroke = 'var(--viz-compare)';
 
               return (
                 <g key={`edge-${i}`}>
@@ -448,7 +421,7 @@ const TrieVisualizer = React.memo(() => {
                     y={(edge.from.y + edge.to.y) / 2 - 8}
                     width="16"
                     height="16"
-                    fill="#e2e8f0"
+                    fill="var(--viz-surface-2)"
                     rx="4"
                   />
                   <text
@@ -456,7 +429,7 @@ const TrieVisualizer = React.memo(() => {
                     y={(edge.from.y + edge.to.y) / 2}
                     textAnchor="middle"
                     dy=".32em"
-                    fill="#475569"
+                    fill="var(--viz-ink)"
                     fontSize="10"
                     fontWeight="bold"
                     fontFamily="monospace"
@@ -492,7 +465,7 @@ const TrieVisualizer = React.memo(() => {
                       cy={node.y}
                       r={radius + 6}
                       fill="none"
-                      stroke="#10b981"
+                      stroke="var(--viz-sorted)"
                       strokeWidth={3}
                       strokeDasharray="4 2"
                       className="animate-spin-slow"
@@ -519,7 +492,7 @@ const TrieVisualizer = React.memo(() => {
                     cy={node.y}
                     r={radius}
                     fill={`url(#${gradId})`}
-                    stroke={node.isEnd ? '#10b981' : strokeClr}
+                    stroke={node.isEnd ? 'var(--viz-sorted)' : strokeClr}
                     strokeWidth={node.isEnd ? 3 : 2}
                     filter="url(#trie-shadow)"
                     className="transition-all duration-300"
@@ -531,7 +504,7 @@ const TrieVisualizer = React.memo(() => {
                     y={node.y + 1}
                     textAnchor="middle"
                     dy=".38em"
-                    fill="white"
+                    fill="var(--viz-node-text)"
                     fontSize={isRoot ? "12" : "18"}
                     fontWeight="800"
                     fontFamily="monospace"
@@ -547,7 +520,7 @@ const TrieVisualizer = React.memo(() => {
                        y={node.y}
                        textAnchor="start"
                        dy=".3em"
-                       fill="#34d399"
+                       fill="var(--viz-node-visited-from)"
                        fontSize="10"
                        fontWeight="bold"
                     >
@@ -567,15 +540,15 @@ const TrieVisualizer = React.memo(() => {
               <MessageSquare size={16} className="text-blue-500" />
               <span className="text-slate-800 font-semibold text-sm">Algorithm Log</span>
               <button
-                onClick={() => setLogs([])}
-                className="ml-auto text-xs text-slate-500 hover:text-slate-800 transition-colors"
+                onClick={() => setTrace([])}
+                className="ml-auto text-xs text-slate-600 hover:text-slate-800 transition-colors"
               >
                 Clear
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-xs font-mono">
               {logs.length === 0 && (
-                <p className="text-slate-500 text-center mt-6">
+                <p className="text-slate-600 text-center mt-6">
                   Perform an operation to see step‑by‑step logs here.
                 </p>
               )}
@@ -594,19 +567,19 @@ const TrieVisualizer = React.memo(() => {
       {/* Legend */}
       <div className="bg-slate-50 p-3 flex flex-wrap gap-4 justify-center text-sm rounded-b-lg border-t border-slate-200">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-active)' }} />
           <span className="text-slate-600">Idle Node</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 border-2 border-[#10b981] border-dashed rounded-full" />
+          <div className="w-4 h-4 border-2 border-[var(--viz-sorted)] border-dashed rounded-full" />
           <span className="text-slate-600">End of Word</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f59e0b' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-compare)' }} />
           <span className="text-slate-600">Active Path</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-sorted)' }} />
           <span className="text-slate-600">Found</span>
         </div>
       </div>

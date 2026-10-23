@@ -1,18 +1,20 @@
-import React, { useState } from 'react';
 import { Search } from 'lucide-react';
 import SearchingVisualizer from '../components/SearchingVisualizer';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
-import { linearSearch, linearSearchInfo } from '../algorithms/searching/linearSearch';
-import { binarySearch, binarySearchInfo } from '../algorithms/searching/binarySearch';
+import { searchingAlgorithms } from '../algorithms/searching';
+import { useParamSelection } from '../hooks/useParamSelection';
 
 const SearchingPage = () => {
-  const algorithms = [
-    { name: 'Linear Search', algorithm: linearSearch, info: linearSearchInfo },
-    { name: 'Binary Search', algorithm: binarySearch, info: binarySearchInfo },
-  ];
+  const algorithms = searchingAlgorithms.map((entry) => ({
+    id: entry.id,
+    name: entry.name,
+    algorithm: entry.generator,
+    info: entry.meta,
+  }));
 
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState(algorithms[0]);
+  const { selected: selectedAlgorithm, select: selectAlgorithm } =
+    useParamSelection(algorithms);
 
   return (
     <PageShell
@@ -24,8 +26,8 @@ const SearchingPage = () => {
       tabs={
         <SegmentedTabs
           items={algorithms}
-          value={selectedAlgorithm.name}
-          onChange={setSelectedAlgorithm}
+          value={selectedAlgorithm.id}
+          onChange={selectAlgorithm}
           label="Searching algorithms"
         />
       }

@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Home, Compass, Terminal } from 'lucide-react';
@@ -39,7 +39,7 @@ const BottomDock = () => {
   ];
 
   return (
-    <div className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-auto transition-all duration-300">
+    <nav aria-label="Quick navigation" className="fixed bottom-5 left-1/2 -translate-x-1/2 z-50 pointer-events-auto transition-all duration-300">
       <div className="flex items-center gap-1 sm:gap-1.5 px-3 py-2 rounded-full border border-slate-200/80 dark:border-white/10 ring-1 ring-black/5 dark:ring-white/10 bg-white/80 dark:bg-black/60 backdrop-blur-xl backdrop-saturate-200 shadow-lg dark:shadow-[0_8px_32px_0_rgba(0,0,0,0.8)]">
         {dockItems.map((item) => {
           const Icon = item.icon;
@@ -68,15 +68,15 @@ const BottomDock = () => {
                 <Icon 
                   className={`w-4 h-4 transition-all duration-200 ${
                     item.id === 'gitlab'
-                      ? 'text-orange-500 fill-current'
+                      ? 'text-orange-700 fill-current'
                       : isActive
-                      ? 'text-indigo-600 dark:text-indigo-400 scale-110'
+                      ? 'text-indigo-700 dark:text-indigo-400 scale-110'
                       : 'text-stone-600 dark:text-stone-400 group-hover:text-slate-900 dark:group-hover:text-white'
                   }`} 
                 />
                 <span className={`text-[12px] font-semibold tracking-tight transition-colors duration-200 ${
                   isActive
-                    ? 'text-indigo-600 dark:text-indigo-400 font-bold'
+                    ? 'text-indigo-700 dark:text-indigo-400 font-bold'
                     : 'text-stone-700 dark:text-stone-300 group-hover:text-slate-900 dark:group-hover:text-white'
                 }`}>
                   {item.label}
@@ -114,6 +114,7 @@ const BottomDock = () => {
             >
               <Link
                 to={item.path}
+                aria-current={isActive ? 'page' : undefined}
                 className="group relative flex items-center rounded-full transition-colors"
                 title={item.label}
               >
@@ -123,7 +124,7 @@ const BottomDock = () => {
           );
         })}
       </div>
-    </div>
+    </nav>
   );
 };
 

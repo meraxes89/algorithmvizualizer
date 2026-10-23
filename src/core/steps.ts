@@ -1,0 +1,533 @@
+/**
+ * The Step Trace Contract.
+ *
+ * Every algorithm in this repo is a pure generator that yields *steps*.
+ * A step is the only thing an algorithm is allowed to say about itself,
+ * and it says two things at once:
+ *
+ *   1. `t` — what just happened. This is the semantic payload: what the
+ *      sound engine listens for, what the event bus publishes, what the
+ *      "now doing..." line reads.
+ *   2. `view` — the complete visual state after that event. This is the
+ *      render payload.
+ *
+ * Carrying the whole view in every step is deliberate. It means a
+ * visualizer is a pure function of `(input, currentStep)` — it never
+ * has to fold a delta, never has to know what came before, and can
+ * render any step of a trace in isolation. That is what makes scrubbing
+ * work: seeking to step N is just "render step N".
+ *
+ * The cost is that a step repeats the state. That is acceptable here
+ * because the states are small (an array of numbers, a list of cell
+ * references, a map of vertex states) and because the alternative — delta
+ * steps plus a per-family reducer — would put the folding logic in the
+ * engine, where it would have to be re-implemented for every family.
+ *
+ * Every step also carries its `family`. That makes a trace
+ * self-describing (a golden-trace file says what each step is without
+ * needing the registry to interpret it) and it makes `AnyStep` a
+ * properly discriminated union, so `switch (step.family)` narrows
+ * soundly. The alternative — sharing one `t` namespace across families
+ * — cannot work, because several families legitimately use the same
+ * words ('done', 'visit', 'path').
+ *
+ * See docs/adr/0001-step-trace-contract.md for the reasoning.
+ */
+
+/** Every family the contract covers. */
+export type StepFamily =
+  | 'sorting'
+  | 'searching'
+  | 'pathfinding'
+  | 'graph'
+  | 'trees'
+  | 'trie'
+  | 'heap'
+  | 'recursion'
+  | 'board'
+  | 'puzzle'
+  | 'dp';
+
+/** Tags every step of a family with that family, so `AnyStep` narrows. */
+type OfFamily<F extends StepFamily> = { readonly family: F };
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Sorting
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** How an element of a sorted array is highlighted. */
+export type SortMark = 'sorted' | 'pivot';
+
+/** The complete visual state of a sorting run. */
+export type SortView = {
+  /** The array as it currently stands. */
+  readonly array: readonly number[];
+  /** Indices being compared right now. Empty on any other step. */
+  readonly comparing: readonly number[];
+  /** Indices being swapped right now. Empty on any other step. */
+  readonly swapping: readonly number[];
+  /** Indices known to be in their final position. */
+  readonly sorted: readonly number[];
+};
+
+export type SortStep = OfFamily<'sorting'> &
+  (
+    | { t: 'set-array'; view: SortView; note?: string }
+    | { t: 'compare'; view: SortView }
+    | { t: 'swap'; view: SortView }
+    | { t: 'mark'; view: SortView; state: SortMark }
+    | { t: 'done'; view: SortView }
+  );
+
+export type SortGenerator = Generator<SortStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Searching
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The complete visual state of a search. */
+export type SearchView = {
+  readonly array: readonly number[];
+  /** Index currently being examined, or -1 when nothing is in flight. */
+  readonly current: number;
+  /** Index the target was found at, or -1 when it has not been found. */
+  readonly found: number;
+  /** The window still under consideration, or null when there is none. */
+  readonly range: readonly [number, number] | null;
+};
+
+export type SearchStep = OfFamily<'searching'> &
+  (
+    | { t: 'set-array'; view: SearchView; note?: string }
+    | { t: 'probe'; view: SearchView; index: number }
+    | { t: 'found'; view: SearchView; index: number }
+    | { t: 'not-found'; view: SearchView }
+    | { t: 'done'; view: SearchView }
+  );
+
+export type SearchGenerator = Generator<SearchStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pathfinding
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** A cell in the pathfinding grid. */
+export type CellRef = {
+  readonly row: number;
+  readonly col: number;
+};
+
+/**
+ * The complete visual state of a pathfinding run.
+ *
+ * The grid itself is not part of the view: the walls are part of the
+ * *input* and never change during a search. Only what the search did to
+ * the grid is in the view.
+ */
+export type PathView = {
+  /** Every cell the search has expanded, in the order it expanded them. */
+  readonly visited: readonly CellRef[];
+  /** The route from start to end, once one is found. */
+  readonly path: readonly CellRef[];
+  /** The open set, for algorithms that show it. */
+  readonly frontier: readonly CellRef[];
+};
+
+export type PathStep = OfFamily<'pathfinding'> &
+  (
+    | { t: 'visit'; view: PathView; cell: CellRef }
+    | { t: 'frontier'; view: PathView; cell: CellRef }
+    | { t: 'path'; view: PathView; path: readonly CellRef[] }
+    | { t: 'not-found'; view: PathView }
+    | { t: 'done'; view: PathView }
+  );
+
+export type PathGenerator = Generator<PathStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Graphs
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type VertexState = 'idle' | 'default' | 'frontier' | 'visiting' | 'visited' | 'in-path';
+
+export type EdgeState =
+  'idle' | 'default' | 'exploring' | 'considering' | 'active' | 'accepted' | 'rejected';
+
+/** The complete visual state of a graph traversal. */
+export type GraphView = {
+  /** State of every vertex the algorithm has touched, by vertex id. */
+  readonly vertices: Readonly<Record<number, VertexState>>;
+  /** State of every edge the algorithm has considered, by edge key. */
+  readonly edges: Readonly<Record<string, EdgeState>>;
+  /** The route from source to target, once one is found. */
+  readonly path: readonly number[];
+  /** The worklist, for the algorithms that show one. */
+  readonly queue: readonly number[];
+  /** The stack, for the algorithms that show one. */
+  readonly stack: readonly number[];
+  /** The distance table, for the weighted algorithms. */
+  readonly distances?: Readonly<Record<number, number>>;
+  /** The all-pairs matrix, for Floyd-Warshall. */
+  readonly matrix?: Readonly<Record<number, Readonly<Record<number, number>>>>;
+  /** The in-degree table, for the topological sort. */
+  readonly indegrees?: Readonly<Record<number, number>>;
+  /** The order the vertices were emitted in. */
+  readonly order?: readonly number[];
+  /** The edges of the tree that was built, for the spanning tree algorithms. */
+  readonly resultEdges?: readonly { from: number; to: number; weight: number }[];
+};
+
+export type GraphStep = OfFamily<'graph'> &
+  (
+    | { t: 'visit'; view: GraphView; description?: string }
+    | { t: 'edge'; view: GraphView; description?: string }
+    | { t: 'path'; view: GraphView; description?: string }
+    | { t: 'done'; view: GraphView; description?: string }
+  );
+
+export type GraphGenerator = Generator<GraphStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Trees
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type TreeNodeState = 'idle' | 'active' | 'visited' | 'found' | 'deleting' | 'successor';
+
+/** A line the algorithm logged. */
+export type TreeLogEntry = {
+  readonly type: 'info' | 'start' | 'compare' | 'success' | 'warn' | 'error' | 'rotation';
+  readonly text: string;
+};
+
+/**
+ * One node of a tree, flattened.
+ *
+ * The tree itself is a linked structure that the algorithms mutate as
+ * they work, so a step cannot hold it by reference — two steps would
+ * then show the same tree. Every step carries this flat snapshot
+ * instead, which is what makes a trace scrubbable.
+ */
+export type TreeNodeSnapshot = {
+  readonly id: number;
+  /** The value of the node, or null while it is still being built. */
+  readonly val: number | null;
+  readonly left: number | null;
+  readonly right: number | null;
+  /** The height of the subtree, for the balanced trees. */
+  readonly height?: number;
+};
+
+/** The complete visual state of a tree operation. */
+export type TreeView = {
+  /** Every node in the tree, by id. */
+  readonly nodes: Readonly<Record<number, TreeNodeSnapshot>>;
+  /** The state of every node the algorithm has touched, by id. */
+  readonly states: Readonly<Record<number, TreeNodeState>>;
+  /** The node currently being worked on, or null. */
+  readonly active: number | null;
+  /** The order the nodes were visited in. */
+  readonly order: readonly number[];
+  /** The nodes taking part in a rotation, for the balanced trees. */
+  readonly rotating?: readonly number[];
+  /** The range a segment-tree node covers, by node id. */
+  readonly ranges?: Readonly<Record<number, readonly [number, number]>>;
+  /** The nodes that contributed to the answer, for a range query. */
+  readonly contributing?: readonly number[];
+  /** The nodes the new value is propagating through, for a point update. */
+  readonly propagating?: readonly number[];
+  /** Everything the algorithm has logged so far. */
+  readonly log: readonly TreeLogEntry[];
+};
+
+export type TreeStep = OfFamily<'trees'> &
+  (
+    | { t: 'visit'; view: TreeView; node: number }
+    | { t: 'active'; view: TreeView; node: number | null }
+    | { t: 'mark'; view: TreeView; node: number; state: TreeNodeState }
+    | { t: 'log'; view: TreeView; entry: TreeLogEntry }
+    | { t: 'done'; view: TreeView }
+  );
+
+export type TreeGenerator = Generator<TreeStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tries
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One node of a trie, flattened. */
+export type TrieNodeSnapshot = {
+  readonly id: number;
+  /** The character the node stands for. */
+  readonly char: string;
+  /** Whether a word ends at this node. */
+  readonly isEnd: boolean;
+  /** The children of the node, by id. */
+  readonly children: readonly number[];
+};
+
+/**
+ * The complete visual state of a trie.
+ *
+ * A trie is a tree whose children are keyed by a character rather than
+ * by a side, so it has a view of its own.
+ */
+export type TrieView = {
+  /** Every node of the trie, by id. */
+  readonly nodes: Readonly<Record<number, TrieNodeSnapshot>>;
+  /** The state of every node the algorithm has touched, by id. */
+  readonly states: Readonly<Record<number, TreeNodeState>>;
+  /** The node currently being worked on, or null. */
+  readonly active: number | null;
+  /** The order the nodes were visited in. */
+  readonly order: readonly number[];
+  /** The nodes that hold a complete word. */
+  readonly found: readonly number[];
+  /** The node being removed. */
+  readonly deleting: readonly number[];
+  /** Everything the algorithm has logged so far. */
+  readonly log: readonly TreeLogEntry[];
+};
+
+export type TrieStep = OfFamily<'trie'> &
+  (
+    | { t: 'visit'; view: TrieView; node: number }
+    | { t: 'active'; view: TrieView; node: number | null }
+    | { t: 'found'; view: TrieView; node: number }
+    | { t: 'log'; view: TrieView; entry: TreeLogEntry }
+    | { t: 'done'; view: TrieView }
+  );
+
+export type TrieGenerator = Generator<TrieStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Heaps
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The complete visual state of a heap.
+ *
+ * A heap is an array with an invariant, not a tree of pointers, so its
+ * view is an array and its highlights are indices.
+ */
+export type HeapView = {
+  /** The values, in the order the heap stores them. */
+  readonly values: readonly number[];
+  /** The index being worked on, or null. */
+  readonly active: number | null;
+  /** The indices being compared. */
+  readonly comparing: readonly number[];
+  /** The indices being swapped. */
+  readonly swapping: readonly number[];
+  /** Everything the algorithm has logged so far. */
+  readonly log: readonly TreeLogEntry[];
+};
+
+export type HeapStep = OfFamily<'heap'> &
+  (
+    | { t: 'compare'; view: HeapView; indices: readonly number[] }
+    | { t: 'swap'; view: HeapView; indices: readonly number[] }
+    | { t: 'active'; view: HeapView; index: number | null }
+    | { t: 'log'; view: HeapView; entry: TreeLogEntry }
+    | { t: 'done'; view: HeapView }
+  );
+
+export type HeapGenerator = Generator<HeapStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recursion
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** One call of a recursive function. */
+export type RecursionNode = {
+  readonly id: string;
+  /** The call this one was made from, or null for the first one. */
+  readonly parentId: string | null;
+  /** The arguments the call was made with. */
+  readonly callArgs: string;
+  /** How deep the call is. */
+  readonly depth: number;
+};
+
+/** One frame of the call stack. */
+export type RecursionFrame = {
+  readonly name: string;
+  readonly depth: number;
+};
+
+/** The complete visual state of a recursion. */
+export type RecursionView = {
+  /** Every call the recursion has made, by id. */
+  readonly nodes: Readonly<Record<string, RecursionNode>>;
+  /** The call stack, innermost frame last. */
+  readonly stack: readonly RecursionFrame[];
+  /** The call being worked on, or null. */
+  readonly active: string | null;
+  /** Everything the recursion has produced so far. */
+  readonly output: readonly unknown[];
+};
+
+export type RecursionStep = OfFamily<'recursion'> &
+  (
+    | { t: 'call'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'decide'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'return'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'base'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'backtrack'; view: RecursionView; frame: RecursionFrame; message?: string }
+    | { t: 'write'; view: RecursionView; text: string }
+    | { t: 'done'; view: RecursionView }
+  );
+
+export type RecursionGenerator = Generator<RecursionStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Boards
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * The complete visual state of a backtracking search over a board.
+ *
+ * A board is not a tree, so it has a view of its own: the board itself,
+ * the call stack, and the cell being worked on.
+ */
+/** A board cell: a mark for most searches, a move number for the tour. */
+export type BoardCell = string | number;
+
+export type BoardView = {
+  /** The board, row by row. */
+  readonly board: readonly (readonly BoardCell[])[];
+  /** The call stack, innermost frame last. */
+  readonly stack: readonly RecursionFrame[];
+  /** The cell being worked on, or null. */
+  readonly active: readonly [number, number] | null;
+  /** The maze, for the searches that walk one. */
+  readonly maze?: readonly (readonly number[])[];
+  /** Everything the search has produced so far. */
+  readonly output: readonly unknown[];
+};
+
+export type BoardStep = OfFamily<'board'> & {
+  /** What happened. */
+  t: 'start' | 'try' | 'place' | 'invalid' | 'backtrack' | 'success' | 'fail' | 'done';
+  /** The complete visual state. */
+  view: BoardView;
+  /** The row being worked on, when the step is about a cell. */
+  row?: number;
+  /** The column being worked on, when the step is about a cell. */
+  col?: number;
+  /** A line of prose about the step. */
+  message?: string;
+};
+
+export type BoardGenerator = Generator<BoardStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Puzzles
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The pegs of a Tower of Hanoi puzzle, each holding its disks. */
+export type PuzzleView = {
+  /** The disks on each peg, largest first. */
+  readonly pegs: Readonly<Record<string, readonly number[]>>;
+  /** The call stack, innermost frame last. */
+  readonly stack: readonly RecursionFrame[];
+};
+
+export type PuzzleStep = OfFamily<'puzzle'> & {
+  /** What happened. */
+  t: 'start' | 'call' | 'move' | 'return' | 'success';
+  /** The complete visual state. */
+  view: PuzzleView;
+  /** A line of prose about the step. */
+  message?: string;
+};
+
+export type PuzzleGenerator = Generator<PuzzleStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Dynamic programming
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** The complete visual state of a dynamic program. */
+export type DPView = {
+  /** The DP table, filled in so far. */
+  readonly table: readonly (readonly number[])[];
+  /** The cell currently being computed, or null. */
+  readonly active: readonly [number, number] | null;
+  /** The values of the items under consideration. */
+  readonly items: readonly number[];
+  /** The weight of each item, for the problems that have one. */
+  readonly weights?: readonly number[];
+};
+
+export type DPStep = OfFamily<'dp'> &
+  (
+    | { t: 'set-table'; view: DPView }
+    | { t: 'cell'; view: DPView; row: number; col: number }
+    | { t: 'write'; view: DPView; row: number; col: number; value: number }
+    | { t: 'done'; view: DPView }
+  );
+
+export type DPGenerator = Generator<DPStep, void, undefined>;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// The registry-facing union
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Maps a family to the step type it produces. */
+export type StepByFamily = {
+  sorting: SortStep;
+  searching: SearchStep;
+  pathfinding: PathStep;
+  graph: GraphStep;
+  trees: TreeStep;
+  trie: TrieStep;
+  heap: HeapStep;
+  recursion: RecursionStep;
+  board: BoardStep;
+  puzzle: PuzzleStep;
+  dp: DPStep;
+};
+
+/** Maps a family to the generator that produces its steps. */
+export type GeneratorByFamily = {
+  sorting: SortGenerator;
+  searching: SearchGenerator;
+  pathfinding: PathGenerator;
+  graph: GraphGenerator;
+  trees: TreeGenerator;
+  trie: TrieGenerator;
+  heap: HeapGenerator;
+  recursion: RecursionGenerator;
+  board: BoardGenerator;
+  puzzle: PuzzleGenerator;
+  dp: DPGenerator;
+};
+
+/** A step of any family. */
+export type AnyStep = StepByFamily[StepFamily];
+
+/** A generator of any family's steps. */
+export type AnyGenerator = GeneratorByFamily[StepFamily];
+
+/**
+ * Narrow a step to a specific family.
+ *
+ * Sound, because every step carries its own family.
+ */
+export const isStepOfFamily = <F extends StepFamily>(
+  family: F,
+  step: AnyStep
+): step is StepByFamily[F] => step.family === family;
+
+/**
+ * Recognise a value as a step of some family.
+ *
+ * Used by the playback engine, which is generic over the step type and
+ * only publishes to the bus when it is actually looking at a step.
+ */
+export const isAnyStep = (value: unknown): value is AnyStep =>
+  typeof value === 'object' &&
+  value !== null &&
+  'family' in value &&
+  't' in value &&
+  'view' in value;

@@ -1,12 +1,11 @@
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Play, RotateCcw, Trash2, Code2, Terminal, Keyboard, Cpu, CheckCircle2, AlertCircle, Settings, X, Globe, Server, Cloud, FileCode, Plus, Upload, Code, Folder, File, ChevronRight, ChevronDown, Trash, Edit2, FolderPlus, FilePlus, ChevronsLeft, MoreVertical } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Play, RotateCcw, Trash2, Code2, Terminal, Keyboard, Cpu, Settings, X, FileCode, Folder, ChevronRight, ChevronDown, FolderPlus, FilePlus, ChevronsLeft } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import PageShell from '../components/ui/PageShell';
 import { useTheme } from '../context/ThemeContext';
-import { LANGUAGES, WANDBOX_COMPILERS, LANGUAGE_ICONS } from '../editor/languages';
+import { LANGUAGES, WANDBOX_COMPILERS } from '../editor/languages';
 import { runJSInBrowser, runPythonInBrowser, runOnWandbox, runOnCodeX, runOnPiston } from '../editor/executors';
 import { registerCompletions } from '../editor/completions';
-
 
 const PlaygroundPage = () => {
   const { isDark } = useTheme();
@@ -20,7 +19,6 @@ const PlaygroundPage = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   const [customInput, setCustomInput] = useState('');
-  const [activeTab, setActiveTab] = useState('output'); // 'output' | 'input'
   const [output, setOutput] = useState('');
   const [error, setError] = useState('');
   const [isRunning, setIsRunning] = useState(false);
@@ -43,7 +41,7 @@ const PlaygroundPage = () => {
 
   // Pyodide runtime cache (loaded once, reused)
   const pyodideRef = useRef(null);
-  const [isPyodideLoading, setIsPyodideLoading] = useState(false);
+  const [, setIsPyodideLoading] = useState(false);
 
   // Monaco editor instance ref (for live option updates without remount)
   const editorRef = useRef(null);
@@ -224,7 +222,7 @@ const PlaygroundPage = () => {
     >
       <div className="mb-4 flex flex-wrap items-center gap-2">
         <div className="relative">
-          <select
+          <select aria-label="Language"
             value={selectedLang}
             onChange={(e) => handleLanguageChange(e.target.value)}
             className="cursor-pointer appearance-none rounded-xl border border-line-subtle bg-paper-1/60 py-2 pl-3 pr-9 text-xs font-semibold text-ink-2 outline-none transition-colors hover:border-line-strong focus:border-accent"
@@ -303,7 +301,7 @@ const PlaygroundPage = () => {
                           {!isMain && (
                             <button
                               onClick={(e) => { e.stopPropagation(); deleteItem(item.path); }}
-                              className="p-1 hover:text-red-500 transition-colors"
+                              className="p-1 hover:text-red-700 transition-colors"
                               title="Delete"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -339,7 +337,7 @@ const PlaygroundPage = () => {
               </div>
             </div>
 
-            <div className="flex-1 min-h-0 relative w-full overflow-hidden bg-paper-1 dark:bg-[#1e1e1e]">
+            <div className="flex-1 min-h-0 relative w-full overflow-hidden bg-paper-1 dark:bg-[var(--code-bg)]">
               <Editor
                 height="100%"
                 language={LANGUAGES[selectedLang].monacoLang}
@@ -347,7 +345,7 @@ const PlaygroundPage = () => {
                 value={activeCode}
                 onChange={(val) => setCode(val || '')}
                 loading={
-                  <div className="absolute inset-0 flex items-center justify-center bg-paper-1 dark:bg-[#1e1e1e]">
+                  <div className="absolute inset-0 flex items-center justify-center bg-paper-1 dark:bg-[var(--code-bg)]">
                     <div className="flex flex-col items-center gap-3">
                       <div className="w-8 h-8 border-4 border-accent border-t-transparent rounded-full animate-spin"></div>
                       <span className="text-sm font-medium text-ink-3">Loading Editor...</span>
@@ -448,7 +446,7 @@ const PlaygroundPage = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   {runStats && (
-                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold ${runStats.success ? 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-700 dark:text-rose-400'}`}>
+                    <span className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-semibold ${runStats.success ? 'bg-emerald-500/10 text-emerald-800 dark:text-emerald-400' : 'bg-rose-500/10 text-rose-700 dark:text-rose-400'}`}>
                       {runStats.success ? 'Success' : `Error (${runStats.stage})`}
                     </span>
                   )}
@@ -476,7 +474,7 @@ const PlaygroundPage = () => {
                 )}
 
                 {error && (
-                  <div className="text-rose-600 dark:text-rose-400 font-medium whitespace-pre-wrap mb-4 pb-4 border-b border-line-subtle">
+                  <div className="text-rose-700 dark:text-rose-400 font-medium whitespace-pre-wrap mb-4 pb-4 border-b border-line-subtle">
                     {error}
                   </div>
                 )}
@@ -500,6 +498,7 @@ const PlaygroundPage = () => {
               </div>
               <button
                 onClick={() => setShowSettings(false)}
+                aria-label="Close settings"
                 className="p-1 text-ink-3 hover:text-ink dark:hover:text-ink rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -596,7 +595,7 @@ const PlaygroundPage = () => {
                     <label className="block text-xs font-bold text-ink-3 uppercase tracking-wider mb-1.5">
                       Piston API Endpoint
                     </label>
-                    <input
+                    <input aria-label="Piston API endpoint"
                       type="text"
                       value={pistonEndpoint}
                       onChange={(e) => setPistonEndpoint(e.target.value)}
@@ -613,7 +612,7 @@ const PlaygroundPage = () => {
                     <label className="block text-xs font-bold text-ink-3 uppercase tracking-wider mb-1.5">
                       Authorization Token (Optional)
                     </label>
-                    <input
+                    <input aria-label="Authorization token"
                       type="password"
                       value={pistonToken}
                       onChange={(e) => setPistonToken(e.target.value)}

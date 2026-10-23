@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { useCanvasPalette } from '../../utils/useCanvasPalette';
 
 const BAR_COUNT = 44;
@@ -45,6 +45,8 @@ export default function LiveSortCanvas({ className = '' }) {
     const canvas = canvasRef.current;
     if (!canvas || !palette) return;
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
 

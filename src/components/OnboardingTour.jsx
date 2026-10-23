@@ -167,21 +167,25 @@ const OnboardingTour = () => {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentStep}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Product tour"
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.95 }}
             transition={{ type: "spring", stiffness: 200, damping: 20 }}
             className="w-80 bg-white dark:bg-zinc-900 rounded-3xl p-6 shadow-2xl border border-indigo-100 dark:border-zinc-800 pointer-events-auto"
           >
-            <button 
+            <button
               onClick={endTour}
-              className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+              aria-label="End tour"
+              className="absolute top-4 right-4 text-slate-600 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
             >
               <X size={16} />
             </button>
 
             <div className="flex items-center gap-2 mb-3">
-              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400">
+              <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-700 dark:text-indigo-400">
                 <Sparkles size={16} />
               </div>
               <h3 className="font-bold text-slate-900 dark:text-white text-lg">

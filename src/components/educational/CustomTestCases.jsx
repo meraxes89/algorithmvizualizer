@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Download, Shuffle, FileText, AlertCircle, X } from 'lucide-react';
+import { Upload, Shuffle, FileText, AlertCircle, X } from 'lucide-react';
 
 const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
   const [inputType, setInputType] = useState('manual');
@@ -87,6 +87,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
         </div>
         <button
           onClick={onClose}
+          aria-label="Close test cases"
           className="text-ink-3 hover:text-ink transition-colors"
         >
           <X size={24} />
@@ -129,7 +130,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
 
       {/* Error Message */}
       {error && (
-        <div className="mb-4 bg-red-500/20 border border-red-500 text-red-400 px-4 py-2 rounded-lg flex items-center gap-2">
+        <div className="mb-4 bg-red-500/20 border border-red-500 text-red-800 dark:text-red-300 px-4 py-2 rounded-lg flex items-center gap-2">
           <AlertCircle size={18} />
           {error}
         </div>
@@ -169,7 +170,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
               <label className="flex items-center gap-2 bg-paper-2/70 hover:bg-paper-2 text-ink-2 px-4 py-2 rounded-lg cursor-pointer transition-colors">
                 <Upload size={18} />
                 Upload File
-                <input
+                <input aria-label="Upload test cases"
                   type="file"
                   accept=".json"
                   onChange={handleJsonUpload}
@@ -201,7 +202,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
               <label className="text-ink-2 text-sm font-semibold mb-2 block">
                 Array Size: {randomSize}
               </label>
-              <input
+              <input aria-label="Array size"
                 type="range"
                 min="10"
                 max="200"
@@ -214,7 +215,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
               <label className="text-ink-2 text-sm font-semibold mb-2 block">
                 Min Value: {randomMin}
               </label>
-              <input
+              <input aria-label="Minimum value"
                 type="range"
                 min="1"
                 max="50"
@@ -227,7 +228,7 @@ const CustomTestCases = React.memo(({ onApplyTest, isOpen, onClose }) => {
               <label className="text-ink-2 text-sm font-semibold mb-2 block">
                 Max Value: {randomMax}
               </label>
-              <input
+              <input aria-label="Maximum value"
                 type="range"
                 min="51"
                 max="500"

@@ -1,33 +1,12 @@
-import React, { useEffect, useRef } from 'react';
-import { useTheme } from '../../context/ThemeContext';
+import { useEffect, useRef } from 'react';
+import useCanvasPalette from '../../utils/useCanvasPalette';
 
 const CELL = 20;
-
-const PALETTE = {
-  light: {
-    background: '#FCFAF4',
-    grid: 'rgba(33, 27, 20, 0.08)',
-    wall: '#475569',
-    visited: '#60A5FA',
-    path: '#FACC15',
-    start: '#10B981',
-    end: '#F43F5E',
-  },
-  dark: {
-    background: '#14110D',
-    grid: 'rgba(241, 235, 223, 0.07)',
-    wall: '#64748B',
-    visited: '#3B82F6',
-    path: '#EAB308',
-    start: '#10B981',
-    end: '#F43F5E',
-  },
-};
 
 const GridCanvas = ({ grid, rows, cols, onCellDown, onCellEnter, onPointerUp }) => {
   const canvasRef = useRef(null);
   const lastCellRef = useRef(null);
-  const { isDark } = useTheme();
+  const { viz: colors } = useCanvasPalette();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -36,12 +15,13 @@ const GridCanvas = ({ grid, rows, cols, onCellDown, onCellEnter, onPointerUp }) 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const width = cols * CELL;
     const height = rows * CELL;
-    const colors = isDark ? PALETTE.dark : PALETTE.light;
 
     canvas.width = width * dpr;
     canvas.height = height * dpr;
 
     const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.fillStyle = colors.background;
     ctx.fillRect(0, 0, width, height);
@@ -59,7 +39,7 @@ const GridCanvas = ({ grid, rows, cols, onCellDown, onCellEnter, onPointerUp }) 
         } else if (node.isStart || node.isEnd) {
           ctx.fillStyle = node.isStart ? colors.start : colors.end;
           ctx.fillRect(x, y, CELL, CELL);
-          ctx.fillStyle = 'rgba(255, 255, 255, 0.85)';
+          ctx.fillStyle = colors.overlay;
           ctx.beginPath();
           ctx.arc(x + CELL / 2, y + CELL / 2, CELL * 0.16, 0, Math.PI * 2);
           ctx.fill();
@@ -85,7 +65,7 @@ const GridCanvas = ({ grid, rows, cols, onCellDown, onCellEnter, onPointerUp }) 
       ctx.lineTo(width, row * CELL + 0.5);
     }
     ctx.stroke();
-  }, [grid, rows, cols, isDark]);
+  }, [grid, rows, cols, colors]);
 
   const cellFromEvent = (event) => {
     const canvas = canvasRef.current;

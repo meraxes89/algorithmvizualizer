@@ -1,7 +1,7 @@
-import React, { lazy, Suspense, useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { pageVariants } from './lib/motion';
 
 import Navbar from './components/Navbar';
@@ -11,6 +11,7 @@ import CustomCursor from './components/CustomCursor';
 import OnboardingTour from './components/OnboardingTour';
 import ToastContainer from './components/Toast';
 import EasterEgg from './components/EasterEgg';
+import { subscribeToStepEvents } from './utils/soundEngine';
 import ErrorBoundary from './components/ErrorBoundary';
 import NotFoundPage from './pages/NotFoundPage';
 
@@ -27,6 +28,7 @@ const PlaygroundPage = lazy(() => import('./pages/PlaygroundPage'));
 const DPPage = lazy(() => import('./pages/DPPage'));
 const ArenaPage = lazy(() => import('./pages/ArenaPage'));
 const QuizPage = lazy(() => import('./pages/QuizPage'));
+const DevGallery = lazy(() => import('./pages/DevGallery'));
 
 import DioramaWrapper from './components/DioramaWrapper';
 
@@ -73,7 +75,12 @@ const AnimatedRoutes = () => {
 
   return (
     <AnimatePresence mode="wait">
-      <Suspense fallback={<PageLoader />}>
+      {/* The key has to sit on AnimatePresence's direct child: it tracks
+          children by key, so an unkeyed <Suspense> wrapper meant it never
+          saw the route change and the exit variants never ran. The
+          location prop on <Routes> keeps the frozen (exiting) copy
+          rendering the page we are leaving. */}
+      <Suspense key={location.pathname} fallback={<PageLoader />}>
         <Routes location={location} key={location.pathname}>
           <Route path="/" element={<PageWrapper><Home /></PageWrapper>} />
           <Route path="/algorithms" element={<PageWrapper><CategoriesPage /></PageWrapper>} />
@@ -87,6 +94,7 @@ const AnimatedRoutes = () => {
           <Route path="/playground" element={<PageWrapper><PlaygroundPage /></PageWrapper>} />
           <Route path="/arena" element={<PageWrapper><ArenaPage /></PageWrapper>} />
           <Route path="/quiz" element={<PageWrapper><QuizPage /></PageWrapper>} />
+          <Route path="/_dev" element={<PageWrapper><DevGallery /></PageWrapper>} />
           <Route path="*" element={<PageWrapper><NotFoundPage /></PageWrapper>} />
         </Routes>
       </Suspense>
@@ -155,25 +163,43 @@ const useRouteWarmup = () => {
 function App() {
   useRouteWarmup();
 
+  // The sound engine is a subscriber: it listens to the step events the
+  // playback engine publishes. No algorithm and no visualizer calls it.
+  useEffect(() => subscribeToStepEvents(), []);
+
   return (
     <ThemeProvider>
-      <Router>
-        <AccentColorManager />
-        <CustomCursor />
-        <ScrollToTop />
-        <div className="min-h-screen bg-paper text-ink selection:bg-accent-soft font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
-          <Navbar />
-          <DioramaWrapper>
-            <ErrorBoundary>
-              <AnimatedRoutes />
-            </ErrorBoundary>
-          </DioramaWrapper>
-          <OnboardingTour />
-          <ToastContainer />
-          <EasterEgg />
-          <BottomDock />
-        </div>
-      </Router>
+      {/* Every framer-motion animation below — route transitions, the
+          cursor springs, the toast slides, the dock — respects the
+          user's reduced-motion preference from this one place. The CSS
+          guard in index.css covers what CSS animates; this covers what
+          framer drives through JavaScript. */}
+      <MotionConfig reducedMotion="user">
+        <Router>
+          <AccentColorManager />
+          <CustomCursor />
+          <ScrollToTop />
+          <div className="min-h-screen bg-paper text-ink selection:bg-accent-soft font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
+            <nav aria-label="Skip navigation">
+              <a href="#main-content" className="skip-link">
+                Skip to content
+              </a>
+            </nav>
+            <Navbar />
+            <div id="main-content" tabIndex={-1} className="outline-none">
+              <DioramaWrapper>
+                <ErrorBoundary>
+                  <AnimatedRoutes />
+                </ErrorBoundary>
+              </DioramaWrapper>
+            </div>
+            <OnboardingTour />
+            <ToastContainer />
+            <EasterEgg />
+            <BottomDock />
+          </div>
+        </Router>
+      </MotionConfig>
     </ThemeProvider>
   );
 }

@@ -4,7 +4,7 @@ import { SPEED_PRESETS } from '../../utils/animationHelpers';
 
 const SPEED_CHIPS = [
   { label: '1x', val: SPEED_PRESETS.SLOW },
-  { label: '2x', val: SPEED_PRESETS.NORMAL },
+  { label: '2x', val: SPEED_PRESETS.MEDIUM },
   { label: '4x', val: SPEED_PRESETS.FAST }
 ];
 
@@ -12,10 +12,8 @@ const StepControls = React.memo(({
   currentStep,
   totalSteps,
   isPlaying,
-  isPaused,
   onPlay,
   onPause,
-  onResume,
   onNext,
   onPrevious,
   onReset,
@@ -35,7 +33,11 @@ const StepControls = React.memo(({
 
       if (e.code === 'Space') {
         e.preventDefault();
-        isPlaying ? onPause?.() : onPlay?.();
+        if (isPlaying) {
+          onPause?.();
+        } else {
+          onPlay?.();
+        }
       } else if (e.code === 'ArrowRight') {
         e.preventDefault();
         if (currentStep < totalSteps) onNext?.();
@@ -61,7 +63,7 @@ const StepControls = React.memo(({
           <span>{String(totalSteps).padStart(3, '0')}</span>
         </div>
         <div className="relative w-full flex items-center group">
-          <input
+          <input aria-label="Step position"
             type="range"
             min="0"
             max={totalSteps > 0 ? totalSteps - 1 : 0}
@@ -92,7 +94,7 @@ const StepControls = React.memo(({
         <button
           onClick={onReset}
           disabled={disabled}
-          className="p-2 text-ink-3 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all disabled:opacity-50 relative group"
+          className="p-2 text-ink-3 hover:text-rose-700 hover:bg-rose-50 dark:hover:bg-rose-500/10 rounded-xl transition-all disabled:opacity-50 relative group"
           title="Reset"
         >
           <RotateCcw size={16} />

@@ -1,0 +1,150 @@
+/**
+ * The step event bus.
+ *
+ * Side effects subscribe to step events. The sound engine is the current
+ * subscriber; future effects can join it. They are never passed into an
+ * algorithm and never called by one. An algorithm yields steps and
+ * nothing else; anything that wants to react to a step listens here.
+ *
+ * That separation is what keeps `src/algorithms` free of React, of the
+ * DOM, and of the audio context.
+ */
+
+import type { StepByFamily, StepFamily } from './steps';
+
+/** A step event, tagged with where in the trace it happened. */
+export type StepEvent<F extends StepFamily = StepFamily> = {
+  readonly family: F;
+  readonly step: StepByFamily[F];
+  /** Position of the step in the trace. */
+  readonly index: number;
+  /** Total number of steps in the trace, when it is known. */
+  readonly total: number;
+  /**
+   * Which visualizer produced the step.
+   *
+   * Two visualizers can run at once in compare mode, so a subscriber that
+   * only wants one of them can filter on this.
+   */
+  readonly source: string;
+  /** Free-form context, e.g. `{ algorithm: 'Bubble Sort' }`. */
+  readonly meta: Readonly<Record<string, unknown>>;
+};
+
+export type StepEventHandler<F extends StepFamily = StepFamily> = (event: StepEvent<F>) => void;
+
+/**
+ * A tiny typed publish/subscribe bus.
+ *
+ * Handlers are stored per family, so a sound handler that only cares
+ * about sorting never sees a graph step. Unsubscribing is done by
+ * calling the function that `on` returns.
+ */
+export class StepEventBus {
+  private readonly handlers = new Map<StepFamily, Set<(event: never) => void>>();
+
+  /**
+   * Subscribe to the steps of one family.
+   *
+   * @returns a function that unsubscribes.
+   */
+  on<F extends StepFamily>(family: F, handler: StepEventHandler<F>): () => void {
+    let bucket = this.handlers.get(family);
+    if (!bucket) {
+      bucket = new Set();
+      this.handlers.set(family, bucket);
+    }
+
+    const wrapped = handler as (event: never) => void;
+    bucket.add(wrapped);
+
+    return () => {
+      bucket?.delete(wrapped);
+    };
+  }
+
+  /**
+   * Subscribe to every family's steps.
+   *
+   * @returns a function that unsubscribes.
+   */
+  onAny(handler: (event: StepEvent) => void): () => void {
+    const removers: (() => void)[] = [];
+
+    for (const family of FAMILIES) {
+      removers.push(
+        this.on(family, (event) => {
+          handler(event as StepEvent);
+        })
+      );
+    }
+
+    return () => {
+      removers.forEach((remove) => remove());
+    };
+  }
+
+  /** Publish a step to the handlers of its own family. */
+  emit<F extends StepFamily>(event: StepEvent<F>): void {
+    const bucket = this.handlers.get(event.family);
+    if (!bucket) return;
+
+    // Copy first: a handler may unsubscribe while we are iterating.
+    for (const handler of [...bucket]) {
+      (handler as StepEventHandler<F>)(event);
+    }
+  }
+
+  /** Number of handlers subscribed to a family. Mostly for tests. */
+  handlerCount(family: StepFamily): number {
+    return this.handlers.get(family)?.size ?? 0;
+  }
+
+  /** Drop every subscription. Mostly for tests. */
+  clear(): void {
+    this.handlers.clear();
+  }
+}
+
+/**
+ * Every family, in a stable order.
+ *
+ * The map is the exhaustiveness check: `Record<StepFamily, true>` stops
+ * compiling when a family is added to the contract and not to the bus,
+ * which is exactly the bug this list had — it was three families behind
+ * the contract, and `onAny` silently ignored them.
+ */
+const FAMILY_NAMES = {
+  sorting: true,
+  searching: true,
+  pathfinding: true,
+  graph: true,
+  trees: true,
+  trie: true,
+  heap: true,
+  recursion: true,
+  board: true,
+  puzzle: true,
+  dp: true,
+} satisfies Record<StepFamily, true>;
+
+export const FAMILIES = Object.keys(FAMILY_NAMES) as readonly StepFamily[];
+
+/** The bus the app uses. Subscribers attach to this one. */
+export const stepBus = new StepEventBus();
+
+/**
+ * Publish a step on the shared bus.
+ *
+ * Convenience wrapper so callers do not have to spell out the generics.
+ */
+export const publishStep = <F extends StepFamily>(
+  family: F,
+  step: StepByFamily[F],
+  index: number,
+  total: number,
+  source = 'unknown',
+  meta: Readonly<Record<string, unknown>> = {}
+): void => {
+  stepBus.emit({ family, step, index, total, source, meta });
+};

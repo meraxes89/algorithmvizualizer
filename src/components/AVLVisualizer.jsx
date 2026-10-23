@@ -1,14 +1,13 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { Plus, Trash2, Search, Shuffle, RotateCcw, Settings, BarChart3, MessageSquare } from 'lucide-react';
 import { SPEED_PRESETS } from '../utils/animationHelpers';
-import {
-  generateRandomAVL,
-  layoutTree,
-  getTreeStats,
-  avlInsertAnimated,
-  avlDeleteAnimated,
-  avlSearchAnimated,
-} from '../algorithms/trees/avlOperations';
+import { generateRandomAVL, getTreeStats } from '../algorithms/trees/avl/avl';
+import { avlInsert } from '../algorithms/trees/avl/avl-insert';
+import { avlDelete, avlSearch } from '../algorithms/trees/avl/avl-operations';
+import { layoutTree } from '../algorithms/trees/layout';
+import { snapshotTree, treeFromSnapshot } from '../algorithms/trees/tree';
+import { usePlayback } from '../hooks/usePlayback';
+import { collectSteps } from '../core/playback';
 
 /* ------------------------------------------------------------------ */
 /*  AVLVisualizer – fully interactive AVL tree playground             */
@@ -17,16 +16,28 @@ import {
 const AVLVisualizer = React.memo(() => {
   // Tree state
   const [avlRoot, setAvlRoot] = useState(null);
-  const [treeData, setTreeData] = useState({ nodes: [], edges: [] });
   const [stats, setStats] = useState({ height: 0, nodeCount: 0, min: '-', max: '-' });
 
   // Animation state
-  const [activeNode, setActiveNode] = useState(null);
-  const [visitedNodes, setVisitedNodes] = useState([]);
-  const [foundNode, setFoundNode] = useState(null);
-  const [deletingNode, setDeletingNode] = useState(null);
-  const [rotatingNodes, setRotatingNodes] = useState([]);
-  const [isRunning, setIsRunning] = useState(false);
+  // The trace of the operation being played, and the engine playing it.
+  const [trace, setTrace] = useState([]);
+  const { index, isPlaying } = usePlayback(trace, {
+    autoplay: true,
+    speed: SPEED_PRESETS.MEDIUM,
+    source: 'trees',
+    meta: { algorithm: 'AVL' },
+  });
+
+  // Everything on screen comes from the current step's view.
+  const view = trace[index]?.view;
+  const activeNode = view?.active ?? null;
+  const visitedNodes = view?.order ?? [];
+  const rotatingNodes = view?.rotating ?? [];
+  const nodeWithState = (state) =>
+    Object.entries(view?.states ?? {}).find(([, value]) => value === state)?.[0] ?? null;
+  const foundNode = nodeWithState('found');
+  const deletingNode = nodeWithState('deleting');
+  const isRunning = isPlaying;
 
   // We need a ref for the root so the refreshLayout callback always
   // sees the latest root during recursive animated operations.
@@ -38,30 +49,33 @@ const AVLVisualizer = React.memo(() => {
   const [showSettings, setShowSettings] = useState(false);
   const [showExplanation, setShowExplanation] = useState(true);
   const [showStats, setShowStats] = useState(true);
-  const [logs, setLogs] = useState([]);
+
 
   const logEndRef = useRef(null);
 
-  // Refresh layout & stats
+  // Refresh the stats. The layout comes from the current step.
   const refreshTree = useCallback((root) => {
-    const layout = layoutTree(root);
-    setTreeData(layout);
     setStats(getTreeStats(root));
   }, []);
 
-  // Callback for mid-animation relayout (rotations change tree structure)
-  const refreshLayout = useCallback(() => {
-    if (rootRef.current) {
-      const layout = layoutTree(rootRef.current);
-      setTreeData(layout);
-    }
-  }, []);
+  // The tree on screen is the one the current step carries, so a
+  // rotation is visible the moment it happens. With no trace running,
+  // the seeded root still shows.
+  const treeData = useMemo(() => {
+    const root = treeFromSnapshot(view?.nodes ?? snapshotTree(avlRoot));
+    return root ? layoutTree(root) : { nodes: [], edges: [] };
+  }, [view, avlRoot]);
 
   // Init
   useEffect(() => {
     handleRandomTree();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
 
   // Auto-scroll logs
   useEffect(() => {
@@ -70,16 +84,8 @@ const AVLVisualizer = React.memo(() => {
 
   /* ---------- helpers ---------- */
 
-  const addLog = useCallback((entry) => {
-    setLogs((prev) => [...prev, { ...entry, ts: Date.now() }]);
-  }, []);
-
   const clearAnimation = () => {
-    setActiveNode(null);
-    setVisitedNodes([]);
-    setFoundNode(null);
-    setDeletingNode(null);
-    setRotatingNodes([]);
+    setTrace([]);
   };
 
   const parsedValue = () => {
@@ -97,7 +103,6 @@ const AVLVisualizer = React.memo(() => {
     setAvlRoot(root);
     rootRef.current = root;
     refreshTree(root);
-    setLogs([{ type: 'info', text: 'Generated a random AVL tree with 7 nodes.', ts: Date.now() }]);
   };
 
   const handleReset = () => {
@@ -105,72 +110,41 @@ const AVLVisualizer = React.memo(() => {
     clearAnimation();
     setAvlRoot(null);
     rootRef.current = null;
-    setTreeData({ nodes: [], edges: [] });
     setStats({ height: 0, nodeCount: 0, min: '-', max: '-' });
-    setLogs([{ type: 'info', text: 'Tree cleared.', ts: Date.now() }]);
   };
 
-  const handleInsert = async () => {
+  const handleInsert = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    const newRoot = await avlInsertAnimated(avlRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setRotatingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
+    const steps = collectSteps(avlInsert(avlRoot, val));
+    const newRoot = avlRoot;
 
     setAvlRoot(newRoot);
     rootRef.current = newRoot;
     refreshTree(newRoot);
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(steps);
     setInputValue('');
   };
 
-  const handleSearch = async () => {
+  const handleSearch = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    await avlSearchAnimated(avlRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setFoundNode,
-      addLog,
-      speed,
-    });
-
-    setIsRunning(false);
+    setTrace(collectSteps(avlSearch(avlRoot, val)));
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     const val = parsedValue();
     if (val === null || isRunning) return;
-    setIsRunning(true);
-    clearAnimation();
 
-    const newRoot = await avlDeleteAnimated(avlRoot, val, {
-      setActiveNode,
-      setVisitedNodes,
-      setDeletingNode,
-      setRotatingNodes,
-      addLog,
-      refreshLayout,
-      speed,
-    });
+    const steps = collectSteps(avlDelete(avlRoot, val));
+    const newRoot = avlRoot;
 
     setAvlRoot(newRoot);
     rootRef.current = newRoot;
     refreshTree(newRoot);
-    clearAnimation();
-    setIsRunning(false);
+    setTrace(steps);
     setInputValue('');
   };
 
@@ -190,27 +164,27 @@ const AVLVisualizer = React.memo(() => {
   };
 
   const getStrokeColor = (id) => {
-    if (rotatingNodes.includes(id)) return '#fde68a';
-    if (deletingNode === id) return '#fecaca';
-    if (foundNode === id) return '#bbf7d0';
-    if (activeNode === id) return '#fef3c7';
-    if (visitedNodes.includes(id)) return '#a7f3d0';
-    return '#c7d2fe';
+    if (rotatingNodes.includes(id)) return 'var(--viz-node-active-soft)';
+    if (deletingNode === id) return 'var(--viz-node-delete-soft)';
+    if (foundNode === id) return 'var(--viz-node-found-soft)';
+    if (activeNode === id) return 'var(--viz-node-active-soft)';
+    if (visitedNodes.includes(id)) return 'var(--viz-node-visited-soft)';
+    return 'var(--viz-node-default-soft)';
   };
 
   /* ---------- log styling ---------- */
 
   const logColor = (type) => {
     switch (type) {
-      case 'start':    return 'text-blue-600';
-      case 'compare':  return 'text-amber-600';
-      case 'success':  return 'text-emerald-600';
-      case 'error':    return 'text-red-600';
-      case 'warn':     return 'text-yellow-600';
-      case 'delete':   return 'text-rose-600';
-      case 'rotation': return 'text-orange-600';
+      case 'start':    return 'text-blue-600 dark:text-blue-300';
+      case 'compare':    return 'text-amber-800 dark:text-amber-300';
+      case 'success':    return 'text-emerald-800 dark:text-emerald-300';
+      case 'error':    return 'text-red-700 dark:text-red-400';
+      case 'warn':    return 'text-yellow-700 dark:text-yellow-300';
+      case 'delete':    return 'text-rose-700 dark:text-rose-300';
+      case 'rotation': return 'text-orange-700 dark:text-orange-300';
       case 'info':
-      default:         return 'text-slate-600';
+      default:         return 'text-slate-600 dark:text-slate-300';
     }
   };
 
@@ -231,9 +205,9 @@ const AVLVisualizer = React.memo(() => {
   /* ---------- helper: balance factor colour ---------- */
 
   const bfColor = (bf) => {
-    if (bf === 0) return '#64748b';        // slate-500
-    if (bf === 1 || bf === -1) return '#2563eb';  // blue-600
-    return '#dc2626';                       // red-600 – imbalanced
+    if (bf === 0) return 'var(--viz-ink-muted)';        // slate-500
+    if (bf === 1 || bf === -1) return 'var(--viz-info-text)';  // blue-700/300
+    return 'var(--viz-danger-strong)';                       // red-600 – imbalanced
   };
 
   /* ---------- render ---------- */
@@ -244,15 +218,15 @@ const AVLVisualizer = React.memo(() => {
       <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-3 rounded-t-lg shadow-lg flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 className="text-xl font-bold">AVL Tree Operations</h2>
-          <p className="text-xs opacity-90 mt-0.5">
+          <p className="text-xs mt-0.5">
             Insert, Delete &amp; Search with rotation animations
           </p>
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Time:</span> O(log n)
           </div>
-          <div className="bg-white/20 px-2.5 py-1 rounded-full">
+          <div className="bg-black/20 px-2.5 py-1 rounded-full">
             <span className="font-semibold">Space:</span> O(n)
           </div>
         </div>
@@ -261,7 +235,7 @@ const AVLVisualizer = React.memo(() => {
       {/* Controls */}
       <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex flex-wrap items-center gap-3">
         {/* Value input */}
-        <input
+        <input aria-label="Value to insert, search, or delete"
           type="number"
           min={1}
           max={999}
@@ -270,14 +244,14 @@ const AVLVisualizer = React.memo(() => {
           onKeyDown={handleKeyDown}
           placeholder="Value (1–999)"
           disabled={isRunning}
-          className="w-32 px-3 py-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm focus:border-blue-400 focus:outline-none text-sm placeholder-slate-400 disabled:opacity-50"
+          className="w-32 px-3 py-2 bg-white dark:bg-slate-700 text-slate-800 dark:text-white rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm focus:border-blue-400 focus:outline-none text-sm placeholder-slate-500 disabled:opacity-50"
         />
 
         {/* Operation buttons */}
         <button
           onClick={handleInsert}
           disabled={isRunning || !parsedValue()}
-          className="flex items-center gap-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-emerald-700 hover:bg-emerald-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Plus size={16} />
           Insert
@@ -286,7 +260,7 @@ const AVLVisualizer = React.memo(() => {
         <button
           onClick={handleSearch}
           disabled={isRunning || !parsedValue() || !avlRoot}
-          className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Search size={16} />
           Search
@@ -295,7 +269,7 @@ const AVLVisualizer = React.memo(() => {
         <button
           onClick={handleDelete}
           disabled={isRunning || !parsedValue() || !avlRoot}
-          className="flex items-center gap-1.5 bg-rose-500 hover:bg-rose-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Trash2 size={16} />
           Delete
@@ -306,7 +280,7 @@ const AVLVisualizer = React.memo(() => {
         <button
           onClick={handleRandomTree}
           disabled={isRunning}
-          className="flex items-center gap-1.5 bg-purple-500 hover:bg-purple-600 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
+          className="flex items-center gap-1.5 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-3 py-2 rounded-lg font-semibold transition-colors text-sm"
         >
           <Shuffle size={16} />
           Random Tree
@@ -378,20 +352,20 @@ const AVLVisualizer = React.memo(() => {
       {showStats && (
         <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-5 py-2 flex flex-wrap gap-5 text-sm">
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 dark:text-slate-400">Nodes:</span>
+            <span className="text-slate-600 dark:text-slate-400">Nodes:</span>
             <span className="text-slate-700 dark:text-slate-200 font-bold">{stats.nodeCount}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 dark:text-slate-400">Height:</span>
+            <span className="text-slate-600 dark:text-slate-400">Height:</span>
             <span className="text-slate-700 dark:text-slate-200 font-bold">{stats.height}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 dark:text-slate-400">Min:</span>
-            <span className="text-emerald-600 font-bold">{stats.min}</span>
+            <span className="text-slate-600 dark:text-slate-400">Min:</span>
+            <span className="text-emerald-800 dark:text-emerald-400 font-bold">{stats.min}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-slate-500 dark:text-slate-400">Max:</span>
-            <span className="text-rose-600 font-bold">{stats.max}</span>
+            <span className="text-slate-600 dark:text-slate-400">Max:</span>
+            <span className="text-rose-700 dark:text-rose-400 font-bold">{stats.max}</span>
           </div>
         </div>
       )}
@@ -401,43 +375,43 @@ const AVLVisualizer = React.memo(() => {
         {/* SVG Tree */}
         <div 
           className="flex-1 flex items-center justify-center p-2 overflow-hidden relative dark:bg-slate-900"
-          style={{ backgroundColor: '#f8fafc', backgroundImage: 'radial-gradient(#cbd5e1 1px, transparent 1px)', backgroundSize: '24px 24px' }}
+          style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
         >
           {treeData.nodes.length === 0 ? (
-            <div className="text-slate-500 dark:text-slate-400 text-lg font-medium select-none">
-              Enter a value and click <span className="text-violet-400">Insert</span> or press{' '}
+            <div className="text-slate-600 dark:text-slate-400 text-lg font-medium select-none">
+              Enter a value and click <span className="text-violet-700 dark:text-violet-300">Insert</span> or press{' '}
               <span className="text-violet-400">Random Tree</span>
             </div>
           ) : (
             <svg viewBox="0 0 1100 460" preserveAspectRatio="xMidYMid meet" className="w-full h-full">
               <defs>
                 <filter id="avl-shadow" x="-30%" y="-30%" width="160%" height="160%">
-                  <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="#000" floodOpacity="0.45" />
+                  <feDropShadow dx="0" dy="2" stdDeviation="4" floodColor="var(--viz-shadow)" floodOpacity="0.45" />
                 </filter>
                 {/* Gradients */}
                 <radialGradient id="avl-grad-default" cx="35%" cy="30%" r="65%">
-                  <stop offset="0%" stopColor="#60a5fa" />
-                  <stop offset="100%" stopColor="#2563eb" />
+                  <stop offset="0%" stopColor="var(--viz-node-default-from)" />
+                  <stop offset="100%" stopColor="var(--viz-node-default-to)" />
                 </radialGradient>
                 <radialGradient id="avl-grad-visited" cx="35%" cy="30%" r="65%">
-                  <stop offset="0%" stopColor="#34d399" />
-                  <stop offset="100%" stopColor="#059669" />
+                  <stop offset="0%" stopColor="var(--viz-node-visited-from)" />
+                  <stop offset="100%" stopColor="var(--viz-node-visited-to)" />
                 </radialGradient>
                 <radialGradient id="avl-grad-active" cx="35%" cy="30%" r="65%">
-                  <stop offset="0%" stopColor="#fcd34d" />
-                  <stop offset="100%" stopColor="#d97706" />
+                  <stop offset="0%" stopColor="var(--viz-node-active-from)" />
+                  <stop offset="100%" stopColor="var(--viz-node-active-to)" />
                 </radialGradient>
                 <radialGradient id="avl-grad-found" cx="35%" cy="30%" r="65%">
-                  <stop offset="0%" stopColor="#6ee7b7" />
-                  <stop offset="100%" stopColor="#10b981" />
+                  <stop offset="0%" stopColor="var(--viz-node-found-from)" />
+                  <stop offset="100%" stopColor="var(--viz-sorted)" />
                 </radialGradient>
                 <radialGradient id="avl-grad-deleting" cx="35%" cy="30%" r="65%">
-                  <stop offset="0%" stopColor="#fca5a5" />
-                  <stop offset="100%" stopColor="#ef4444" />
+                  <stop offset="0%" stopColor="var(--viz-node-delete-from)" />
+                  <stop offset="100%" stopColor="var(--viz-node-delete-to)" />
                 </radialGradient>
                 <radialGradient id="avl-grad-rotating" cx="35%" cy="30%" r="65%">
-                  <stop offset="0%" stopColor="#fdba74" />
-                  <stop offset="100%" stopColor="#ea580c" />
+                  <stop offset="0%" stopColor="var(--viz-node-warn-from)" />
+                  <stop offset="100%" stopColor="var(--viz-node-warn-to)" />
                 </radialGradient>
               </defs>
 
@@ -453,7 +427,7 @@ const AVLVisualizer = React.memo(() => {
                     y1={edge.from.y}
                     x2={edge.to.x}
                     y2={edge.to.y}
-                    stroke={isRotating ? '#fb923c' : fromActive && toActive ? '#fbbf24' : '#cbd5e1'}
+                    stroke={isRotating ? 'var(--viz-warning)' : fromActive && toActive ? 'var(--viz-compare)' : 'var(--viz-edge)'}
                     strokeWidth={isRotating ? 5 : fromActive && toActive ? 4 : 3}
                     strokeLinecap="round"
                     className="transition-all duration-300"
@@ -510,7 +484,7 @@ const AVLVisualizer = React.memo(() => {
                       y={node.y - 4}
                       textAnchor="middle"
                       dy=".38em"
-                      fill="white"
+                      fill="var(--viz-node-text)"
                       fontSize="20"
                       fontWeight="800"
                       fontFamily="monospace"
@@ -524,7 +498,7 @@ const AVLVisualizer = React.memo(() => {
                       x={node.x + 30}
                       y={node.y - 30}
                       textAnchor="middle"
-                      fill="#3b82f6"
+                      fill="var(--viz-active)"
                       fontSize="11"
                       fontWeight="700"
                       fontFamily="monospace"
@@ -558,15 +532,15 @@ const AVLVisualizer = React.memo(() => {
               <MessageSquare size={16} className="text-blue-500" />
               <span className="text-slate-800 dark:text-slate-100 font-semibold text-sm">Algorithm Log</span>
               <button
-                onClick={() => setLogs([])}
-                className="ml-auto text-xs text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
+                onClick={() => setTrace([])}
+                className="ml-auto text-xs text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-white transition-colors"
               >
                 Clear
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-3 space-y-1.5 text-xs font-mono">
               {logs.length === 0 && (
-                <p className="text-slate-500 dark:text-slate-400 text-center mt-6">
+                <p className="text-slate-600 dark:text-slate-400 text-center mt-6">
                   Perform an operation to see step‑by‑step logs here.
                 </p>
               )}
@@ -585,23 +559,23 @@ const AVLVisualizer = React.memo(() => {
       {/* Legend */}
       <div className="bg-slate-50 dark:bg-slate-800 p-3 flex flex-wrap gap-4 justify-center text-sm rounded-b-lg border-t border-slate-200 dark:border-slate-700">
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#3b82f6' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-active)' }} />
           <span className="text-slate-600 dark:text-slate-300">Unvisited</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#f59e0b' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-compare)' }} />
           <span className="text-slate-600 dark:text-slate-300">Visiting</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#10b981' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-sorted)' }} />
           <span className="text-slate-600 dark:text-slate-300">Visited / Found</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ea580c' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-node-warn-to)' }} />
           <span className="text-slate-600 dark:text-slate-300">Rotating</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-4 h-4 rounded" style={{ backgroundColor: '#ef4444' }} />
+          <div className="w-4 h-4 rounded" style={{ backgroundColor: 'var(--viz-node-delete-to)' }} />
           <span className="text-slate-600 dark:text-slate-300">Deleting</span>
         </div>
       </div>

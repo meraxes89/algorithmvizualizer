@@ -1,9 +1,13 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { alias } from './vite.aliases.ts';
 
 export default defineConfig(({ mode }) => ({
   base: process.env.GITHUB_PAGES === 'true' ? '/algorithmvizualizer/' : '/',
   plugins: [react()],
+  resolve: {
+    alias,
+  },
   server: {
     host: true,
   },
