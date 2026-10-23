@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { ThemeProvider } from './context/ThemeContext';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, MotionConfig, motion } from 'framer-motion';
 import { pageVariants } from './lib/motion';
 
 import Navbar from './components/Navbar';
@@ -169,30 +169,37 @@ function App() {
 
   return (
     <ThemeProvider>
-      <Router>
-        <AccentColorManager />
-        <CustomCursor />
-        <ScrollToTop />
-        <div className="min-h-screen bg-paper text-ink selection:bg-accent-soft font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
-          <nav aria-label="Skip navigation">
-            <a href="#main-content" className="skip-link">
-              Skip to content
-            </a>
-          </nav>
-          <Navbar />
-          <div id="main-content" tabIndex={-1} className="outline-none">
-            <DioramaWrapper>
-              <ErrorBoundary>
-                <AnimatedRoutes />
-              </ErrorBoundary>
-            </DioramaWrapper>
+      {/* Every framer-motion animation below — route transitions, the
+          cursor springs, the toast slides, the dock — respects the
+          user's reduced-motion preference from this one place. The CSS
+          guard in index.css covers what CSS animates; this covers what
+          framer drives through JavaScript. */}
+      <MotionConfig reducedMotion="user">
+        <Router>
+          <AccentColorManager />
+          <CustomCursor />
+          <ScrollToTop />
+          <div className="min-h-screen bg-paper text-ink selection:bg-accent-soft font-sans transition-colors duration-300 pb-20 overflow-hidden preserve-3d">
+            <nav aria-label="Skip navigation">
+              <a href="#main-content" className="skip-link">
+                Skip to content
+              </a>
+            </nav>
+            <Navbar />
+            <div id="main-content" tabIndex={-1} className="outline-none">
+              <DioramaWrapper>
+                <ErrorBoundary>
+                  <AnimatedRoutes />
+                </ErrorBoundary>
+              </DioramaWrapper>
+            </div>
+            <OnboardingTour />
+            <ToastContainer />
+            <EasterEgg />
+            <BottomDock />
           </div>
-          <OnboardingTour />
-          <ToastContainer />
-          <EasterEgg />
-          <BottomDock />
-        </div>
-      </Router>
+        </Router>
+      </MotionConfig>
     </ThemeProvider>
   );
 }
