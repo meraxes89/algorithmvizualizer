@@ -5,7 +5,7 @@ import { generateRandomAVL, getTreeStats } from '../algorithms/trees/avl/avl';
 import { avlInsert } from '../algorithms/trees/avl/avl-insert';
 import { avlDelete, avlSearch } from '../algorithms/trees/avl/avl-operations';
 import { layoutTree } from '../algorithms/trees/layout';
-import { treeFromSnapshot } from '../algorithms/trees/tree';
+import { snapshotTree, treeFromSnapshot } from '../algorithms/trees/tree';
 import { usePlayback } from '../hooks/usePlayback';
 import { collectSteps } from '../core/playback';
 
@@ -59,11 +59,12 @@ const AVLVisualizer = React.memo(() => {
   }, []);
 
   // The tree on screen is the one the current step carries, so a
-  // rotation is visible the moment it happens.
+  // rotation is visible the moment it happens. With no trace running,
+  // the seeded root still shows.
   const treeData = useMemo(() => {
-    const root = treeFromSnapshot(view?.nodes ?? {});
+    const root = treeFromSnapshot(view?.nodes ?? snapshotTree(avlRoot));
     return root ? layoutTree(root) : { nodes: [], edges: [] };
-  }, [view]);
+  }, [view, avlRoot]);
 
   // Init
   useEffect(() => {
@@ -71,17 +72,17 @@ const AVLVisualizer = React.memo(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
+
   // Auto-scroll logs
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
   /* ---------- helpers ---------- */
-
-  const logs = useMemo(
-    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
-    [view]
-  );
 
   const clearAnimation = () => {
     setTrace([]);

@@ -57,17 +57,17 @@ const HeapVisualizer = React.memo(() => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const logs = useMemo(
+    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
+    [view]
+  );
+
   // Auto-scroll logs
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [logs]);
 
   /* ---------- helpers ---------- */
-
-  const logs = useMemo(
-    () => (view?.log ?? []).map((entry) => ({ ...entry, ts: 0 })),
-    [view]
-  );
 
   const clearAnimation = () => {
     setTrace([]);

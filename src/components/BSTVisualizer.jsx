@@ -6,7 +6,7 @@ import {
   getTreeStats,
 } from '../algorithms/trees/bst/bst';
 import { bstDelete, bstInsert, bstSearch } from '../algorithms/trees/bst/bst-operations';
-import { treeFromSnapshot } from '../algorithms/trees/tree';
+import { snapshotTree, treeFromSnapshot } from '../algorithms/trees/tree';
 import { layoutTree } from '../algorithms/trees/layout';
 import { usePlayback } from '../hooks/usePlayback';
 import { collectSteps } from '../core/playback';
@@ -53,11 +53,14 @@ const BSTVisualizer = React.memo(() => {
     [view]
   );
 
-  // The tree on screen is the one the current step carries.
+  // The tree on screen is the one the current step carries, so a
+  // rotation or insert is visible the moment it happens. With no trace
+  // running, the seeded root still shows — the port to the contract once
+  // dropped that, and the canvas stayed empty until an operation ran.
   const treeData = useMemo(() => {
-    const root = treeFromSnapshot(view?.nodes ?? {});
+    const root = treeFromSnapshot(view?.nodes ?? snapshotTree(bstRoot));
     return root ? layoutTree(root) : { nodes: [], edges: [] };
-  }, [view]);
+  }, [view, bstRoot]);
 
   const isRunning = isPlaying;
 
