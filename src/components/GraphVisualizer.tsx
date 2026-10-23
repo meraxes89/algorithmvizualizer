@@ -1,17 +1,66 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Trash2, HelpCircle, Shuffle, ChevronLeft, ChevronRight, Edit3 } from 'lucide-react';
-import { graphAlgorithms, getEdgeKey } from '../algorithms/graph';
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
+import {
+  Play,
+  Pause,
+  RotateCcw,
+  Trash2,
+  HelpCircle,
+  Shuffle,
+  ChevronLeft,
+  ChevronRight,
+  Edit3,
+} from 'lucide-react';
+import {
+  graphAlgorithms,
+  getEdgeKey,
+  type Edge,
+  type GraphAlgorithm,
+} from '../algorithms/graph';
 import { viz } from '../theme/vizTokens';
 import { collectSteps } from '../core/playback';
 import { usePlayback } from '../hooks/usePlayback';
 import InteractiveGraphBuilder from './educational/InteractiveGraphBuilder';
 import { triggerVictoryConfetti } from '../utils/confettiHelper';
 import { toast } from './Toast';
+import type { EdgeState, GraphStep } from '@core/steps';
+
+/** A vertex pinned to a canvas position. */
+type PlacedVertex = {
+  id: number;
+  label: string;
+  x: number;
+  y: number;
+};
+
+/** A family entry plus the complexities the header shows. */
+type GraphAlgorithmDetails = GraphAlgorithm & {
+  timeComplexity: string;
+  spaceComplexity: string;
+};
+
+/** The shape the graph page hands down for the selected algorithm. */
+type AlgorithmInfo = {
+  id: string;
+  name: string;
+};
+
+type EditMode = 'select' | 'add-node' | 'add-edge' | 'delete';
+
+type GraphVisualizerProps = {
+  algorithmInfo?: AlgorithmInfo;
+};
 
 // Algorithm details including description, complexity, etc.
 // The algorithms come from the family registry, so the page, the arena
 // and anything else all run the same implementations.
-const ALGORITHM_DETAILS = Object.fromEntries(
+const ALGORITHM_DETAILS: Record<string, GraphAlgorithmDetails> = Object.fromEntries(
   graphAlgorithms.map((entry) => [
     entry.id,
     {
@@ -22,26 +71,28 @@ const ALGORITHM_DETAILS = Object.fromEntries(
   ])
 );
 
-const GraphVisualizer = React.memo(({ algorithmInfo }) => {
+const GraphVisualizer = memo(({ algorithmInfo }: GraphVisualizerProps) => {
   // Read algorithm type from context. Fall back to Dijkstra if not found.
-  const currentAlgoKey = Object.keys(ALGORITHM_DETAILS).find(
-    key => ALGORITHM_DETAILS[key].name === algorithmInfo?.name || key === algorithmInfo?.name
-  ) || 'Dijkstra';
+  const currentAlgoKey =
+    Object.keys(ALGORITHM_DETAILS).find(
+      (key) =>
+        ALGORITHM_DETAILS[key].name === algorithmInfo?.name || key === algorithmInfo?.name
+    ) || 'Dijkstra';
 
   const details = ALGORITHM_DETAILS[currentAlgoKey];
 
   // Graph state
-  const [vertices, setVertices] = useState([]);
-  const [edges, setEdges] = useState([]);
+  const [vertices, setVertices] = useState<PlacedVertex[]>([]);
+  const [edges, setEdges] = useState<Edge[]>([]);
   const [isDirected, setIsDirected] = useState(details.directedOnly || false);
   const [isWeighted, setIsWeighted] = useState(true);
 
   // Selector states
-  const [sourceId, setSourceId] = useState(null);
-  const [targetId, setTargetId] = useState(null);
+  const [sourceId, setSourceId] = useState<number | null>(null);
+  const [targetId, setTargetId] = useState<number | null>(null);
 
   // Visualizer step states
-  const [steps, setSteps] = useState([]);
+  const [steps, setSteps] = useState<GraphStep[]>([]);
 
   // The playback engine owns the run: graph steps reach the event bus and
   // the transport behaves like every other family's.
@@ -64,14 +115,22 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
   const [showGraphBuilder, setShowGraphBuilder] = useState(false);
 
   // Editor states
-  const [selectedNodeId, setSelectedNodeId] = useState(null);
-  const [edgeStartNodeId, setEdgeStartNodeId] = useState(null);
-  const [editMode, setEditMode] = useState('select'); // 'select', 'add-node', 'add-edge', 'delete'
+  const [selectedNodeId, setSelectedNodeId] = useState<number | null>(null);
+  const [edgeStartNodeId, setEdgeStartNodeId] = useState<number | null>(null);
+  const [editMode, setEditMode] = useState<EditMode>('select');
   const [edgeWeight, setEdgeWeight] = useState('1');
-  
+
   // Drag node ref
-  const draggingNodeRef = useRef(null);
-  const svgRef = useRef(null);
+  const draggingNodeRef = useRef<number | null>(null);
+  const svgRef = useRef<SVGSVGElement | null>(null);
+
+  // `generateRandomGraph` has to stay referentially stable so the mount
+  // effect below runs exactly once, but the random graph still needs the
+  // current directed flag. Reading it through a ref keeps both true.
+  const isDirectedRef = useRef(isDirected);
+  useEffect(() => {
+    isDirectedRef.current = isDirected;
+  }, [isDirected]);
 
   // Sync isDirected when selected algorithm changes
   useEffect(() => {
@@ -89,24 +148,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     setSteps([]);
   }, [currentAlgoKey, resetPlayback]);
 
-  // Generate an initial random graph
-  useEffect(() => {
-    generateRandomGraph();
-  }, []);
-
-  // Set default source/target after graph generation
-  useEffect(() => {
-    if (vertices.length > 0) {
-      if (sourceId === null || !vertices.some(v => v.id === sourceId)) {
-        setSourceId(vertices[0].id);
-      }
-      if (targetId === null || !vertices.some(v => v.id === targetId)) {
-        setTargetId(vertices[vertices.length - 1]?.id || null);
-      }
-    }
-  }, [vertices]);
-
-  const generateRandomGraph = () => {
+  const generateRandomGraph = useCallback(() => {
     pause();
     setSteps([]);
 
@@ -115,7 +157,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     const height = 340;
 
     // Arrange nodes in a neat circle
-    const newVertices = [];
+    const newVertices: PlacedVertex[] = [];
     const centerX = width / 2;
     const centerY = height / 2;
     const radiusX = width / 2.8;
@@ -131,11 +173,13 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
       });
     }
 
-    const newEdges = [];
-    const addedPairs = new Set();
+    const newEdges: Edge[] = [];
+    const addedPairs = new Set<string>();
 
-    const addEdge = (u, v) => {
-      const pairKey = isDirected ? `${u}->${v}` : `${Math.min(u, v)}-${Math.max(u, v)}`;
+    const addEdge = (u: number, v: number) => {
+      const pairKey = isDirectedRef.current
+        ? `${u}->${v}`
+        : `${Math.min(u, v)}-${Math.max(u, v)}`;
       if (u !== v && !addedPairs.has(pairKey)) {
         addedPairs.add(pairKey);
         newEdges.push({
@@ -164,10 +208,32 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     setEdges(newEdges);
     setSourceId(0);
     setTargetId(count - 1);
-  };
+  }, [pause]);
 
-  const handleSvgDoubleClick = (e) => {
+  // Generate an initial random graph once, on mount.
+  useEffect(() => {
+    generateRandomGraph();
+  }, [generateRandomGraph]);
+
+  // Set default source/target after graph generation. The setters read
+  // the previous value, so this only fills the slots the current graph
+  // has no node for.
+  useEffect(() => {
+    if (vertices.length === 0) return;
+
+    setSourceId((prev) =>
+      prev === null || !vertices.some((v) => v.id === prev) ? vertices[0].id : prev
+    );
+    setTargetId((prev) =>
+      prev === null || !vertices.some((v) => v.id === prev)
+        ? (vertices[vertices.length - 1]?.id ?? null)
+        : prev
+    );
+  }, [vertices]);
+
+  const handleSvgDoubleClick = (e: ReactMouseEvent<SVGSVGElement>) => {
     if (editMode !== 'add-node' && editMode !== 'select') return;
+    if (!svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
@@ -176,19 +242,19 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     const maxId = vertices.reduce((max, v) => (v.id > max ? v.id : max), -1);
     const newId = maxId + 1;
     const newLabel = String.fromCharCode(65 + (newId % 26)) + (newId >= 26 ? Math.floor(newId / 26) : '');
-    
+
     setVertices([...vertices, { id: newId, label: newLabel, x, y }]);
     // Keep it on select mode
     setEditMode('select');
   };
 
   // Node Drag and Drop handlers
-  const handleNodeMouseDown = (e, node) => {
+  const handleNodeMouseDown = (e: ReactMouseEvent<SVGGElement>, node: PlacedVertex) => {
     e.stopPropagation();
     if (editMode === 'delete') {
       // Delete Node
-      setVertices(vertices.filter(v => v.id !== node.id));
-      setEdges(edges.filter(edge => edge.from !== node.id && edge.to !== node.id));
+      setVertices(vertices.filter((v) => v.id !== node.id));
+      setEdges(edges.filter((edge) => edge.from !== node.id && edge.to !== node.id));
       if (sourceId === node.id) setSourceId(null);
       if (targetId === node.id) setTargetId(null);
       return;
@@ -209,9 +275,10 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
         const weight = isWeighted ? parsedWeight : 1;
 
         // Check if edge already exists
-        const edgeExists = edges.some(edge => 
-          isDirected ? (edge.from === u && edge.to === v) : 
-          ((edge.from === u && edge.to === v) || (edge.from === v && edge.to === u))
+        const edgeExists = edges.some((edge) =>
+          isDirected
+            ? edge.from === u && edge.to === v
+            : (edge.from === u && edge.to === v) || (edge.from === v && edge.to === u)
         );
 
         if (!edgeExists) {
@@ -228,14 +295,15 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     draggingNodeRef.current = node.id;
   };
 
-  const handleSvgMouseMove = (e) => {
+  const handleSvgMouseMove = (e: ReactMouseEvent<SVGSVGElement>) => {
     if (draggingNodeRef.current === null) return;
+    if (!svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
 
-    setVertices(prev => 
-      prev.map(v => v.id === draggingNodeRef.current ? { ...v, x, y } : v)
+    setVertices((prev) =>
+      prev.map((v) => (v.id === draggingNodeRef.current ? { ...v, x, y } : v))
     );
   };
 
@@ -244,19 +312,19 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
   };
 
   // Delete specific edge
-  const handleEdgeClick = (e, edge) => {
+  const handleEdgeClick = (e: ReactMouseEvent<SVGGElement>, edge: Edge) => {
     e.stopPropagation();
     if (editMode === 'delete') {
-      setEdges(edges.filter(el => !(el.from === edge.from && el.to === edge.to)));
+      setEdges(edges.filter((el) => !(el.from === edge.from && el.to === edge.to)));
     }
   };
 
-  const getEdgeCoords = (from, to, nodeRadius = 24) => {
+  const getEdgeCoords = (from: PlacedVertex, to: PlacedVertex, nodeRadius = 24) => {
     const dx = to.x - from.x;
     const dy = to.y - from.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
     if (distance === 0) return { x1: from.x, y1: from.y, x2: to.x, y2: to.y };
-    
+
     const arrowOffset = isDirected ? 8 : 0;
     const totalEndOffset = nodeRadius + arrowOffset;
 
@@ -278,7 +346,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     pause();
 
     // MST algorithms and Topological Sort do not need source/target selection.
-    const computedSteps = details.needsSource
+    const computedSteps: GraphStep[] = details.needsSource
       ? collectSteps(details.generator(vertices, edges, sourceId, targetId, isDirected))
       : collectSteps(details.generator(vertices, edges, null, null, isDirected));
 
@@ -290,10 +358,10 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     setSteps([]);
   };
 
-  const activeStep = steps[currentStepIndex] || null;
+  const activeStep: GraphStep | null = steps[currentStepIndex] || null;
 
   // Compute status colors for rendering
-  const getNodeColor = (nodeId) => {
+  const getNodeColor = (nodeId: number): string => {
     if (details.needsSource && nodeId === sourceId) return viz.start;
     if (details.needsTarget && nodeId === targetId) return viz.end;
 
@@ -305,7 +373,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     return viz.node;
   };
 
-  const getNodeTextColor = (nodeId) => {
+  const getNodeTextColor = (nodeId: number): string => {
     if (details.needsSource && nodeId === sourceId) return viz.onBright;
     if (details.needsTarget && nodeId === targetId) return viz.onBright;
 
@@ -316,7 +384,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     return viz.nodeText;
   };
 
-  const getEdgeColor = (edge) => {
+  const getEdgeColor = (edge: Edge): string => {
     if (activeStep) {
       const key = getEdgeKey(edge.from, edge.to, isDirected);
       const edgeStatus = activeStep.view.edges[key];
@@ -328,7 +396,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
     return viz.muted;
   };
 
-  const getEdgeWidth = (edge) => {
+  const getEdgeWidth = (edge: Edge): number => {
     if (activeStep) {
       const key = getEdgeKey(edge.from, edge.to, isDirected);
       const edgeStatus = activeStep.view.edges[key];
@@ -447,7 +515,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
       <div className="bg-slate-50 dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-6 py-3 flex flex-wrap items-center justify-between gap-3 text-slate-700 dark:text-slate-200">
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
           <span className="text-slate-600 dark:text-slate-400 font-bold uppercase tracking-wider mr-1.5 select-none text-[11px]">Editor:</span>
-          
+
           <button
             onClick={() => { setEditMode('select'); setEdgeStartNodeId(null); }}
             className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all border shadow-sm ${editMode === 'select' ? 'bg-blue-600 border-blue-600 text-white' : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600 text-slate-600 dark:text-slate-300'}`}
@@ -532,11 +600,11 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
               <span className="text-slate-600 dark:text-slate-300">Source:</span>
               <select
                 aria-label="Source node"
-                value={sourceId || ''}
+                value={sourceId ?? ''}
                 onChange={(e) => setSourceId(Number(e.target.value))}
                 className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-2 py-1 text-slate-800 dark:text-white text-xs font-semibold focus:outline-none focus:border-blue-400 shadow-sm"
               >
-                {vertices.map(v => (
+                {vertices.map((v) => (
                   <option key={v.id} value={v.id}>{v.label}</option>
                 ))}
               </select>
@@ -548,12 +616,12 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
               <span className="text-slate-600 dark:text-slate-300">Target:</span>
               <select
                 aria-label="Target node"
-                value={targetId || ''}
-                onChange={(e) => setTargetId(Number(e.target.value))}
+                value={targetId ?? ''}
+                onChange={(e) => setTargetId(e.target.value === '' ? null : Number(e.target.value))}
                 className="bg-white dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-md px-2 py-1 text-slate-800 dark:text-white text-xs font-semibold focus:outline-none focus:border-blue-400 shadow-sm"
               >
                 <option value="">None</option>
-                {vertices.map(v => (
+                {vertices.map((v) => (
                   <option key={v.id} value={v.id}>{v.label}</option>
                 ))}
               </select>
@@ -567,16 +635,16 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
         <div className="bg-blue-50 dark:bg-blue-900/20 border-b border-blue-100 dark:border-blue-900 px-6 py-3 flex items-center justify-between text-xs md:text-sm font-semibold">
           <div className="flex items-center gap-2 text-blue-600">
             <span className="text-slate-600 dark:text-slate-400">Step {currentStepIndex + 1} of {steps.length}:</span>
-            <span className="text-slate-800 dark:text-slate-100 font-semibold">{activeStep.description}</span>
+            <span className="text-slate-800 dark:text-slate-100 font-semibold">{activeStep.description ?? ''}</span>
           </div>
           {activeStep.view.queue.length > 0 && (
             <div className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-600 shadow-sm">
-              Queue: [{activeStep.view.queue.map(id => vertices.find(v => v.id === id)?.label || id).join(', ')}]
+              Queue: [{activeStep.view.queue.map((id) => vertices.find((v) => v.id === id)?.label || id).join(', ')}]
             </div>
           )}
           {activeStep.view.stack.length > 0 && (
             <div className="text-xs text-slate-600 dark:text-slate-300 bg-white dark:bg-slate-700 px-2.5 py-1 rounded-md border border-slate-200 dark:border-slate-600 shadow-sm">
-              Stack: [{activeStep.view.stack.map(id => vertices.find(v => v.id === id)?.label || id).join(', ')}]
+              Stack: [{activeStep.view.stack.map((id) => vertices.find((v) => v.id === id)?.label || id).join(', ')}]
             </div>
           )}
         </div>
@@ -593,6 +661,8 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
         <svg
           ref={svgRef}
+          role="img"
+          aria-label="Interactive graph canvas"
           className="w-full h-full min-h-[350px] border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm dark:bg-slate-900"
           style={{ backgroundColor: 'var(--viz-canvas)', backgroundImage: 'radial-gradient(var(--viz-canvas-dot) 1px, transparent 1px)', backgroundSize: '24px 24px' }}
           onMouseMove={handleSvgMouseMove}
@@ -661,15 +731,15 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
           {/* Links / Edges */}
           {edges.map((edge, idx) => {
-            const fromNode = vertices.find(v => v.id === edge.from);
-            const toNode = vertices.find(v => v.id === edge.to);
+            const fromNode = vertices.find((v) => v.id === edge.from);
+            const toNode = vertices.find((v) => v.id === edge.to);
             if (!fromNode || !toNode) return null;
 
             const coords = getEdgeCoords(fromNode, toNode, 24);
             const midX = (fromNode.x + toNode.x) / 2;
             const midY = (fromNode.y + toNode.y) / 2;
-            const statusKey = activeStep
-              ? activeStep.view.edges[getEdgeKey(edge.from, edge.to, isDirected)]
+            const statusKey: EdgeState | null = activeStep
+              ? activeStep.view.edges[getEdgeKey(edge.from, edge.to, isDirected)] ?? null
               : null;
 
             const markerId = isDirected
@@ -729,7 +799,7 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
 
           {/* Draw connecting line if linking nodes */}
           {editMode === 'add-edge' && edgeStartNodeId !== null && (() => {
-            const startNode = vertices.find(v => v.id === edgeStartNodeId);
+            const startNode = vertices.find((v) => v.id === edgeStartNodeId);
             if (!startNode) return null;
             return (
               <line
@@ -934,8 +1004,8 @@ const GraphVisualizer = React.memo(({ algorithmInfo }) => {
               initialGraph={{ vertices, edges, isDirected }}
               onGraphChange={(newGraph) => {
                 if (!newGraph) return;
-                if (newGraph.vertices) setVertices(newGraph.vertices);
-                if (newGraph.edges) setEdges(newGraph.edges);
+                if (newGraph.vertices) setVertices([...newGraph.vertices]);
+                if (newGraph.edges) setEdges([...newGraph.edges]);
                 if (typeof newGraph.isDirected === 'boolean') setIsDirected(newGraph.isDirected);
               }}
             />

@@ -45,7 +45,6 @@
   "src/components/EasterEgg.jsx",
   "src/components/ErrorBoundary.jsx",
   "src/components/GitLabIcon.jsx",
-  "src/components/GraphVisualizer.jsx",
   "src/components/GridBacktrackingVisualizer.jsx",
   "src/components/HeapVisualizer.jsx",
   "src/components/Logo.jsx",
