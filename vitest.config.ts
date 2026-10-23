@@ -34,10 +34,10 @@ export default defineConfig({
       // Ratchet upward one point at a time as files are ported and tested.
       // Never lower a threshold to make a pull request green.
       thresholds: {
-        statements: 86,
-        branches: 86,
-        functions: 86,
-        lines: 86,
+        statements: 87,
+        branches: 87,
+        functions: 87,
+        lines: 87,
       },
     },
   },
