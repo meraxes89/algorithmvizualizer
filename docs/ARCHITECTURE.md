@@ -320,9 +320,9 @@ The deploy workflow runs after the checks workflow succeeds for the same commit 
 
 ### Why some things are not covered yet
 
-- Component-level smoke tests currently exist for the sorting and searching bar renderers and the Tower of Hanoi visualizer, the first visualizer ported to strict TypeScript. The other visualizers are covered at the algorithm layer and by route loading in the browser checks, not by dedicated component tests.
+- Component-level smoke tests exist for every step family: the sorting and searching bar renderers, the Graph, Pathfinding, DP, BST, AVL, Heap, Trie, Segment Tree, Recursion and Backtracking visualizers, plus the Tower of Hanoi. The 3D renderers and the remaining shell chrome are covered by route loading in the browser checks.
 - The arena lineups and home-page suggestions are presentation lists that are not yet driven by the registry.
-- Metadata is split across `src/data/algorithmData.js`, `treeAlgorithms.js`, `recursionAlgorithms.js`, family registry descriptions and some visualizer-local copy. Unifying it is a separate migration.
+- Metadata for sorting, searching and pathfinding is unified into the family registries (a required, typed `meta` field). Tree and recursion content tables, the graph registry's inline descriptions and the DP visualizer's local copy are separate migrations.
 
 These are recorded in [Known boundaries](#known-boundaries) so they do not look like finished work.
 
@@ -360,8 +360,8 @@ The step-by-step recipe, including tests and the pull-request checklist, is in [
 The project is deliberately mid-migration. These are the main boundaries to know about:
 
 - **Two source lists for navigation.** Family registries own implementations; the app registry owns display. Tests keep them in sync, but adding an algorithm still requires both edits.
-- **Metadata is not unified.** `src/data/algorithmData.js` covers sorting, searching, trees and pathfinding. Tree and recursion pages have their own content tables; graph descriptions live with the graph registry, and DP descriptions live inside `DPVisualizer`. A single metadata layer is future work.
-- **Legacy visualizers remain.** Most `.jsx` components are still outside the strict TypeScript program. New code must be TypeScript; conversion happens one hot file at a time. `TowerOfHanoiVisualizer` and `animationHelpers` were the first Phase 6 ports.
+- **Metadata is unified for three of the families.** Sorting, searching and pathfinding metadata lives on the family registry entries as a required, typed `meta` field, so registry and metadata cannot drift. Tree and recursion pages still have their own content tables; graph descriptions live with the graph registry, and DP descriptions live inside `DPVisualizer`.
+- **Legacy visualizers remain.** Most `.jsx` components are still outside the strict TypeScript program. New code must be TypeScript; conversion happens one hot file at a time. `TowerOfHanoiVisualizer`, `animationHelpers` and `GraphVisualizer` are the Phase 6 ports; `GraphVisualizer` was chosen by churn, and its port added `.d.ts` boundary shims (`Toast`, `InteractiveGraphBuilder`, `confettiHelper`) so grandfathered files stay out of the checked graph until they convert.
 - **Arena and home surfaces have local lists.** The arena lineup and home-page suggestions do not yet read the app registry.
 - **The Playground depends on remote engines.** JavaScript and Python can run in the browser; compiled languages use Wandbox, Codex or a configured Piston endpoint. Availability is outside this repository's control.
 - **Native dialogs remain in the Playground.** File creation, deletion and reset still use browser `prompt`/`confirm` in that tool. The graph editor's `prompt`/`alert` flow has been retired.

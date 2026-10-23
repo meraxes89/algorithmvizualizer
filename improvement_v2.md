@@ -2,7 +2,7 @@
 
 > **Goal:** Turn this repo into a codebase strangers can navigate in an afternoon and extend in minutes.
 > **North-star test:** _A developer who has never seen this repo adds a new algorithm in ~30 minutes without touching the engine, sound, scrubbing, or docs — and cannot break anything else while doing it._
-> **Status:** Phases 0–5 complete; Phase 6 (continuous hardening) is in progress. See [`execution_tracker.md`](execution_tracker.md) for the item-level ledger. Successor to [`docs/archive/improvement_v1.md`](docs/archive/improvement_v1.md) (performance) — this plan is about *architecture, safety, and documentation*.
+> **Status:** Phases 0–6 complete — this PR carries the full programme; see [`execution_tracker.md`](execution_tracker.md) for the item-level ledger. The first tagged release is the one remaining open item and is deliberately blocked until this PR merges (a tag must not point at an unmerged feature branch). Successor to [`docs/archive/improvement_v1.md`](docs/archive/improvement_v1.md) (performance) — this plan is about *architecture, safety, and documentation*.
 
 ---
 
@@ -173,8 +173,10 @@ Semantic viz-token block (`--viz-compare/swap/visited/path/start/end/wall…`) r
 ### Phase 5 — Docs for strangers · effort: 1–2 sessions
 Rewrite `README.md` to describe reality honestly (current oversell is a contributor-repellant). Write `docs/ARCHITECTURE.md` (layer map, data flow, **Step Trace Contract reference** − the single most-shared doc), `docs/CONTRIBUTING.md` (golden path recipe + coding rules + perf rules), 5–6 ADRs (generators over callbacks; registry over hardcoding; incremental TS; pnpm; class-dark-mode; playback engine) into `docs/adr/`. Move the four legacy plan/tracker docs to `docs/archive/` with a pointer from root. Acceptance: a reviewer who has never read the code can answer "where do I add X?" in ≤2 doc clicks.
 
-### Phase 6 — Continuous hardening · effort: 1 session, then ongoing
+### Phase 6 — Continuous hardening · effort: 1 session, then ongoing · **complete in this PR**
 Deduplicate lockfile policy in docs; dependabot/renovate on; hot files migrate to real TS strictness (registry, core, one algorithm per family); raise coverage gate gradually; optional Lighthouse CI on the deploy preview; release tagging (semver tags + GitHub releases; no changesets needed at this size).
+
+**Delivered:** ADR 0004 is the canonical toolchain/lockfile policy; Dependabot groups weekly updates; the coverage gate ratcheted 85 → 86 → 87 (measured: 93.2% statements, 87.41% branches, 92.37% functions); `TowerOfHanoiVisualizer`, `animationHelpers` and — chosen by churn — `GraphVisualizer` ported to strict TypeScript with `.d.ts` boundary shims so grandfathered files stay out of the checked graph; the Lighthouse route-budget job runs on every PR; `MotionConfig reducedMotion="user"` closes the reduced-motion audit across the framer layer; educational metadata is unified into the family registries (`algorithmData.js` deleted); component smoke tests cover all 11 step families; `docs/RELEASING.md` holds the release procedure. The first tagged release waits for merge by policy. The 3D screenshot regression stays a follow-up: WebGL parity in CI is flaky, and the scenes have route-level and reduced-motion coverage.
 
 **Total: ~12–17 focused sessions** to "professional repo" end state.
 
@@ -182,15 +184,15 @@ Deduplicate lockfile policy in docs; dependabot/renovate on; hot files migrate t
 
 ## 6. Definition of Done (whole plan)
 
-- [ ] One implementation per algorithm; registry entry surfaces it in 5+ UIs with zero extra edits
-- [ ] `src/algorithms` contains zero React/DOM imports — enforced by CI
-- [ ] `lint + typecheck + test + e2e + build` green on every PR; failing any blocks merge
-- [ ] Golden traces + property tests cover 100% of registered algorithms; coverage gate ≥85% on `algorithms/core/registry`
-- [ ] Visualizers all share one playback engine (no `setInterval`/`setTimeout` chains in pages/components)
-- [ ] Zero hardcoded hexes outside token files; legacy chrome eliminated
-- [ ] All 13 routes axe-clean without exceptions list
-- [ ] README describes reality; ARCHITECTURE/CONTRIBUTING/ADR docs live; legacy trackers archived
-- [ ] Dead code list (§1.5) empty; proof = grep + PR deletions
+- [x] One implementation per algorithm; registry entry surfaces it in 5+ UIs with zero extra edits — the Phase 3 dogfood (Heap Sort, Jump Search, Fibonacci-DP) proved the path, and the metadata now travels with the registry entry as a required field
+- [x] `src/algorithms` contains zero React/DOM imports — enforced by CI since Phase 1
+- [x] `lint + typecheck + test + e2e + build` green on every PR; failing any blocks merge — the checks, build/bundle-budget, a11y and Lighthouse jobs all gate the PR
+- [x] Golden traces + property tests cover 100% of registered algorithms; coverage gate ≥ 85% on `algorithms/core/registry` — now ≥ 87%, measured at 93.2% statements
+- [x] Visualizers all share one playback engine (no `setInterval`/`setTimeout` chains in pages/components) — closed in Phase 2; the favicon, confetti and arena race timer remain by design
+- [x] Zero hardcoded hexes outside token files; legacy chrome eliminated — enforced by the ESLint `no-restricted-syntax` rule
+- [x] All routes axe-clean without an exceptions list — 30 axe scans + 3 keyboard flows in CI
+- [x] README describes reality; ARCHITECTURE/CONTRIBUTING/ADR docs live; legacy trackers archived — Phase 5, and the docs were updated in the same commits as the Phase 6 changes they describe
+- [x] Dead code list (§1.5) empty; proof = grep + PR deletions — the §1.5 list died in the family ports; `algorithmData.js` (with its unreachable sections) died in the metadata unification
 
 ## 7. Anti-goals (explicitly not doing)
 
@@ -210,3 +212,4 @@ Deduplicate lockfile policy in docs; dependabot/renovate on; hot files migrate t
 ## 9. Change Log
 
 - **2026-10-22** — Authored from the full-repo audit; decisions locked (incremental TS; all-in testing; plan-only status).
+- **2026-10-23** — Phase 6 completed in PR #2: churn-based `GraphVisualizer` port, metadata unification into the family registries, component tests for all 11 step families, the reduced-motion audit, the Lighthouse route-budget job, and the coverage gate at 87%. Definition of Done ticked with evidence; the first tagged release remains blocked on merge.

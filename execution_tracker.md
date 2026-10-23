@@ -123,7 +123,7 @@
 #### Phase 2 acceptance
 
 - [x] Golden traces pass for every ported family
-- [ ] Component smoke tests pass for every ported family — **only `SortingBars` and `SearchingBars` have component tests today (2 of 11 families)**; everything else is covered at the algorithm layer, and the visualizers are exercised by the build and by hand. Adding jsdom smoke tests per visualizer is open work, not done.
+- [x] Component smoke tests pass for every ported family — **closed in Phase 6**: every one of the 11 step families now has a component suite (sorting and searching bars; Graph, Pathfinding, DP, BST, AVL, Heap, Trie, Segment Tree, Recursion, Backtracking, Tower of Hanoi) (`fcfa621`, `e2bd9ff`, `32b2cc1`)
 - [x] The old implementation is gone for every ported family — verified by grep
 - [x] Every family ported — sorting, searching, pathfinding, graph, trees (BST, AVL, heap, segment tree, trie), recursion (call tree and board searches), puzzles (Tower of Hanoi) and DP; the only remaining algorithm module is the maze generator, which is a constructor rather than an animation and is typed
 
@@ -164,7 +164,7 @@ Verification:
 - [x] `pnpm build`
 - [x] `pnpm size` — budget OK; `useParamSelection.js` is a new 0.4 kB chunk, the registry folds into existing chunks, no repricing needed
 
-Still open for a later phase: universal `StepControls` scrubbing, metadata unification (`algorithmData.js` still covers four families), component smoke tests for 9 of the 11 families.
+Still open for a later phase at the time: universal `StepControls` scrubbing, metadata unification, component smoke tests for 9 of the 11 families. **Phase 6 update:** metadata unification landed (`78b60a8`) and the component smoke tests landed (`fcfa621`, `e2bd9ff`); universal `StepControls` scrubbing remains the one open follow-up from this list.
 
 ### Phase 4 — Design system completion
 
@@ -213,7 +213,7 @@ Verification:
 - [x] `grep` hex count outside `src/theme/` — 0
 - [x] CI run 39783243026 on `4f3e43a` — checks, build and the 33-test a11y job (30 axe scans + 3 keyboard flows) all green
 
-Still open for a later phase: visual screenshot regression on the 3D scenes, reduced-motion audit beyond the current guards, universal `StepControls` scrubbing, metadata unification (`algorithmData.js` still covers four families), and component smoke tests for 9 of the 11 families.
+Still open for a later phase at the time: visual screenshot regression on the 3D scenes, reduced-motion audit beyond the current guards, universal `StepControls` scrubbing, metadata unification, and component smoke tests for 9 of the 11 families. **Phase 6 update:** the reduced-motion audit landed (`c113e72`), metadata unification landed (`78b60a8`) and the component smoke tests landed (`fcfa621`, `e2bd9ff`); 3D screenshot regression and universal `StepControls` scrubbing remain open follow-ups.
 
 ### Phase 5 — Docs for strangers
 
@@ -260,26 +260,41 @@ Still open for a later phase: visual screenshot regression on the 3D scenes, red
 - [x] `TowerOfHanoiVisualizer` migrated from `.jsx` to strict `.tsx` with typed `PuzzleStep` state and a component test
 - [x] `animationHelpers` migrated from `.js` to `.ts`; four unused exports removed; grid, array and speed helpers now typed and tested
 - [x] Stale `TowerOfHanoiVisualizer.jsx` allowlist entry pruned
-- [x] Coverage gate raised from 85% to 86% across statements, branches, functions and lines
-- [x] Current coverage after the ports: 87.30% statements, 89.28% branches, 92.81% functions; 320 tests across 45 files
-- [ ] Next hot file — choose from the remaining visualizers after measuring churn, not by file size alone
+- [x] Coverage gate raised from 85% to 86%, then to **87%** after the completion batch (`0c2703d`)
+- [x] Coverage after the completion batch: **93.2% statements, 87.41% branches, 92.37% functions, 93.2% lines**; 376 tests across 57 files
+- [x] **Next hot file, chosen by churn as directed** — `GraphVisualizer` (8 touches across the 52 PR commits, the highest of any unported visualizer) ported from `.jsx` to strict `.tsx` with a nine-test component suite; both of its `exhaustive-deps` warnings resolved; three `.d.ts` boundary shims (`Toast`, `InteractiveGraphBuilder`, `confettiHelper`) keep the grandfathered legacy files out of the checked graph instead of forcing their conversion (`32b2cc1`)
+- [x] The strict port surfaced and fixed latent falsy-id bugs: the target selector's “None” aliased node 0 (`Number('') === 0`), node ids of 0 fell through every `||` guard, and the canvas svg gained `role="img"` and a label (`32b2cc1`)
 
 #### Documentation and operations
 
 - [x] ADR 0004 is the canonical toolchain/lockfile policy; README and CONTRIBUTING now link to it instead of repeating it
 - [x] README and CONTRIBUTING link the release checklist and dependency automation
-- [ ] Optional Lighthouse CI — deferred until the maintenance loop is stable
-- [ ] 3D screenshot regression, reduced-motion audit, metadata unification and the remaining component smoke tests — still open follow-ups
+- [x] **Optional Lighthouse CI — landed** (`ea80145`): the `lighthouse` job builds the production preview, serves it with `vite preview` on the same Playwright Chromium the a11y job installs, and asserts category budgets via `tools/lighthouse-budget.mjs` — accessibility 90, best-practices 85, SEO 90 gate tightly (deterministic on a static route); performance floors at a generous 75 because the shared runner varies and the per-chunk bundle budget remains the real performance guard. Reports upload as artifacts on every run
+- [x] **Metadata unification** (`78b60a8`) — `algorithmData.js` deleted: sorting, searching and pathfinding metadata moved into typed `meta` modules colocated with the family registries and attached as a **required** field, so registry and metadata cannot drift; `metadata.test.ts` pins completeness and `meta.name === entry.name`. Filled the drift gaps the old table had accumulated: BFS, DFS and Dijkstra had no metadata at all, Jump Search's panel showed Linear Search's content (the visualizer ternary could never look it up), and Heap Sort's code viewer was empty (the nameMap never listed it). The dead `trees` section (four entries, zero consumers) died with the file
+- [x] **Reduced-motion audit complete** (`c113e72`) — the CSS guard in `index.css` clamps what CSS animates; the 3D scenes and two home canvases already query the preference; the audit found the remaining gap was framer-motion's JavaScript-driven motion (14 consumer files: route transitions, cursor springs, toasts, the dock). `MotionConfig reducedMotion="user"` at the app root covers all of them from one place; the playback engine is untouched — stepping an algorithm is the product, not decoration
+- [x] **Component smoke tests for the remaining families** (`fcfa621`, `e2bd9ff`) — suites for pathfinding, DP, the tree traversals, BST, AVL, heap, trie, segment tree, the recursion call tree and the backtracking board; every one of the 11 step families now has component tests. The suites drive the real page contracts and pin mount-seeding, trace compilation through the playback engine, control locking during playback, reset, and the labelled inputs from the a11y pass
+- [ ] 3D screenshot regression — the one follow-up deliberately left open: WebGL screenshot parity in CI is notoriously flaky and the 3D scenes are already covered by route loading and the reduced-motion guards
 
-#### Verification
+#### Found by the new safety net, not by reading
 
-- [x] `pnpm lint` — 0 errors, 25 pre-existing warnings
-- [x] `pnpm typecheck`
-- [x] `pnpm test` — 320 passing across 45 files
-- [x] `pnpm test:coverage` — 87.30% statements, 89.28% branches, 92.81% functions (86% gate)
-- [x] `GITHUB_PAGES=true pnpm build`
-- [x] `pnpm size` — bundle budget OK; no budget changes
-- [x] CI run 39811124486 on `39e4afd` — checks, build/bundle budget and the a11y route sweep all green
+- [x] `AVLVisualizer` and `HeapVisualizer` crashed on **every render** — the auto-scroll effect listed `logs` in its dependency array above the `const logs = useMemo(...)` that defines it, a temporal dead zone `ReferenceError`. The AVL and Heap tabs of the tree page were dead in production; the axe route sweep could not see it because it scans routes in their default state (`e2bd9ff`)
+- [x] The Phase 2 tree port dropped the idle rendering: `refreshTree` became stats-only, so a seeded tree — on mount or after Random Tree — left the canvas empty behind the “press Random Tree” placeholder, exactly backwards. The layout memo now falls back to `snapshotTree(root)` when no trace runs (`e2bd9ff`)
+- [x] `GraphVisualizer`'s target selector “None” set `targetId` to node 0 instead of `null` (`32b2cc1`)
+- [x] Jump Search, BFS, DFS and Dijkstra shipped with missing or wrong educational content — the drift the unification closed (`78b60a8`)
+
+#### Verification (completion batch, `c113e72`)
+
+- [x] `pnpm lint` — 0 errors, **23 warnings** (down from 25: both `GraphVisualizer` `exhaustive-deps` warnings resolved by the port)
+- [x] `pnpm typecheck` — clean
+- [x] `pnpm test` — **376 passing across 57 files** (from 320/45)
+- [x] `pnpm test:coverage` — 93.2% statements, 87.41% branches, 92.37% functions, 93.2% lines (**87% gate**)
+- [x] `pnpm build` and `GITHUB_PAGES=true pnpm build` — green
+- [x] `pnpm size` — bundle budget OK; the metadata move re-chunked `StepControls.js` (4.3 kB) and `usePlayback.js` (4.1 kB) out of the page chunks, both now carry their own budgets, and the stale `algorithmData.js` budget is retired
+- [x] CI run on the final commit — see the PR status
+
+#### Earlier batches
+
+- [x] CI run 39811124486 on `39e4afd` — checks, build/bundle budget and the a11y route sweep all green (previous batch: 0 lint errors, 25 warnings, 320 tests, 87.30% statements)
 
 ---
 

@@ -140,16 +140,19 @@ A good test set covers:
 
 ### 3. Register the implementation
 
-Add the generator to the family registry, for example `src/algorithms/sorting/index.ts`:
+Add the generator to the family registry, for example `src/algorithms/sorting/index.ts`. Since the metadata unification, every entry carries a required `meta` field, so the register step is also where the educational content is attached:
 
 ```ts
 import { exampleSort } from './example-sort/example-sort';
+import { sortingMeta } from './meta';
 
 export const sortingAlgorithms = [
   // ...
-  { id: 'exampleSort', name: 'Example Sort', generator: exampleSort },
+  { id: 'exampleSort', name: 'Example Sort', generator: exampleSort, meta: sortingMeta.exampleSort },
 ];
 ```
+
+The meta field is typed, so an entry without it does not compile — the registry and its metadata cannot drift apart the way the old `algorithmData.js` table did. `metadata.test.ts` fails if a name, description, pseudocode or any of the four code snippets goes missing.
 
 The family registry is what the page (and, for the racing families, the arena) runs. If the algorithm is not here, it is not part of the product.
 
@@ -163,21 +166,21 @@ sorting('exampleSort', 'Example Sort'),
 
 This is what makes it appear in the navigation, the category grid and the command palette. The page tab comes from the family registry; adding the display entry keeps the shell in sync. The registry test compares the display entry against the family registry, so `pnpm test` fails if the ids or names differ.
 
-### 5. Add page metadata if the page expects it
+### 5. Write the educational metadata
 
-Some pages read long-form descriptions and code samples from `src/data/`:
+The long-form descriptions, complexities, pseudocode and code samples live in the family's typed `meta` module, colocated with the registry that requires it:
 
 | Surface | Metadata source |
 | :--- | :--- |
-| Sorting | `src/data/algorithmData.js`, `sorting` section |
-| Searching | `src/data/algorithmData.js`, `searching` section |
-| Trees | `src/data/treeAlgorithms.js` |
-| Pathfinding | `src/data/algorithmData.js`, `pathfinding` section |
+| Sorting | `src/algorithms/sorting/meta.ts` |
+| Searching | `src/algorithms/searching/meta.ts` |
+| Pathfinding | `src/algorithms/pathfinding/meta.ts` |
+| Trees (traversals) | `src/data/treeAlgorithms.js` |
 | Recursion | `src/data/recursionAlgorithms.js` |
-| Graph | Descriptions live with the graph registry |
+| Graph | Descriptions live with the graph registry entries |
 | Dynamic programming | Descriptions currently live in `src/components/DPVisualizer.jsx` |
 
-Check the page that will host the algorithm. A missing entry may fall back to a name-only panel, but the explanation and code viewer will be incomplete. Add the content in the expected shape rather than duplicating it in the page.
+Because the field is required, a missing entry is caught at compile time rather than degrading to a name-only panel at runtime. Match the existing entries' shape: `name` (it must equal the registry entry's `name` — the test enforces it), `description`, the complexity fields, `pseudocode` and all four `codeSnippets` (C++, Java, Python, JavaScript).
 
 ### 6. Run the gates
 
