@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import fc from 'fast-check';
 import { avlInsert, balanceFactor, nodeHeight, rightRotate, leftRotate } from './avl-insert';
-import { generateRandomAVL } from './avl';
 import type { TreeNode } from '../tree';
 
 const drain = <T>(generator: Generator<unknown, T, undefined>): T => {
@@ -78,8 +77,31 @@ describe('avlInsert', () => {
   });
 
   it('logs what it did', () => {
+    // A fixed tree, not a random one: generateRandomAVL could draw 50 as
+    // the root value, and inserting an existing root logs the duplicate
+    // warning without a single compare — a ~1% flake that failed CI run
+    // 39917898865. Descending to insert 50 here is guaranteed to compare.
+    //       40
+    //      /  \
+    //    20    60
+    //   /  \
+    // 10   30
+    const tree: TreeNode = {
+      id: 1,
+      val: 40,
+      left: {
+        id: 2,
+        val: 20,
+        left: { id: 4, val: 10, left: null, right: null },
+        right: { id: 5, val: 30, left: null, right: null },
+        height: 2,
+      },
+      right: { id: 3, val: 60, left: null, right: null },
+      height: 3,
+    };
+
     const steps: { view: { log: { type: string }[] } }[] = [];
-    const generator = avlInsert(generateRandomAVL(5, 5, 95), 50);
+    const generator = avlInsert(tree, 50);
 
     let step = generator.next();
     while (!step.done) {
