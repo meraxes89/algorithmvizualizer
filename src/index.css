@@ -1,3 +1,21 @@
+/* Self-hosted fonts (same origin, discovered in this render-blocking
+   stylesheet instead of a third-party async load — a late font swap was
+   the CLS 1.0 on the home route in CI run 39913064762). Latin subsets
+   only: the copy is English, so the other unicode-range blocks would be
+   dead bytes in the shipped CSS. Weights match the old Google Fonts
+   query; the browser falls back to the system stack for any glyph the
+   latin subsets do not cover, exactly as before. */
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-500.css';
+@import '@fontsource/inter/latin-600.css';
+@import '@fontsource/inter/latin-700.css';
+@import '@fontsource/jetbrains-mono/latin-400.css';
+@import '@fontsource/jetbrains-mono/latin-500.css';
+@import '@fontsource/jetbrains-mono/latin-600.css';
+@import '@fontsource/playfair-display/latin-700.css';
+@import '@fontsource/playfair-display/latin-400-italic.css';
+@import '@fontsource/playfair-display/latin-700-italic.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -405,33 +423,34 @@ pre,
   filter: blur(2px);
 }
 
-/* Micro-Visualizer Animations */
+/* Micro-Visualizer Animations — transform-only. These used to animate
+   `height` and `left`, which are layout properties: every frame was a
+   real layout shift, counted by the browser's Layout Instability API
+   even while the decorations were invisible. Same visuals, no CLS. */
 @keyframes bars-swap {
   0%,
   100% {
-    transform: translateY(0);
-    height: 10px;
+    transform: translateY(0) scaleY(0.5);
   }
   50% {
-    transform: translateY(-5px);
-    height: 20px;
+    transform: translateY(-5px) scaleY(1);
   }
 }
 
 @keyframes path-solve {
   0% {
-    left: 0;
+    transform: translateX(0);
     opacity: 0;
   }
   10% {
     opacity: 1;
   }
   90% {
-    left: 100%;
+    transform: translateX(100%);
     opacity: 1;
   }
   100% {
-    left: 100%;
+    transform: translateX(100%);
     opacity: 0;
   }
 }

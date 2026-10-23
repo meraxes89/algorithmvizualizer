@@ -9,9 +9,11 @@ const DioramaWrapper = React.memo(({ children }) => {
   const location = useLocation();
   const rafId = useRef(null);
 
-  // Z-Axis Parallax based on Scroll
+  // Z-Axis Parallax based on Scroll — the foreground only. The ambient
+  // mesh background is static HTML in index.html now (present at first
+  // paint); mounting it here inserted a full-viewport element ~300ms in
+  // and registered a 0.155 layout shift on every page load.
   const { scrollY } = useScroll();
-  const backgroundY = useTransform(scrollY, [0, 1000], [0, 300]);
   const foregroundY = useTransform(scrollY, [0, 1000], [0, -150]);
 
   useEffect(() => {
@@ -90,15 +92,6 @@ const DioramaWrapper = React.memo(({ children }) => {
 
   return (
     <div className="w-full relative overflow-hidden preserve-3d" style={{ perspective: '2000px' }}>
-      
-      {/* Scroll-Parallax Ambient Background */}
-      <motion.div 
-        style={{ y: backgroundY }}
-        className="absolute inset-0 pointer-events-none z-[-1] translate-z-negative-100"
-      >
-        <div className="bg-ambient w-full h-full"></div>
-      </motion.div>
-
       {/* Global Cursor Glow */}
       <div className="cursor-glow" />
 

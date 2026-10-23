@@ -15,15 +15,17 @@
         } catch (e) {}
       })();
     </script>
-    <!-- Google Fonts: Paper Studio stack — Inter (UI) · Playfair (editorial display) · JetBrains Mono (code) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
-    <noscript>
-      <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Playfair+Display:ital,wght@0,700;1,400;1,700&display=swap" rel="stylesheet" />
-    </noscript>
+    <!-- Fonts are self-hosted via @fontsource packages imported from
+         src/index.css — same origin, discovered in the render-blocking
+         stylesheet. The old async Google Fonts pattern applied (and swapped)
+         web fonts after first paint, which was the layout-shift source on
+         slow networks and flaked the CI Lighthouse budget. -->
   </head>
   <body>
+    <!-- Ambient mesh background: static HTML so it is present at first
+         paint. Mounting it from React (~300ms in) inserted a full-viewport
+         pseudo-element and registered a 0.155 layout shift on every load. -->
+    <div class="bg-ambient" aria-hidden="true"></div>
     <div id="root"></div>
     <script type="module" src="/src/index.jsx"></script>
   </body>

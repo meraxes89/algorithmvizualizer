@@ -93,21 +93,32 @@ const CategoriesPage = () => {
 
                     {category.tag === 'SORTING' && (
                       <div className="absolute right-5 bottom-24 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none flex items-end gap-1 z-0">
-                        {[10, 15, 8].map((h, i) => (
+                        {/* bars-swap animates scaleY (transform-origin bottom),
+                            not height — height animation is a layout shift
+                            every frame, even while invisible. */}
+                        {[0, 1, 2].map((i) => (
                           <div
                             key={i}
                             className="w-1.5 bg-accent rounded-full"
-                            style={{ height: `${h}px`, animation: `bars-swap 1.5s infinite ease-in-out ${i * 0.2}s` }}
+                            style={{
+                              height: '20px',
+                              transformOrigin: 'bottom',
+                              animation: `bars-swap 1.5s infinite ease-in-out ${i * 0.2}s`,
+                            }}
                           />
                         ))}
                       </div>
                     )}
                     {category.tag === 'PATHFINDING' && (
                       <div className="absolute left-5 right-5 bottom-28 h-px bg-accent/30 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none z-0">
+                        {/* The full-width wrapper travels with translateX so the
+                            dot never animates a layout property (`left`). */}
                         <div
-                          className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent shadow-[0_0_10px_var(--accent)]"
+                          className="absolute inset-0 pointer-events-none"
                           style={{ animation: 'path-solve 2.5s infinite ease-in-out' }}
-                        />
+                        >
+                          <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-accent shadow-[0_0_10px_var(--accent)]" />
+                        </div>
                       </div>
                     )}
 
