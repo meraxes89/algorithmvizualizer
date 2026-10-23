@@ -4,7 +4,6 @@ import { generateSortedArray, SPEED_PRESETS } from '../utils/animationHelpers';
 import ExplanationPanel from './educational/ExplanationPanel';
 const CodeViewer = lazy(() => import('./educational/CodeViewer'));
 import CustomTestCases from './educational/CustomTestCases';
-import { algorithmDatabase } from '../data/algorithmData';
 import StepControls from './educational/StepControls';
 import { usePlayback } from '../hooks/usePlayback';
 import { collectSteps } from '../core/playback';
@@ -274,7 +273,7 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
 
       {/* Educational Modals/Overlays */}
       <ExplanationPanel
-        algorithmInfo={algorithmDatabase.searching[algorithmInfo.name === 'Binary Search' ? 'binarySearch' : 'linearSearch'] || algorithmInfo}
+        algorithmInfo={algorithmInfo}
         isOpen={showExplanation}
         onClose={() => setShowExplanation(false)}
       />
@@ -287,7 +286,7 @@ const SearchingVisualizer = React.memo(({ algorithm, algorithmInfo }) => {
             </div>
             <Suspense fallback={<div className="flex h-full items-center justify-center text-xs font-semibold text-ink-3">Loading source…</div>}>
               <CodeViewer
-                codeSnippets={algorithmDatabase.searching[algorithmInfo.name === 'Binary Search' ? 'binarySearch' : 'linearSearch']?.codeSnippets}
+                codeSnippets={algorithmInfo.codeSnippets}
                 isOpen={showCodeViewer}
                 onClose={() => setShowCodeViewer(false)}
               />

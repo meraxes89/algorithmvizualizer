@@ -5,7 +5,6 @@ import ComparisonMode from '../components/educational/ComparisonMode';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { sortingAlgorithms } from '../algorithms/sorting';
-import { algorithmDatabase } from '../data/algorithmData';
 import { useParamSelection } from '../hooks/useParamSelection';
 
 const SortingPage = () => {
@@ -13,7 +12,7 @@ const SortingPage = () => {
     id: entry.id,
     name: entry.name,
     algorithm: entry.generator,
-    info: algorithmDatabase.sorting[entry.id] ?? { name: entry.name },
+    info: entry.meta,
   }));
 
   const { selected: selectedAlgorithm, select: selectAlgorithm } =

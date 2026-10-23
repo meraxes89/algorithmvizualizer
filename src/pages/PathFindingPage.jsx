@@ -3,7 +3,6 @@ import PathFindingVisualizer from '../components/PathFindingVisualizer';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { pathfindingAlgorithms } from '../algorithms/pathfinding';
-import { algorithmDatabase } from '../data/algorithmData';
 import { useParamSelection } from '../hooks/useParamSelection';
 
 const PathFindingPage = () => {
@@ -11,7 +10,7 @@ const PathFindingPage = () => {
     id: entry.id,
     name: entry.name,
     algorithm: entry.generator,
-    info: algorithmDatabase.pathfinding?.[entry.id] ?? { name: entry.name },
+    info: entry.meta,
   }));
 
   const { selected: selectedAlgorithm, select: selectAlgorithm } =

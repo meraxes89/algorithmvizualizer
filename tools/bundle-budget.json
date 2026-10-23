@@ -17,6 +17,7 @@
   "QuizPage.js": 7168,
   "RecursionAlgorithms.js": 46080,
   "SearchingPage.js": 13312,
+  "StepControls.js": 5120,
   "SegmentTreeVisualizer.js": 19456,
   "SegmentedTabs.js": 1024,
   "Sorting3DVisualizer.js": 4096,
@@ -24,7 +25,6 @@
   "TreeAlgorithms.js": 6656,
   "TreeVisualizer.js": 8192,
   "TrieVisualizer.js": 20480,
-  "algorithmData.js": 34816,
   "animationHelpers.js": 1024,
   "confetti.module.js": 12288,
   "confettiHelper.js": 2048,
@@ -40,5 +40,6 @@
   "SortingBars.js": 896,
   "useCanvasPalette.js": 896,
   "layout.js": 640,
-  "useParamSelection.js": 640
+  "useParamSelection.js": 640,
+  "usePlayback.js": 5120
 }

@@ -78,7 +78,6 @@
   "src/components/ui/PageShell.jsx",
   "src/components/ui/SegmentedTabs.jsx",
   "src/context/ThemeContext.jsx",
-  "src/data/algorithmData.js",
   "src/data/recursionAlgorithms.js",
   "src/data/treeAlgorithms.js",
   "src/editor/completions.js",

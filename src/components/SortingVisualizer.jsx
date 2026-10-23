@@ -6,7 +6,6 @@ import StepControls from './educational/StepControls';
 import ExplanationPanel from './educational/ExplanationPanel';
 const CodeViewer = lazy(() => import('./educational/CodeViewer'));
 import CustomTestCases from './educational/CustomTestCases';
-import { algorithmDatabase } from '../data/algorithmData';
 import { triggerVictoryConfetti, getColorsFromTailwind } from '../utils/confettiHelper';
 import { startFaviconAnimation, stopFaviconAnimation } from '../utils/animatedFavicon';
 import SoundControls from './SoundControls';
@@ -140,18 +139,6 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource
   const handleCustomTest = (testArray) => {
     resetArray(testArray);
     setShowCustomTest(false);
-  };
-
-  const getAlgorithmData = (name) => {
-    const nameMap = {
-      'Bubble Sort': 'bubbleSort',
-      'Selection Sort': 'selectionSort',
-      'Insertion Sort': 'insertionSort',
-      'Merge Sort': 'mergeSort',
-      'Quick Sort': 'quickSort'
-    };
-    const key = nameMap[name];
-    return key ? algorithmDatabase.sorting[key] : null;
   };
 
   const maxValue = useMemo(() => Math.max(...array, 1), [array]);
@@ -405,7 +392,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource
 
       {/* Educational Modals/Overlays */}
       <ExplanationPanel
-        algorithmInfo={getAlgorithmData(algorithmInfo.name) || algorithmInfo}
+        algorithmInfo={algorithmInfo}
         isOpen={showExplanation}
         onClose={() => setShowExplanation(false)}
       />
@@ -418,7 +405,7 @@ const SortingVisualizer = React.memo(({ algorithm, algorithmInfo, playbackSource
             </div>
             <Suspense fallback={<div className="flex h-full items-center justify-center text-xs font-semibold text-ink-3">Loading source…</div>}>
               <CodeViewer
-                codeSnippets={getAlgorithmData(algorithmInfo.name)?.codeSnippets}
+                codeSnippets={algorithmInfo.codeSnippets}
                 isOpen={showCodeViewer}
                 onClose={() => setShowCodeViewer(false)}
               />

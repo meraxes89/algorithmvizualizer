@@ -3,7 +3,6 @@ import SearchingVisualizer from '../components/SearchingVisualizer';
 import PageShell from '../components/ui/PageShell';
 import SegmentedTabs from '../components/ui/SegmentedTabs';
 import { searchingAlgorithms } from '../algorithms/searching';
-import { algorithmDatabase } from '../data/algorithmData';
 import { useParamSelection } from '../hooks/useParamSelection';
 
 const SearchingPage = () => {
@@ -11,7 +10,7 @@ const SearchingPage = () => {
     id: entry.id,
     name: entry.name,
     algorithm: entry.generator,
-    info: algorithmDatabase.searching[entry.id] ?? { name: entry.name },
+    info: entry.meta,
   }));
 
   const { selected: selectedAlgorithm, select: selectAlgorithm } =
